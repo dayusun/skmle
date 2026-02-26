@@ -1,7 +1,5 @@
 source("tests/verify_skmle.R")
 
-cat('R f(0):', f(rep(0, 5)), '\n')
-
 estres_pkg_0 <- skmle(
   formula = X_Surv ~ cov1 + cov2,
   data = simdata,
