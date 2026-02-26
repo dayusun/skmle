@@ -5,3 +5,5 @@
 ^\.gitignore$
 ^\.github$
 ^test_out\.txt$
+^tests$
+^tests/
