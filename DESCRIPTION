@@ -1,11 +1,10 @@
 Package: skmle
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Author: First Last <first.last@example.com>
+Maintainer: First Last <first.last@example.com>
+Description: Implements the smoothed maximum likelihood estimation (skmle) method with efficient C++ backend using Rcpp, enabling fast estimation of semiparametric transformation models.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
@@ -17,4 +16,5 @@ Imports:
     nloptr,
     Rcpp,
     RcppArmadillo,
-    splines
+    splines,
+    survival
