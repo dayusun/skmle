@@ -1,0 +1,242 @@
+#' Fit skmle model
+#'
+#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
+#' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
+#' @param id A vector identifying subjects in the data.
+#' @param obs_times The observation times for the subjects.
+#' @param s The s parameter for the transformation function.
+#' @param h The bandwidth parameter.
+#' @param nknots The number of knots for the splines. Default is 3.
+#' @param norder The order of the splines. Default is 3.
+#' @param lq_nodes The number of Legendre-Gauss quadrature nodes for the integral. Default is 64.
+#' @param maxeval Maximum number of evaluations for nlopt. Default is 10000.
+#' @param xtol_rel Relative tolerance for nlopt. Default is 1e-6.
+#'
+#' @return A list containing the estimation results.
+#' @importFrom survival Surv
+#' @importFrom stats model.frame model.matrix model.response
+#' @importFrom splines ns
+#' @importFrom gaussquad legendre.quadrature.rules
+#' @export
+skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6) {
+  
+  mf <- model.frame(formula, data)
+  Y <- model.response(mf)
+  
+  if (!inherits(Y, "Surv")) {
+    stop("Response must be a survival object created with Surv()")
+  }
+  
+  X_time <- Y[, 1]
+  delta <- Y[, 2]
+  
+  Z <- model.matrix(formula, data)
+  
+  # Remove intercept if present
+  if (colnames(Z)[1] == "(Intercept)") {
+    Z <- Z[, -1, drop = FALSE]
+  }
+  
+  id_vec <- as.numeric(data[[deparse(substitute(id))]])
+  if (is.null(id_vec)) {
+      id_vec <- as.numeric(eval(substitute(id), data, parent.frame()))
+  }
+  
+  obs_times_vec <- as.numeric(data[[deparse(substitute(obs_times))]])
+  if (is.null(obs_times_vec)) {
+      obs_times_vec <- as.numeric(eval(substitute(obs_times), data, parent.frame()))
+  }
+  
+  kerfun <- function(xx) {
+    pmax((1 - xx^2) * 0.75, 0)
+  }
+  
+  n <- length(unique(id_vec))
+  
+  kerval <- kerfun((X_time - obs_times_vec) / h) / h * as.numeric(X_time > obs_times_vec)
+  
+  knots <- (1:nknots) / (nknots + 1)
+  
+  bsmat <- splines::ns(X_time, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))
+  
+  lqrule <- gaussquad::legendre.quadrature.rules(lq_nodes)[[lq_nodes]]
+  
+  lq_x <- lqrule$x
+  lq_w <- lqrule$w
+  
+  # Precompute for quadrature
+  n_quad <- length(lq_x)
+  bsmat_tt_all <- array(0, dim = c(n_quad, ncol(bsmat), 1))
+  kerval_tt_all <- matrix(0, nrow = n_quad, ncol = length(X_time))
+  
+  for (q in 1:n_quad) {
+    tt <- 0.5 * lq_x[q] + 0.5
+    
+    dist_tt <- tt - obs_times_vec
+    kerval_tt_all[q, ] <- kerfun(dist_tt / h) / h * as.numeric(dist_tt > 0)
+    
+    bsmat_tt <- splines::ns(rep(tt, 2), knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))[1, , drop = FALSE]
+    bsmat_tt_all[q, , 1] <- bsmat_tt
+  }
+  
+  # Reorganize array for C++
+  bsmat_tt_mat <- matrix(0, nrow = n_quad, ncol = ncol(bsmat))
+  for (q in 1:n_quad) {
+    bsmat_tt_mat[q, ] <- bsmat_tt_all[q, , 1]
+  }
+  
+  
+  ineqmat <- matrix(0, nrow = length(X_time), ncol = ncol(Z) + ncol(bsmat))
+  if (s != 0) {
+      ineqmat <- cbind(Z, as.matrix(bsmat))
+      ineqmat <- ineqmat[(X_time > obs_times_vec) & (abs(X_time - obs_times_vec) <= h), ]
+  }
+  
+  res <- skmle_cpp_fit(
+    n = n,
+    p = ncol(Z),
+    gammap = ncol(bsmat),
+    s = s,
+    h = h,
+    covariates = as.matrix(Z),
+    bsmat = as.matrix(bsmat),
+    X = as.numeric(X_time),
+    obs_times = as.numeric(obs_times_vec),
+    delta = as.numeric(delta),
+    kerval = as.numeric(kerval),
+    lq_x = as.numeric(lq_x),
+    lq_w = as.numeric(lq_w),
+    bsmat_tt_all = bsmat_tt_mat,
+    kerval_tt_all = as.matrix(kerval_tt_all),
+    ineqmat = as.matrix(ineqmat),
+    maxeval = maxeval,
+    xtol_rel = xtol_rel
+  )
+  
+  beta_est <- res$solution[1:ncol(Z)]
+  gamma_est <- res$solution[(ncol(Z) + 1):(ncol(Z) + ncol(bsmat))]
+  
+  A_est <- calc_A(
+    beta = beta_est,
+    gamma = gamma_est,
+    s = s,
+    h = h,
+    covariates = as.matrix(Z),
+    bsmat = as.matrix(bsmat),
+    X = as.numeric(X_time),
+    obs_times = as.numeric(obs_times_vec),
+    delta = as.numeric(delta),
+    kerval = as.numeric(kerval),
+    bsmat_XX = as.matrix(bsmat),
+    n_subj = n
+  )
+
+  B_est <- calc_B(
+    beta = beta_est,
+    gamma = gamma_est,
+    s = s,
+    h = h,
+    covariates = as.matrix(Z),
+    bsmat = as.matrix(bsmat),
+    X = as.numeric(X_time),
+    obs_times = as.numeric(obs_times_vec),
+    delta = as.numeric(delta),
+    kerval = as.numeric(kerval),
+    id = as.numeric(id_vec),
+    bsmat_XX = as.matrix(bsmat),
+    lq_x = as.numeric(lq_x),
+    lq_w = as.numeric(lq_w),
+    bsmat_tt_all = bsmat_tt_mat,
+    kerval_tt_all = as.matrix(kerval_tt_all),
+    n_subj = n
+  )
+  
+  var_est <- solve(A_est) %*% B_est %*% solve(A_est) / n
+  
+  names(beta_est) <- colnames(Z)
+  dimnames(var_est) <- list(colnames(Z), colnames(Z))
+  
+  out <- list(
+    coefficients = beta_est,
+    var = var_est,
+    gamma = gamma_est,
+    loglik = -res$minimum,
+    A = A_est,
+    B = B_est,
+    convergence = res$status,
+    n = n,
+    s = s,
+    h = h,
+    call = match.call()
+  )
+  
+  class(out) <- "skmle"
+  return(out)
+}
+
+#' Print skmle object
+#'
+#' @param x An object of class `skmle`.
+#' @param ... Further arguments passed to or from other methods.
+#' @export
+print.skmle <- function(x, ...) {
+  cat("Call:\n")
+  print(x$call)
+  cat("\nCoefficients:\n")
+  print(x$coefficients)
+  invisible(x)
+}
+
+#' Summary for skmle object
+#'
+#' @param object An object of class `skmle`.
+#' @param ... Further arguments passed to or from other methods.
+#' @importFrom stats pnorm
+#' @export
+summary.skmle <- function(object, ...) {
+  coef <- object$coefficients
+  se <- sqrt(diag(object$var))
+  z_val <- coef / se
+  p_val <- 2 * pnorm(-abs(z_val))
+  
+  coef_table <- cbind(
+    Estimate = coef,
+    `Std. Error` = se,
+    `z value` = z_val,
+    `Pr(>|z|)` = p_val
+  )
+  
+  res <- list(
+    call = object$call,
+    coefficients = coef_table,
+    loglik = object$loglik,
+    convergence = object$convergence,
+    n = object$n
+  )
+  class(res) <- "summary.skmle"
+  return(res)
+}
+
+#' Print summary of skmle object
+#'
+#' @param x An object of class `summary.skmle`.
+#' @param ... Further arguments passed to or from other methods.
+#' @importFrom stats printCoefmat
+#' @export
+print.summary.skmle <- function(x, ...) {
+  cat("Call:\n")
+  print(x$call)
+  cat("\n")
+  
+  cat(sprintf("  n= %d\n\n", x$n))
+  
+  if (nrow(x$coefficients) > 0) {
+    stats::printCoefmat(x$coefficients, P.values = TRUE, has.Pvalue = TRUE)
+  }
+  
+  cat("\nLog-likelihood:", format(x$loglik, digits = 4), "\n")
+  if (x$convergence < 0) {
+    cat("Optimization may not have converged (status:", x$convergence, ")\n")
+  }
+  invisible(x)
+}
