@@ -1,4 +1,4 @@
-source("c:/Users/commi/OneDrive/Professional/Research/asyn/Rpackage/skmle/Rprototype_funcs.R")
+source("c:/Users/commi/OneDrive/Professional/Research/asyn/Rpackage/skmle/dev/Rprototype_funcs.R")
 library(skmle)
 
 set.seed(123)
