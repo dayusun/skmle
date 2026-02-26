@@ -13,4 +13,4 @@ estres_pkg_0 <- skmle(
   norder = 3,
   maxeval = 1
 )
-cat('C++ nll(0):', estres_pkg_0$minimum, '\n')
+cat('C++ nll(0):', -estres_pkg_0$loglik, '\n')
