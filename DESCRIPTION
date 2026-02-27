@@ -13,6 +13,7 @@ LinkingTo:
     RcppArmadillo
 Imports: 
     gaussquad,
+    ggplot2,
     nloptr,
     Rcpp,
     RcppArmadillo,
