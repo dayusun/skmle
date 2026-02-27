@@ -1,0 +1,242 @@
+#' Fit the Cox model using estimating equations
+#'
+#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
+#' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
+#' @param id A vector identifying subjects in the data.
+#' @param obs_times The observation times for the subjects.
+#' @param h The bandwidth parameter.
+#'
+#' @return A list containing the estimation results.
+#' @importFrom survival Surv
+#' @importFrom stats model.frame model.matrix model.response
+#' @importFrom nleqslv nleqslv
+#' @export
+kee_cox <- function(formula, data, id, obs_times, h) {
+    mf <- model.frame(formula, data)
+    Y <- model.response(mf)
+
+    if (!inherits(Y, "Surv")) {
+        stop("Response must be a survival object created with Surv()")
+    }
+
+    X_time <- Y[, 1]
+    delta <- Y[, 2]
+
+    Z <- model.matrix(formula, data)
+    if (colnames(Z)[1] == "(Intercept)") Z <- Z[, -1, drop = FALSE]
+
+    id_vec <- as.numeric(data[[deparse(substitute(id))]])
+    if (is.null(id_vec)) {
+        id_vec <- as.numeric(eval(substitute(id), data, parent.frame()))
+    }
+
+    obs_times_vec <- as.numeric(data[[deparse(substitute(obs_times))]])
+    if (is.null(obs_times_vec)) {
+        obs_times_vec <- as.numeric(eval(substitute(obs_times), data, parent.frame()))
+    }
+
+    kerfun <- function(xx) {
+        pmax((1 - xx^2) * 0.75, 0)
+    }
+
+    n <- length(unique(id_vec))
+    kerval <- kerfun((X_time - obs_times_vec) / h) / h * as.numeric(X_time > obs_times_vec)
+
+    estequ <- function(beta) {
+        kee_cox_estequ(
+            beta = beta,
+            covariates = as.matrix(Z),
+            X = as.numeric(X_time),
+            obs_times = as.numeric(obs_times_vec),
+            delta = as.numeric(delta),
+            kerval = as.numeric(kerval),
+            h = h,
+            n_subj = n
+        )
+    }
+
+    init_beta <- rep(0, ncol(Z))
+    estres <- nleqslv::nleqslv(init_beta, fn = estequ)
+    beta_est <- estres$x
+
+    var_res <- kee_cox_var(
+        beta = beta_est,
+        covariates = as.matrix(Z),
+        X = as.numeric(X_time),
+        obs_times = as.numeric(obs_times_vec),
+        delta = as.numeric(delta),
+        kerval = as.numeric(kerval),
+        h = h,
+        id = as.numeric(id_vec),
+        n_subj = n
+    )
+
+    W <- var_res$W
+    Sigma <- var_res$Sigma
+    var_est <- solve(W) %*% Sigma %*% solve(W)
+
+    names(beta_est) <- colnames(Z)
+    dimnames(var_est) <- list(colnames(Z), colnames(Z))
+
+    out <- list(
+        coefficients = beta_est,
+        var = var_est,
+        W = W,
+        Sigma = Sigma,
+        convergence = estres$termcd,
+        n = n,
+        h = h,
+        call = match.call()
+    )
+    class(out) <- "kee"
+    return(out)
+}
+
+#' Fit the Additive model using estimating equations
+#'
+#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
+#' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
+#' @param id A vector identifying subjects in the data.
+#' @param obs_times The observation times for the subjects.
+#' @param h The bandwidth parameter.
+#' @param lq_nodes The number of Legendre-Gauss quadrature nodes for the integral. Default is 64.
+#'
+#' @return A list containing the estimation results.
+#' @importFrom survival Surv
+#' @importFrom stats model.frame model.matrix model.response
+#' @importFrom gaussquad legendre.quadrature.rules
+#' @export
+kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
+    mf <- model.frame(formula, data)
+    Y <- model.response(mf)
+
+    if (!inherits(Y, "Surv")) {
+        stop("Response must be a survival object created with Surv()")
+    }
+
+    X_time <- Y[, 1]
+    delta <- Y[, 2]
+
+    Z <- model.matrix(formula, data)
+    if (colnames(Z)[1] == "(Intercept)") Z <- Z[, -1, drop = FALSE]
+
+    id_vec <- as.numeric(data[[deparse(substitute(id))]])
+    if (is.null(id_vec)) {
+        id_vec <- as.numeric(eval(substitute(id), data, parent.frame()))
+    }
+
+    obs_times_vec <- as.numeric(data[[deparse(substitute(obs_times))]])
+    if (is.null(obs_times_vec)) {
+        obs_times_vec <- as.numeric(eval(substitute(obs_times), data, parent.frame()))
+    }
+
+    kerfun <- function(xx) {
+        pmax((1 - xx^2) * 0.75, 0)
+    }
+
+    n <- length(unique(id_vec))
+    kerval <- kerfun((X_time - obs_times_vec) / h) / h * as.numeric(X_time > obs_times_vec)
+
+    lqrule <- gaussquad::legendre.quadrature.rules(lq_nodes)[[lq_nodes]]
+    lq_x <- lqrule$x
+    lq_w <- lqrule$w
+
+    res <- kee_additive_est(
+        covariates = as.matrix(Z),
+        X = as.numeric(X_time),
+        obs_times = as.numeric(obs_times_vec),
+        delta = as.numeric(delta),
+        kerval = as.numeric(kerval),
+        h = h,
+        id = as.numeric(id_vec),
+        lq_x = as.numeric(lq_x),
+        lq_w = as.numeric(lq_w),
+        n_subj = n
+    )
+
+    beta_est <- as.vector(res$est)
+    A <- res$A_est
+    B <- res$B_est
+    Sigma <- res$Sigma_est
+    var_est <- solve(A) %*% Sigma %*% solve(A)
+
+    names(beta_est) <- colnames(Z)
+    dimnames(var_est) <- list(colnames(Z), colnames(Z))
+
+    out <- list(
+        coefficients = beta_est,
+        var = var_est,
+        A = A,
+        B = B,
+        Sigma = Sigma,
+        n = n,
+        h = h,
+        call = match.call()
+    )
+    class(out) <- "kee"
+    return(out)
+}
+
+#' Print kee object
+#'
+#' @param x An object of class `kee`.
+#' @param ... Further arguments passed to or from other methods.
+#' @export
+print.kee <- function(x, ...) {
+    cat("Call:\n")
+    print(x$call)
+    cat("\nCoefficients:\n")
+    print(x$coefficients)
+    invisible(x)
+}
+
+#' Summary for kee object
+#'
+#' @param object An object of class `kee`.
+#' @param ... Further arguments passed to or from other methods.
+#' @importFrom stats pnorm
+#' @export
+summary.kee <- function(object, ...) {
+    coef <- object$coefficients
+    se <- sqrt(diag(object$var))
+    z_val <- coef / se
+    p_val <- 2 * pnorm(-abs(z_val))
+
+    coef_table <- cbind(
+        Estimate = coef,
+        `Std. Error` = se,
+        `z value` = z_val,
+        `Pr(>|z|)` = p_val
+    )
+
+    res <- list(
+        call = object$call,
+        coefficients = coef_table,
+        convergence = if (is.null(object$convergence)) NA else object$convergence,
+        n = object$n
+    )
+    class(res) <- "summary.kee"
+    return(res)
+}
+
+#' Print summary of kee object
+#'
+#' @param x An object of class `summary.kee`.
+#' @param ... Further arguments passed to or from other methods.
+#' @importFrom stats printCoefmat
+#' @export
+print.summary.kee <- function(x, ...) {
+    cat("Call:\n")
+    print(x$call)
+    cat("\n")
+    cat(sprintf("  n= %d\n\n", x$n))
+
+    if (nrow(x$coefficients) > 0) {
+        stats::printCoefmat(x$coefficients, P.values = TRUE, has.Pvalue = TRUE)
+    }
+
+    if (!is.na(x$convergence) && x$convergence != 1) {
+        cat("\nOptimization status:", x$convergence, "\n")
+    }
+    invisible(x)
+}
