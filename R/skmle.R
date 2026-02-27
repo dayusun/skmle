@@ -167,6 +167,7 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
     n = n,
     s = s,
     h = h,
+    nknots = nknots,
     call = match.call()
   )
   
@@ -239,4 +240,46 @@ print.summary.skmle <- function(x, ...) {
     cat("Optimization may not have converged (status:", x$convergence, ")\n")
   }
   invisible(x)
+}
+
+#' Plot the estimated baseline function for skmle model
+#'
+#' @param x An object of class `skmle`.
+#' @param t_seq A numeric vector of time points to evaluate the baseline function. Default is `seq(0, 1, length.out = 100)`.
+#' @param ... Further arguments passed to or from other methods.
+#' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal
+#' @importFrom splines ns
+#' @export
+plot.skmle <- function(x, t_seq = seq(0, 1, length.out = 100), ...) {
+  if (!inherits(x, "skmle")) {
+    stop("Object must be of class 'skmle'")
+  }
+  
+  if (!is.null(x$nknots)) {
+    nknots <- x$nknots
+  } else {
+    nknots <- length(x$gamma) - 2
+  }
+  
+  knots <- (1:nknots) / (nknots + 1)
+  
+  bsmat_plot <- splines::ns(t_seq, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))
+  
+  baseline_est <- as.vector(bsmat_plot %*% x$gamma)
+  
+  plot_data <- data.frame(
+    Time = t_seq,
+    Baseline = baseline_est
+  )
+  
+  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = Time, y = Baseline)) +
+    ggplot2::geom_line(color = "blue", linewidth = 1) +
+    ggplot2::labs(
+      title = "Estimated Baseline Function",
+      x = "Time",
+      y = "Baseline Value"
+    ) +
+    ggplot2::theme_minimal()
+  
+  return(p)
 }
