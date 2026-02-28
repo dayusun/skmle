@@ -28,8 +28,21 @@
 #' @examples
 #' \dontrun{
 #' library(survival)
+#'
+#' # Simulate data for 200 subjects under the proportional hazards model (s = 0)
+#' set.seed(123)
+#' dat <- sim_skmle_data(
+#'     n = 200,
+#'     mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'     mu_bar = 8,
+#'     alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'     beta = c(1, -0.5), # True coefficients
+#'     s = 0, # proportional hazards
+#'     cen = 0.7 # censoring parameter
+#' )
+#'
 #' # Fit the Cox model using kernel estimating equations
-#' fit_cox <- kee_cox(Surv(time, status) ~ x1 + x2,
+#' fit_cox <- kee_cox(Surv(X, delta) ~ covariates,
 #'     data = dat, id = id, obs_times = obs_times,
 #'     h = 0.5
 #' )
@@ -151,8 +164,21 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #' @examples
 #' \dontrun{
 #' library(survival)
+#'
+#' # Simulate data for 200 subjects under the additive hazards model (s = 1)
+#' set.seed(123)
+#' dat <- sim_skmle_data(
+#'     n = 200,
+#'     mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'     mu_bar = 8,
+#'     alpha = function(tt) 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'     beta = c(1, -0.5), # True coefficients
+#'     s = 1, # additive hazards
+#'     cen = 0.7 # censoring parameter
+#' )
+#'
 #' # Fit the additive hazards model using kernel estimating equations
-#' fit_add <- kee_additive(Surv(time, status) ~ x1 + x2,
+#' fit_add <- kee_additive(Surv(X, delta) ~ covariates,
 #'     data = dat, id = id, obs_times = obs_times,
 #'     h = 0.5
 #' )
