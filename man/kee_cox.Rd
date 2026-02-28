@@ -15,11 +15,38 @@ kee_cox(formula, data, id, obs_times, h)
 
 \item{obs_times}{The observation times for the subjects.}
 
-\item{h}{The bandwidth parameter.}
+\item{h}{The bandwidth parameter for kernel smoothing.}
 }
 \value{
-A list containing the estimation results.
+A list of class \code{kee} containing the estimation results, including
+estimated coefficients, variance-covariance matrix, and optimization details.
 }
 \description{
-Fit the Cox model using estimating equations
+Fits the proportional hazards (Cox) model for survival data with
+sparse longitudinal covariates using a kernel-weighted estimating equations approach.
+}
+\details{
+\code{kee_cox} uses a kernel-smoothed partial likelihood estimating equation to estimate
+regression coefficients when covariates are measured intermittently and sparsely.
+It circumvents the estimation of the unknown nonparametric baseline hazard function.
+}
+\examples{
+\dontrun{
+library(survival)
+# Fit the Cox model using kernel estimating equations
+fit_cox <- kee_cox(Surv(time, status) ~ x1 + x2,
+    data = dat, id = id, obs_times = obs_times,
+    h = 0.5
+)
+summary(fit_cox)
+}
+
+}
+\references{
+Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
+"Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
+\emph{Journal of the American Statistical Association} (2025): 1-12.
+
+Cao, Hongyuan, et al. "Inference for Cox models with sparse longitudinal covariates."
+\emph{Biometrika} (2015).
 }

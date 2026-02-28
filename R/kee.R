@@ -1,12 +1,41 @@
 #' Fit the Cox model using estimating equations
 #'
+#' @description Fits the proportional hazards (Cox) model for survival data with
+#' sparse longitudinal covariates using a kernel-weighted estimating equations approach.
+#'
 #' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
 #' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
 #' @param id A vector identifying subjects in the data.
 #' @param obs_times The observation times for the subjects.
-#' @param h The bandwidth parameter.
+#' @param h The bandwidth parameter for kernel smoothing.
 #'
-#' @return A list containing the estimation results.
+#' @details
+#' `kee_cox` uses a kernel-smoothed partial likelihood estimating equation to estimate
+#' regression coefficients when covariates are measured intermittently and sparsely.
+#' It circumvents the estimation of the unknown nonparametric baseline hazard function.
+#'
+#' @references
+#' Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
+#' "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
+#' *Journal of the American Statistical Association* (2025): 1-12.
+#'
+#' Cao, Hongyuan, et al. "Inference for Cox models with sparse longitudinal covariates."
+#' *Biometrika* (2015).
+#'
+#' @return A list of class `kee` containing the estimation results, including
+#' estimated coefficients, variance-covariance matrix, and optimization details.
+#'
+#' @examples
+#' \dontrun{
+#' library(survival)
+#' # Fit the Cox model using kernel estimating equations
+#' fit_cox <- kee_cox(Surv(time, status) ~ x1 + x2,
+#'     data = dat, id = id, obs_times = obs_times,
+#'     h = 0.5
+#' )
+#' summary(fit_cox)
+#' }
+#'
 #' @importFrom survival Surv
 #' @importFrom stats model.frame model.matrix model.response
 #' @importFrom nleqslv nleqslv
@@ -94,14 +123,42 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 
 #' Fit the Additive model using estimating equations
 #'
+#' @description Fits the additive hazards model for survival data with
+#' sparse longitudinal covariates using a kernel-weighted estimating equations approach.
+#'
 #' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
 #' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
 #' @param id A vector identifying subjects in the data.
 #' @param obs_times The observation times for the subjects.
-#' @param h The bandwidth parameter.
+#' @param h The bandwidth parameter for kernel smoothing.
 #' @param lq_nodes The number of Legendre-Gauss quadrature nodes for the integral. Default is 64.
 #'
-#' @return A list containing the estimation results.
+#' @details
+#' `kee_additive` uses a kernel-smoothed martingale-based estimating equation to estimate
+#' regression coefficients in the additive hazards model when covariates are measured intermittently and sparsely.
+#'
+#' @references
+#' Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
+#' "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
+#' *Journal of the American Statistical Association* (2025): 1-12.
+#'
+#' Sun, Dayu, Hongyuan Cao, and Yining Chen. "Additive hazards models with sparse
+#' longitudinal covariates." *Lifetime Data Analysis* (2022).
+#'
+#' @return A list of class `kee` containing the estimation results, including
+#' estimated coefficients, and variance-covariance matrix.
+#'
+#' @examples
+#' \dontrun{
+#' library(survival)
+#' # Fit the additive hazards model using kernel estimating equations
+#' fit_add <- kee_additive(Surv(time, status) ~ x1 + x2,
+#'     data = dat, id = id, obs_times = obs_times,
+#'     h = 0.5
+#' )
+#' summary(fit_add)
+#' }
+#'
 #' @importFrom survival Surv
 #' @importFrom stats model.frame model.matrix model.response
 #' @importFrom gaussquad legendre.quadrature.rules

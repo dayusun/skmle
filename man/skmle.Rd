@@ -27,23 +27,59 @@ skmle(
 
 \item{obs_times}{The observation times for the subjects.}
 
-\item{s}{The s parameter for the transformation function.}
+\item{s}{The s parameter for the Box-Cox transformation function. \code{s = 0} corresponds to the proportional hazards model, and \code{s = 1} corresponds to the additive hazards model.}
 
-\item{h}{The bandwidth parameter.}
+\item{h}{The bandwidth parameter for kernel smoothing.}
 
-\item{nknots}{The number of knots for the splines. Default is 3.}
+\item{nknots}{The number of knots for the B-splines used to approximate the baseline hazard function. Default is 3.}
 
-\item{norder}{The order of the splines. Default is 3.}
+\item{norder}{The order of the B-splines. Default is 3 (cubic splines).}
 
-\item{lq_nodes}{The number of Legendre-Gauss quadrature nodes for the integral. Default is 64.}
+\item{lq_nodes}{The number of Legendre-Gauss quadrature nodes for the integral of the baseline hazard. Default is 64.}
 
-\item{maxeval}{Maximum number of evaluations for nlopt. Default is 10000.}
+\item{maxeval}{Maximum number of evaluations for nlopt optimization. Default is 10000.}
 
-\item{xtol_rel}{Relative tolerance for nlopt. Default is 1e-6.}
+\item{xtol_rel}{Relative tolerance for nlopt optimization. Default is 1e-6.}
 }
 \value{
-A list containing the estimation results.
+A list of class \code{skmle} containing the estimation results, including
+estimated coefficients, variance-covariance matrix, log-likelihood, and optimization details.
 }
 \description{
-Fit skmle model
+Fits a transformed hazards model for survival data with sparsely
+and intermittently observed longitudinal covariates using the sieve maximum
+kernel-weighted log-likelihood estimator (SMKLE).
+}
+\details{
+The \code{skmle} function implements the Sieve Maximum Kernel-weighted Log-likelihood
+Estimator proposed by Sun et al. (2025). The method combines kernel weighting
+on the log-likelihood (to handle sparse longitudinal covariates evaluated at event
+or censoring times) with a B-spline sieve approximation for the unknown
+nonparametric baseline hazard function. The estimation is optimized using an
+efficient C++ backend via \code{Rcpp} and \code{nloptr}.
+}
+\examples{
+\dontrun{
+library(survival)
+# Suppose dat is a dataframe with sparse longitudinal data
+# id: subject ID
+# obs_times: times at which covariates were measured
+# time: survival/censoring time
+# status: event indicator (1 = event, 0 = censored)
+# x1, x2: time-dependent covariates measured at obs_times
+
+# Fit the SMKLE model with Box-Cox parameter s = 0 (proportional hazards)
+fit <- skmle(Surv(time, status) ~ x1 + x2,
+  data = dat, id = id, obs_times = obs_times,
+  s = 0, h = 0.5, nknots = 3
+)
+summary(fit)
+plot(fit)
+}
+
+}
+\references{
+Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
+"Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
+\emph{Journal of the American Statistical Association} (2025): 1-12.
 }

@@ -15,13 +15,39 @@ kee_additive(formula, data, id, obs_times, h, lq_nodes = 64)
 
 \item{obs_times}{The observation times for the subjects.}
 
-\item{h}{The bandwidth parameter.}
+\item{h}{The bandwidth parameter for kernel smoothing.}
 
 \item{lq_nodes}{The number of Legendre-Gauss quadrature nodes for the integral. Default is 64.}
 }
 \value{
-A list containing the estimation results.
+A list of class \code{kee} containing the estimation results, including
+estimated coefficients, and variance-covariance matrix.
 }
 \description{
-Fit the Additive model using estimating equations
+Fits the additive hazards model for survival data with
+sparse longitudinal covariates using a kernel-weighted estimating equations approach.
+}
+\details{
+\code{kee_additive} uses a kernel-smoothed martingale-based estimating equation to estimate
+regression coefficients in the additive hazards model when covariates are measured intermittently and sparsely.
+}
+\examples{
+\dontrun{
+library(survival)
+# Fit the additive hazards model using kernel estimating equations
+fit_add <- kee_additive(Surv(time, status) ~ x1 + x2,
+    data = dat, id = id, obs_times = obs_times,
+    h = 0.5
+)
+summary(fit_add)
+}
+
+}
+\references{
+Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
+"Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
+\emph{Journal of the American Statistical Association} (2025): 1-12.
+
+Sun, Dayu, Hongyuan Cao, and Yining Chen. "Additive hazards models with sparse
+longitudinal covariates." \emph{Lifetime Data Analysis} (2022).
 }
