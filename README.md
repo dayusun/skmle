@@ -3,9 +3,9 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The **skmle** package implements robust and efficient inference for a general class of **transformed hazards models** with sparse, intermittently observed longitudinal covariates. 
+The **skmle** package implements robust and efficient inference for a general class of **transformed hazards models** with sparse, intermittently observed longitudinal covariates.
 
-Standard survival analysis methods typically require the availability of the entire trajectory of time-dependent covariates. In practice, however, covariates are often observed sparsely and irregularly over time (e.g., occasional clinical visits or vital sign measurements). The `skmle` package resolves this issue using a novel combination of **kernel weighting** and **sieve maximum log-likelihood estimation (SMKLE)**. 
+Standard survival analysis methods typically require the availability of the entire trajectory of time-dependent covariates. In practice, however, covariates are often observed sparsely and irregularly over time (e.g., occasional clinical visits or vital sign measurements). The `skmle` package resolves this issue using a novel combination of **kernel weighting** and **sieve maximum log-likelihood estimation (SMKLE)**.
 
 The core estimation computations are implemented via a highly efficient C++ backend utilizing `Rcpp`, `RcppArmadillo`, and the `nlopt` C API, enabling fast and scalable model fitting.
 
@@ -14,6 +14,7 @@ The core estimation computations are implemented via a highly efficient C++ back
 - **`skmle()`**: Fits flexible transformed hazards models (utilizing the Box-Cox transformation family) using the Sieve Maximum Kernel-weighted Log-likelihood Estimator. This accommodates both the proportional hazards model (`s = 0`) and additive hazards model (`s = 1`), among others.
 - **`kee_cox()`**: Fits proportional hazards models using the Kernel Estimating Equations (KEE) approach.
 - **`kee_additive()`**: Fits additive hazards models using the KEE approach.
+- **`sim_skmle_data()`**: A comprehensive set of tools to simulate survival dataset objects equipped with sparse, intermittently observed longitudinal covariate processes (powered by Non-Homogeneous Poisson Processes) compatible for testing the estimators.
 
 ## Installation
 
@@ -24,7 +25,7 @@ You can install the development version of `skmle` from GitHub with:
 devtools::install_github("dayusun/skmle")
 ```
 
-*(Note: Since the package depends on C++ code, you will need appropriate C++ compilers installed on your system—e.g., Rtools for Windows, or Xcode Command Line Tools for macOS).*
+_(Note: Since the package depends on C++ code, you will need appropriate C++ compilers installed on your system—e.g., Rtools for Windows, or Xcode Command Line Tools for macOS)._
 
 ## Usage Example
 
@@ -42,9 +43,9 @@ library(survival)
 # - x1, x2: Time-dependent covariates
 
 # 1. Fit the proportional hazards model (Box-Cox parameter s = 0)
-fit_ph <- skmle(Surv(time, status) ~ x1 + x2, 
-                data = dat, 
-                id = id, 
+fit_ph <- skmle(Surv(time, status) ~ x1 + x2,
+                data = dat,
+                id = id,
                 obs_times = obs_times,
                 s = 0,        # s=0 corresponds to proportional hazards
                 h = 0.5,      # Kernel bandwidth
@@ -61,4 +62,4 @@ plot(fit_ph)
 
 The theoretical foundation and methodology for this package are thoroughly detailed in:
 
-> **Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao. "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."** *Journal of the American Statistical Association* (2025): 1-12. [DOI: 10.1080/01621459.2025.2476781](https://doi.org/10.1080/01621459.2025.2476781)
+> **Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao. "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."** _Journal of the American Statistical Association_ (2025): 1-12. [DOI: 10.1080/01621459.2025.2476781](https://doi.org/10.1080/01621459.2025.2476781)
