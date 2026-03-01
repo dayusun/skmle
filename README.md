@@ -36,6 +36,8 @@ library(skmle)
 library(survival)
 
 # 1. Simulate data for 200 subjects
+
+*Note:* subject identifiers (`id`) may be non‑numeric; the functions will internally convert them to integer codes.
 set.seed(123)
 dat <- sim_skmle_data(
     n = 200,
