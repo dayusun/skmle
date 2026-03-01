@@ -156,7 +156,8 @@ simAsytransdata <-
     if (length(obs_times) == 0)
       obs_times <- cen
     
-    covariates_obscov <- matrix(c(z_fun(obs_times),rep((z_cons/beta[2]),length(z_fun(obs_times)))),length(z_fun(obs_times)))
+    z_cons_raw <- as.numeric((mean(z) + rnorm(1, 0, 1)) > 0)
+    covariates_obscov <- cbind(z_fun(obs_times), rep(z_cons_raw, length(obs_times)))
     
     # Results
     return(

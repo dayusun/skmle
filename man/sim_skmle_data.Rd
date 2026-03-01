@@ -15,7 +15,7 @@ sim_skmle_data(n, mu, mu_bar, alpha, beta, s, cen, nstep = 20)
 
 \item{alpha}{A function specifying the baseline hazard component.}
 
-\item{beta}{A numeric vector of true regression coefficients for the generated covariates (length 2 in this implementation).}
+\item{beta}{A numeric vector of true regression coefficients for the generated covariates (length 2 in this implementation). The function currently only supports two covariates; supplying a vector of another length raises an error.}
 
 \item{s}{The Box-Cox transformation parameter (0 for proportional hazards, 1 for additive hazards).}
 
@@ -28,7 +28,7 @@ A tibble (data frame) in long format containing the following columns:
 \item{id}{Subject identifier.}
 \item{X}{The observed survival or censoring time.}
 \item{delta}{Event indicator (TRUE if event occurred, FALSE if censored).}
-\item{covariates}{A matrix of the observed time-dependent covariates.}
+\item{covariates}{A two-column matrix of the observed covariates. Column 1 is a time-varying process, and column 2 is a constant (binary) indicator for each subject.}
 \item{obs_times}{The exact times at which the covariates were observed.}
 \item{censoring}{The randomly generated right-censoring time for the subject.}
 }
@@ -48,6 +48,8 @@ covariates are generated using a Non-Homogeneous Poisson Process.
 library(dplyr)
 # Simulate a dataset of 200 subjects under the proportional hazards model (s = 0)
 set.seed(123)
+# the returned data frame contains a matrix column `covariates` with two
+# columns: a time-varying component and a constant indicator
 sim_data <- sim_skmle_data(
     n = 200,
     mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),

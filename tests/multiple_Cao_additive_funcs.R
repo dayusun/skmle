@@ -121,11 +121,12 @@ simAsytransdata <-
     # 3. Generate observation time
     z_fun <- stepfun(left_time_points, c(0, z))
 
-    z_cons<- beta[2] * (mean(z)+rnorm(1,0,1) > 0)
+    z_cons_raw <- as.numeric((mean(z) + rnorm(1, 0, 1)) > 0)
+    z_cons <- beta[2] * z_cons_raw
 
     h_fun <- function(x) {
       beta[1] %*% z_fun(x) + 
-        z_cons
+        beta[2] * z_cons_raw
     }
     
     # 4. Generate failure time
@@ -157,7 +158,7 @@ simAsytransdata <-
     if (length(obs_times) == 0)
       obs_times <- cen
     
-    covariates_obscov <- matrix(c(z_fun(obs_times),rep((z_cons/beta[2]),length(z_fun(obs_times)))),length(z_fun(obs_times)))
+    covariates_obscov <- cbind(z_fun(obs_times), rep(z_cons_raw, length(obs_times)))
     
     # Results
     return(

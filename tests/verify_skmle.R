@@ -1,4 +1,5 @@
-source("c:/Users/commi/OneDrive/Professional/Research/asyn/Rpackage/skmle/dev/Rprototype_funcs.R")
+# rely on the development helper in the project directory
+source("dev/Rprototype_funcs.R")
 library(skmle)
 
 set.seed(123)
@@ -41,7 +42,8 @@ print(ori_time)
 
 
 # Package version
-# `skmle` expects `kovariates` as formula `Z ~ covariates` or similar. Let's fix column names.
+# break the matrix into separate covariate columns (pkg can also handle a
+# matrix variable in the formula, but the old script did not).
 simdata$cov1 <- simdata$covariates[,1]
 simdata$cov2 <- simdata$covariates[,2]
 simdata$X_Surv <- survival::Surv(simdata$X, simdata$delta)

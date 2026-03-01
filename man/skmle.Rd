@@ -19,17 +19,17 @@ skmle(
 )
 }
 \arguments{
-\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function.}
+\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function. The model must include at least one covariate (intercept-only formulas are unsupported).}
 
 \item{data}{A data.frame in which to interpret the variables named in the formula, or in the \code{id} argument.}
 
-\item{id}{A vector identifying subjects in the data.}
+\item{id}{A vector identifying subjects in the data. Values are coerced to integer codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.}
 
 \item{obs_times}{The observation times for the subjects.}
 
 \item{s}{The s parameter for the Box-Cox transformation function. \code{s = 0} corresponds to the proportional hazards model, and \code{s = 1} corresponds to the additive hazards model.}
 
-\item{h}{The bandwidth parameter for kernel smoothing.}
+\item{h}{The bandwidth parameter for kernel smoothing. Must be positive.}
 
 \item{nknots}{The number of knots for the B-splines used to approximate the baseline hazard function. Default is 3.}
 
