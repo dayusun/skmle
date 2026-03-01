@@ -41,6 +41,8 @@ NonHPP_gen <- function(lambdat, censor, lambda.bar) {
 #' @param mu_bar An upper bound for the intensity function `mu`.
 #' @param alpha A function specifying the baseline hazard component.
 #' @param beta A numeric vector of true regression coefficients for the generated covariates (length 2 in this implementation).
+#'   The simulation currently constructs precisely two covariates;
+#'   supplying a vector of other length will trigger an error.
 #' @param s The Box-Cox transformation parameter (0 for proportional hazards, 1 for additive hazards).
 #' @param cen The maximum follow-up or censoring time parameter.
 #' @param nstep Number of steps for generating the piecewise constant longitudinal covariate process. Default is 20.
@@ -56,7 +58,8 @@ NonHPP_gen <- function(lambdat, censor, lambda.bar) {
 #'   \item{id}{Subject identifier.}
 #'   \item{X}{The observed survival or censoring time.}
 #'   \item{delta}{Event indicator (TRUE if event occurred, FALSE if censored).}
-#'   \item{covariates}{A matrix of the observed time-dependent covariates.}
+#'   \item{covariates}{A two‑column matrix (time‑varying covariate in column 1,
+#'     constant indicator in column 2) recording the observed covariates.}
 #'   \item{obs_times}{The exact times at which the covariates were observed.}
 #'   \item{censoring}{The randomly generated right-censoring time for the subject.}
 #'
@@ -92,9 +95,35 @@ sim_skmle_data <- function(n,
                            s,
                            cen,
                            nstep = 20) {
-    # Internal function to generate data for a single subject
+    ## input validation -------------------------------------------------------
+    if (!is.numeric(n) || length(n) != 1 || n <= 0) {
+        stop("'n' must be a positive integer")
+    }
+    if (!is.function(mu) || !is.function(alpha)) {
+        stop("'mu' and 'alpha' must be functions of time")
+    }
+    if (!is.numeric(mu_bar) || length(mu_bar) != 1 || mu_bar <= 0) {
+        stop("'mu_bar' must be a positive numeric value")
+    }
+    if (!is.numeric(beta) || length(beta) < 1) {
+        stop("'beta' must be a numeric vector of length at least 1")
+    }
+    if (length(beta) != 2L) {
+        stop("This simulation currently only supports two covariates (length(beta) == 2)")
+    }
+    if (!is.numeric(s) || length(s) != 1) {
+        stop("'s' must be a numeric scalar")
+    }
+    if (!is.numeric(cen) || length(cen) != 1 || cen <= 0) {
+        stop("'cen' must be a positive numeric value")
+    }
+    if (!is.numeric(nstep) || length(nstep) != 1 || nstep <= 0) {
+        stop("'nstep' must be a positive integer")
+    }
+
+    # internal helper --------------------------------------------------------
     sim_single_subject <- function() {
-        # 1. Generate censoring times
+        # 1. Generate censoring times (uniform over [cen,1] but not exceeding 1)
         cen_i <- runif(1, cen, 1.5)
         cen_i <- min(cen_i, 1)
 
@@ -106,12 +135,12 @@ sim_skmle_data <- function(n,
         left_time_points <- (0:(nstep - 1)) / nstep
         z_fun <- stepfun(left_time_points, c(0, z))
 
-        # Generate the second covariate (time-independent constant part)
-        z_cons <- beta[2] * (mean(z) + rnorm(1, 0, 1) > 0)
+        # Generate the second covariate as a binary indicator
+        z_cons_raw <- as.numeric((mean(z) + rnorm(1, 0, 1)) > 0)
 
-        # The aggregated linear predictor part
+        # The aggregated linear predictor part (used for survival time)
         h_fun <- function(x) {
-            beta[1] * z_fun(x) + z_cons
+            beta[1] * z_fun(x) + beta[2] * z_cons_raw
         }
 
         # 3. Generate failure time based on transformation parameter 's'
@@ -133,23 +162,22 @@ sim_skmle_data <- function(n,
 
         # 4. Generate R_ik (Observation times) via NHPP
         obs_times <- NonHPP_gen(mu, cen_i, mu_bar)
-
-        if (length(obs_times) == 0) {
-            obs_times <- cen_i
-        }
+        if (length(obs_times) == 0) obs_times <- cen_i
 
         # Combine covariates evaluated at observation times
-        covariates_obscov <- matrix(c(z_fun(obs_times), rep((z_cons / beta[2]), length(z_fun(obs_times)))), ncol = 2)
+        covariates_obscov <- cbind(
+            z_fun(obs_times),
+            rep(z_cons_raw, length(obs_times))
+        )
+        colnames(covariates_obscov) <- paste0("cov", seq_len(ncol(covariates_obscov)))
 
         # Return results for the subject
-        return(
-            tibble::tibble(
-                X = X,
-                delta = fail_time < cen_i,
-                covariates = covariates_obscov,
-                obs_times = obs_times,
-                censoring = cen_i
-            )
+        tibble::tibble(
+            X = X,
+            delta = fail_time < cen_i,
+            covariates = covariates_obscov,
+            obs_times = obs_times,
+            censoring = cen_i
         )
     }
 

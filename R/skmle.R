@@ -4,12 +4,13 @@
 #' and intermittently observed longitudinal covariates using the sieve maximum
 #' kernel-weighted log-likelihood estimator (SMKLE).
 #'
-#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
+#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function. The model must include at least one covariate (intercept-only formulas are unsupported).
 #' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
-#' @param id A vector identifying subjects in the data.
+#' @param id A vector identifying subjects in the data. Values are coerced to integer
+#'   codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.
 #' @param obs_times The observation times for the subjects.
 #' @param s The s parameter for the Box-Cox transformation function. `s = 0` corresponds to the proportional hazards model, and `s = 1` corresponds to the additive hazards model.
-#' @param h The bandwidth parameter for kernel smoothing.
+#' @param h The bandwidth parameter for kernel smoothing. Must be positive.
 #' @param nknots The number of knots for the B-splines used to approximate the baseline hazard function. Default is 3.
 #' @param norder The order of the B-splines. Default is 3 (cubic splines).
 #' @param lq_nodes The number of Legendre-Gauss quadrature nodes for the integral of the baseline hazard. Default is 64.
@@ -48,13 +49,24 @@
 #'   cen = 0.7 # censoring parameter
 #' )
 #'
-#' # 'covariates' column from sim_skmle_data is a matrix containing both covariates
-#' # Fit the SMKLE model with Box-Cox parameter s = 0
+#' # 'covariates' column from sim_skmle_data is a two-column matrix; there are two
+#' # ways to include it in the model. Using the matrix directly will result in a
+#' # design matrix with columns `covariates1`, `covariates2`.  You may also split
+#' # it into separate variables, e.g. `Z1`, `Z2`.
 #' fit <- skmle(Surv(X, delta) ~ covariates,
 #'   data = dat, id = id, obs_times = obs_times,
 #'   s = 0, h = 0.5, nknots = 3
 #' )
+#'
+#' # or create named covariate columns yourself:
+#' dat$Z1 <- dat$covariates[, 1]
+#' dat$Z2 <- dat$covariates[, 2]
+#' fit2 <- skmle(Surv(X, delta) ~ Z1 + Z2,
+#'   data = dat, id = id, obs_times = obs_times,
+#'   s = 0, h = 0.5, nknots = 3
+#' )
 #' summary(fit)
+#' summary(fit2)
 #' plot(fit)
 #' }
 #'
@@ -64,7 +76,25 @@
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
 skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6) {
-  mf <- model.frame(formula, data)
+  # validate inputs --------------------------------------------------------
+  if (missing(formula) || missing(data) || missing(id) ||
+    missing(obs_times) || missing(s) || missing(h)) {
+    stop("formula, data, id, obs_times, s and h must all be supplied")
+  }
+  if (!is.numeric(h) || length(h) != 1 || h <= 0) stop("'h' must be a positive number")
+  if (!is.numeric(s) || length(s) != 1) stop("'s' must be a numeric scalar")
+  if (!is.numeric(nknots) || length(nknots) != 1 || nknots < 1) stop("'nknots' must be >= 1")
+  if (!is.numeric(norder) || length(norder) != 1 || norder < 1) stop("'norder' must be >= 1")
+  if (!is.numeric(lq_nodes) || length(lq_nodes) != 1 || lq_nodes < 1) stop("'lq_nodes' must be >= 1")
+  if (!is.data.frame(data)) stop("'data' must be a data.frame")
+
+  # robust parsing of formula, id, and obs_times to synchronize NA dropping
+  call <- match.call()
+  m <- match(c("formula", "data", "id", "obs_times"), names(call), 0L)
+  mf_call <- call[c(1L, m)]
+  mf_call[[1L]] <- quote(stats::model.frame)
+  mf <- eval(mf_call, parent.frame())
+
   Y <- model.response(mf)
 
   if (!inherits(Y, "Surv")) {
@@ -73,67 +103,56 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
 
   X_time <- Y[, 1]
   delta <- Y[, 2]
+  if (anyNA(X_time) || anyNA(delta)) {
+    stop("missing values in survival response not permitted")
+  }
 
-  Z <- model.matrix(formula, data)
-
-  # Remove intercept if present
-  if (colnames(Z)[1] == "(Intercept)") {
+  Z <- model.matrix(formula, data = mf)
+  if (ncol(Z) > 0 && colnames(Z)[1] == "(Intercept)") {
     Z <- Z[, -1, drop = FALSE]
   }
+  if (ncol(Z) == 0) stop("model must contain at least one covariate")
 
-  id_vec <- as.numeric(data[[deparse(substitute(id))]])
-  if (is.null(id_vec)) {
-    id_vec <- as.numeric(eval(substitute(id), data, parent.frame()))
-  }
+  id_vec <- as.numeric(model.extract(mf, "id"))
+  obs_times_vec <- as.numeric(model.extract(mf, "obs_times"))
 
-  obs_times_vec <- as.numeric(data[[deparse(substitute(obs_times))]])
-  if (is.null(obs_times_vec)) {
-    obs_times_vec <- as.numeric(eval(substitute(obs_times), data, parent.frame()))
+  if (length(id_vec) != length(X_time) || length(obs_times_vec) != length(X_time)) {
+    stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
   }
+  id_vec <- as.integer(factor(id_vec))
 
   kerfun <- function(xx) {
     pmax((1 - xx^2) * 0.75, 0)
   }
 
   n <- length(unique(id_vec))
-
   kerval <- kerfun((X_time - obs_times_vec) / h) / h * as.numeric(X_time > obs_times_vec)
 
   knots <- (1:nknots) / (nknots + 1)
-
   bsmat <- splines::ns(X_time, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))
 
   lqrule <- gaussquad::legendre.quadrature.rules(lq_nodes)[[lq_nodes]]
-
   lq_x <- lqrule$x
   lq_w <- lqrule$w
 
-  # Precompute for quadrature
+  # Precompute for quadrature points (matrix form only)
   n_quad <- length(lq_x)
-  bsmat_tt_all <- array(0, dim = c(n_quad, ncol(bsmat), 1))
+  bsmat_tt_mat <- matrix(0, nrow = n_quad, ncol = ncol(bsmat))
   kerval_tt_all <- matrix(0, nrow = n_quad, ncol = length(X_time))
 
-  for (q in 1:n_quad) {
+  for (q in seq_len(n_quad)) {
     tt <- 0.5 * lq_x[q] + 0.5
-
     dist_tt <- tt - obs_times_vec
     kerval_tt_all[q, ] <- kerfun(dist_tt / h) / h * as.numeric(dist_tt > 0)
-
-    bsmat_tt <- splines::ns(rep(tt, 2), knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))[1, , drop = FALSE]
-    bsmat_tt_all[q, , 1] <- bsmat_tt
+    bsmat_tt_mat[q, ] <- splines::ns(rep(tt, 2), knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))[1, , drop = TRUE]
   }
 
-  # Reorganize array for C++
-  bsmat_tt_mat <- matrix(0, nrow = n_quad, ncol = ncol(bsmat))
-  for (q in 1:n_quad) {
-    bsmat_tt_mat[q, ] <- bsmat_tt_all[q, , 1]
-  }
-
-
-  ineqmat <- matrix(0, nrow = length(X_time), ncol = ncol(Z) + ncol(bsmat))
+  # inequality constraints matrix, may be empty if no rows satisfy the filter
+  ineqmat <- matrix(numeric(0), nrow = 0, ncol = ncol(Z) + ncol(bsmat))
   if (s != 0) {
-    ineqmat <- cbind(Z, as.matrix(bsmat))
-    ineqmat <- ineqmat[(X_time > obs_times_vec) & (abs(X_time - obs_times_vec) <= h), ]
+    tmp <- cbind(Z, as.matrix(bsmat))
+    rows <- (X_time > obs_times_vec) & (abs(X_time - obs_times_vec) <= h)
+    if (any(rows)) ineqmat <- tmp[rows, , drop = FALSE]
   }
 
   res <- skmle_cpp_fit(
@@ -195,7 +214,13 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
     n_subj = n
   )
 
-  var_est <- solve(A_est) %*% B_est %*% solve(A_est) / n
+  var_est <- tryCatch(
+    solve(A_est) %*% B_est %*% solve(A_est) / n,
+    error = function(e) {
+      warning("variance estimation failed, A_est may be singular: ", e$message)
+      matrix(NA_real_, ncol(A_est), ncol(A_est))
+    }
+  )
 
   names(beta_est) <- colnames(Z)
   dimnames(var_est) <- list(colnames(Z), colnames(Z))
@@ -297,6 +322,9 @@ print.summary.skmle <- function(x, ...) {
 plot.skmle <- function(x, t_seq = seq(0, 1, length.out = 100), ...) {
   if (!inherits(x, "skmle")) {
     stop("Object must be of class 'skmle'")
+  }
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("ggplot2 is required for plotting; please install it")
   }
 
   if (!is.null(x$nknots)) {
