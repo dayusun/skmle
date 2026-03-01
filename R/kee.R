@@ -5,9 +5,9 @@
 #'
 #' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
 #' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
-#' @param id A vector identifying subjects in the data.
+#' @param id A vector identifying subjects in the data. Values are coerced to integer codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.
 #' @param obs_times The observation times for the subjects.
-#' @param h The bandwidth parameter for kernel smoothing.
+#' @param h The bandwidth parameter for kernel smoothing. Must be positive.
 #'
 #' @details
 #' `kee_cox` uses a kernel-smoothed partial likelihood estimating equation to estimate
@@ -41,12 +41,25 @@
 #'     cen = 0.7 # censoring parameter
 #' )
 #'
-#' # Fit the Cox model using kernel estimating equations
+#' # `dat$covariates` is a two‑column matrix.  you can either supply the
+#' # matrix directly in the formula or split it into separate columns:
+#'
+#' ## matrix interface (model.matrix will expand into covariates1, covariates2)
 #' fit_cox <- kee_cox(Surv(X, delta) ~ covariates,
 #'     data = dat, id = id, obs_times = obs_times,
 #'     h = 0.5
 #' )
+#'
+#' ## explicit columns
+#' dat$Z1 <- dat$covariates[, 1]
+#' dat$Z2 <- dat$covariates[, 2]
+#' fit_cox2 <- kee_cox(Surv(X, delta) ~ Z1 + Z2,
+#'     data = dat, id = id, obs_times = obs_times,
+#'     h = 0.5
+#' )
+#'
 #' summary(fit_cox)
+#' summary(fit_cox2)
 #' }
 #'
 #' @importFrom survival Surv
@@ -54,7 +67,24 @@
 #' @importFrom nleqslv nleqslv
 #' @export
 kee_cox <- function(formula, data, id, obs_times, h) {
-    mf <- model.frame(formula, data)
+    # basic input validation
+    if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(h)) {
+        stop("formula, data, id, obs_times and h must all be supplied")
+    }
+    if (!is.numeric(h) || length(h) != 1 || h <= 0) {
+        stop("bandwidth 'h' must be a positive number")
+    }
+    if (!is.data.frame(data)) {
+        stop("'data' must be a data.frame")
+    }
+
+    # robust parsing of formula, id, and obs_times to synchronize NA dropping
+    call <- match.call()
+    m <- match(c("formula", "data", "id", "obs_times"), names(call), 0L)
+    mf_call <- call[c(1L, m)]
+    mf_call[[1L]] <- quote(stats::model.frame)
+    mf <- eval(mf_call, parent.frame())
+
     Y <- model.response(mf)
 
     if (!inherits(Y, "Surv")) {
@@ -64,17 +94,22 @@ kee_cox <- function(formula, data, id, obs_times, h) {
     X_time <- Y[, 1]
     delta <- Y[, 2]
 
-    Z <- model.matrix(formula, data)
-    if (colnames(Z)[1] == "(Intercept)") Z <- Z[, -1, drop = FALSE]
-
-    id_vec <- as.numeric(data[[deparse(substitute(id))]])
-    if (is.null(id_vec)) {
-        id_vec <- as.numeric(eval(substitute(id), data, parent.frame()))
+    Z <- model.matrix(formula, data = mf)
+    # drop intercept if present
+    if (ncol(Z) > 0 && colnames(Z)[1] == "(Intercept)") {
+        Z <- Z[, -1, drop = FALSE]
+    }
+    if (ncol(Z) == 0) {
+        stop("model must contain at least one covariate")
     }
 
-    obs_times_vec <- as.numeric(data[[deparse(substitute(obs_times))]])
-    if (is.null(obs_times_vec)) {
-        obs_times_vec <- as.numeric(eval(substitute(obs_times), data, parent.frame()))
+    id_vec <- as.numeric(model.extract(mf, "id"))
+    obs_times_vec <- as.numeric(model.extract(mf, "obs_times"))
+    # convert identifier to integer codes for safe use in C++
+    id_vec <- as.integer(factor(id_vec))
+
+    if (length(id_vec) != length(X_time) || length(obs_times_vec) != length(X_time)) {
+        stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
     }
 
     kerfun <- function(xx) {
@@ -115,7 +150,13 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 
     W <- var_res$W
     Sigma <- var_res$Sigma
-    var_est <- solve(W) %*% Sigma %*% solve(W)
+    var_est <- tryCatch(
+        solve(W) %*% Sigma %*% solve(W),
+        error = function(e) {
+            warning("variance computation failed, W may be singular: ", e$message)
+            matrix(NA_real_, ncol(W), ncol(W))
+        }
+    )
 
     names(beta_est) <- colnames(Z)
     dimnames(var_est) <- list(colnames(Z), colnames(Z))
@@ -139,11 +180,11 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #' @description Fits the additive hazards model for survival data with
 #' sparse longitudinal covariates using a kernel-weighted estimating equations approach.
 #'
-#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
+#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function. The model must include at least one covariate (intercept-only formulas are unsupported).
 #' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
-#' @param id A vector identifying subjects in the data.
+#' @param id A vector identifying subjects in the data. Values are coerced to integer codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.
 #' @param obs_times The observation times for the subjects.
-#' @param h The bandwidth parameter for kernel smoothing.
+#' @param h The bandwidth parameter for kernel smoothing. Must be positive.
 #' @param lq_nodes The number of Legendre-Gauss quadrature nodes for the integral. Default is 64.
 #'
 #' @details
@@ -178,6 +219,8 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #' )
 #'
 #' # Fit the additive hazards model using kernel estimating equations
+#' # dat$covariates is a two-column matrix; you may use it directly or split
+#' # into separate columns as desired.
 #' fit_add <- kee_additive(Surv(X, delta) ~ covariates,
 #'     data = dat, id = id, obs_times = obs_times,
 #'     h = 0.5
@@ -190,7 +233,27 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
 kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
-    mf <- model.frame(formula, data)
+    # basic validation
+    if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(h)) {
+        stop("formula, data, id, obs_times and h must all be supplied")
+    }
+    if (!is.numeric(h) || length(h) != 1 || h <= 0) {
+        stop("bandwidth 'h' must be a positive number")
+    }
+    if (!is.numeric(lq_nodes) || length(lq_nodes) != 1 || lq_nodes <= 0) {
+        stop("'lq_nodes' must be a positive integer")
+    }
+    if (!is.data.frame(data)) {
+        stop("'data' must be a data.frame")
+    }
+
+    # robust parsing of formula, id, and obs_times to synchronize NA dropping
+    call <- match.call()
+    m <- match(c("formula", "data", "id", "obs_times"), names(call), 0L)
+    mf_call <- call[c(1L, m)]
+    mf_call[[1L]] <- quote(stats::model.frame)
+    mf <- eval(mf_call, parent.frame())
+
     Y <- model.response(mf)
 
     if (!inherits(Y, "Surv")) {
@@ -199,18 +262,20 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
 
     X_time <- Y[, 1]
     delta <- Y[, 2]
-
-    Z <- model.matrix(formula, data)
-    if (colnames(Z)[1] == "(Intercept)") Z <- Z[, -1, drop = FALSE]
-
-    id_vec <- as.numeric(data[[deparse(substitute(id))]])
-    if (is.null(id_vec)) {
-        id_vec <- as.numeric(eval(substitute(id), data, parent.frame()))
+    if (anyNA(X_time) || anyNA(delta)) {
+        stop("missing values in survival response not permitted")
     }
 
-    obs_times_vec <- as.numeric(data[[deparse(substitute(obs_times))]])
-    if (is.null(obs_times_vec)) {
-        obs_times_vec <- as.numeric(eval(substitute(obs_times), data, parent.frame()))
+    Z <- model.matrix(formula, data = mf)
+    if (ncol(Z) > 0 && colnames(Z)[1] == "(Intercept)") Z <- Z[, -1, drop = FALSE]
+    if (ncol(Z) == 0) stop("model must contain at least one covariate")
+
+    id_vec <- as.numeric(model.extract(mf, "id"))
+    obs_times_vec <- as.numeric(model.extract(mf, "obs_times"))
+    id_vec <- as.integer(factor(id_vec))
+
+    if (length(id_vec) != length(X_time) || length(obs_times_vec) != length(X_time)) {
+        stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
     }
 
     kerfun <- function(xx) {
@@ -241,7 +306,13 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
     A <- res$A_est
     B <- res$B_est
     Sigma <- res$Sigma_est
-    var_est <- solve(A) %*% Sigma %*% solve(A)
+    var_est <- tryCatch(
+        solve(A) %*% Sigma %*% solve(A),
+        error = function(e) {
+            warning("variance computation failed, A may be singular: ", e$message)
+            matrix(NA_real_, ncol(A), ncol(A))
+        }
+    )
 
     names(beta_est) <- colnames(Z)
     dimnames(var_est) <- list(colnames(Z), colnames(Z))
