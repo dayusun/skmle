@@ -70,12 +70,9 @@ List kee_cox_var(const arma::vec& beta,
   int p = covariates.n_cols;
   
   arma::mat W = arma::zeros<arma::mat>(p, p);
-  std::map<int, arma::vec> id_to_sigma;
-  
-  for (int i = 0; i < n; ++i) {
-    id_to_sigma[id[i]] = arma::zeros<arma::vec>(p);
-  }
-  
+  // convert id values (1..n_subj) to zero-based indices; n_subj should
+  // equal the number of unique subjects and ids must be coded accordingly.
+  std::vector<arma::vec> id_to_sigma(n_subj, arma::zeros<arma::vec>(p));
   arma::vec expbeta = arma::exp(covariates * beta);
   
   for (int i = 0; i < n; ++i) {
@@ -104,7 +101,10 @@ List kee_cox_var(const arma::vec& beta,
         arma::mat S2_o_S0 = S2_XX_sum / S0_XX_sum;
         
         W += (S2_o_S0 - Zbar_XX * trans(Zbar_XX)) * kerval[i];
-        id_to_sigma[id[i]] += kerval[i] * (trans(covariates.row(i)) - Zbar_XX);
+        int idx = static_cast<int>(std::round(id[i])) - 1;
+        if (idx >= 0 && idx < n_subj) {
+          id_to_sigma[idx] += kerval[i] * (trans(covariates.row(i)) - Zbar_XX);
+        }
       }
     }
   }
@@ -112,8 +112,8 @@ List kee_cox_var(const arma::vec& beta,
   W = W / static_cast<double>(n_subj);
   
   arma::mat Sigma = arma::zeros<arma::mat>(p, p);
-  for(auto const& imap: id_to_sigma) {
-    Sigma += imap.second * trans(imap.second);
+  for (int j = 0; j < n_subj; ++j) {
+    Sigma += id_to_sigma[j] * trans(id_to_sigma[j]);
   }
   Sigma = Sigma / std::pow(static_cast<double>(n_subj), 2.0);
   
@@ -141,10 +141,8 @@ List kee_additive_est(const arma::mat& covariates,
   arma::vec B = arma::zeros<arma::vec>(p);
   
   // To compute A: needs double integral approximated by lq sum 
-  std::map<int, arma::mat> id_to_A;
-  for (int i = 0; i < n; ++i) {
-    id_to_A[id[i]] = arma::zeros<arma::mat>(p, p);
-  }
+  // use vector indexed by subject code (1..n_subj)
+  std::vector<arma::mat> id_to_A(n_subj, arma::zeros<arma::mat>(p, p));
   
   for (int q = 0; q < n_quad; ++q) {
     double tt = 0.5 * lq_x[q] + 0.5;
@@ -176,7 +174,10 @@ List kee_additive_est(const arma::mat& covariates,
              double kerval_tt = std::max((1.0 - std::pow(dist_tt / h, 2.0)) * 0.75, 0.0) / h;
              if (kerval_tt > 0) {
                 arma::vec cov_m_Zbar = trans(covariates.row(i)) - Zbar_tt;
-                id_to_A[id[i]] += weight * kerval_tt * (cov_m_Zbar * covariates.row(i));
+                int idx = static_cast<int>(std::round(id[i])) - 1;
+                if (idx >= 0 && idx < n_subj) {
+                  id_to_A[idx] += weight * kerval_tt * (cov_m_Zbar * covariates.row(i));
+                }
              }
           }
         }
@@ -184,16 +185,13 @@ List kee_additive_est(const arma::mat& covariates,
     }
   }
   
-  for(auto const& imap: id_to_A) {
-    A += imap.second;
+  for (int j = 0; j < n_subj; ++j) {
+    A += id_to_A[j];
   }
   A = A / static_cast<double>(n_subj);
   
   // Compute B
-  std::map<int, arma::vec> id_to_B;
-  for (int i = 0; i < n; ++i) {
-    id_to_B[id[i]] = arma::zeros<arma::vec>(p);
-  }
+  std::vector<arma::vec> id_to_B(n_subj, arma::zeros<arma::vec>(p));
   
   for (int i = 0; i < n; ++i) {
     if (kerval[i] > 0) {
@@ -220,8 +218,8 @@ List kee_additive_est(const arma::mat& covariates,
     }
   }
   
-  for(auto const& imap: id_to_B) {
-    B += imap.second;
+  for (int j = 0; j < n_subj; ++j) {
+    B += id_to_B[j];
   }
   B = B / static_cast<double>(n_subj);
   
@@ -231,12 +229,9 @@ List kee_additive_est(const arma::mat& covariates,
   
   // Compute Sigma
   arma::mat Sigma = arma::zeros<arma::mat>(p, p);
-  
-  for(auto const& imap: id_to_B) {
-    int key = imap.first;
-    arma::vec b_indi = imap.second;
-    arma::mat a_indi = id_to_A[key];
-    
+  for (int j = 0; j < n_subj; ++j) {
+    arma::vec b_indi = id_to_B[j];
+    arma::mat a_indi = id_to_A[j];
     arma::vec diff = b_indi - a_indi * beta;
     Sigma += diff * trans(diff);
   }
