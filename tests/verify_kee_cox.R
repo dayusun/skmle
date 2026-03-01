@@ -36,8 +36,8 @@ res_ori <- estproc_Cox_Cao_mul(data = simdata, n = nn, h = hh)
 # 2. New kee_cox C++ implementation
 cat("Running kee_cox (C++ via R wrapper)...\n")
 
-# Format for formula
-# Need covariates as separate columns
+# Format for formula - package will accept a two‑column matrix, but here
+# we explicitly create Z1 and Z2 so the original comparison functions work.
 simdata_formula <- simdata
 simdata_formula$Z1 <- simdata$covariates[, 1]
 simdata_formula$Z2 <- simdata$covariates[, 2]

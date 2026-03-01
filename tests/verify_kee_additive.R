@@ -35,6 +35,7 @@ res_ori <- estproc_additive_Cao_mul(data = simdata, n = nn, h = hh)
 # 2. New kee_additive C++ implementation
 cat("Running kee_additive (C++ via R wrapper)...\n")
 
+# create explicit covariate columns for the formula (matrix would also work)
 simdata_formula <- simdata
 simdata_formula$Z1 <- simdata$covariates[, 1]
 simdata_formula$Z2 <- simdata$covariates[, 2]

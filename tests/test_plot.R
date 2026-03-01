@@ -1,6 +1,6 @@
 library(skmle)
 library(dplyr)
-source("c:/Users/commi/OneDrive/Professional/Research/asyn/Rpackage/skmle/dev/Rprototype_funcs.R")
+source("dev/Rprototype_funcs.R")
 
 set.seed(123)
 nn <- 100
