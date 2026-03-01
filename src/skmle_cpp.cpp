@@ -1,5 +1,6 @@
 #include <RcppArmadillo.h>
 #include <nloptrAPI.h>
+#include <algorithm> // for std::count and other utilities
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -195,8 +196,10 @@ List skmle_cpp_fit(int n, int p, int gammap, double s, double h,
     opt = nlopt_create(NLOPT_LD_SLSQP, n_vars);
   } else {
     opt = nlopt_create(NLOPT_LD_SLSQP, n_vars);
-    std::vector<double> tol(ineqmat.n_rows, 1e-8);
-    nlopt_add_inequality_mconstraint(opt, ineqmat.n_rows, ineq_constraints, &data, tol.data());
+    if (ineqmat.n_rows > 0) {
+      std::vector<double> tol(ineqmat.n_rows, 1e-8);
+      nlopt_add_inequality_mconstraint(opt, ineqmat.n_rows, ineq_constraints, &data, tol.data());
+    }
   }
   
   nlopt_set_min_objective(opt, nll_obj, &data);
@@ -264,12 +267,14 @@ arma::mat calc_B(const arma::vec& beta, const arma::vec& gamma, double s, double
   arma::vec alpha_XX = bsmat_XX * gamma;
   arma::vec cov_beta = covariates * beta;
   
-  std::map<int, arma::vec> id_to_bb1;
-  
+  // use vectors instead of maps keyed by id
+  std::vector<arma::vec> id_to_bb1(n_subj, arma::zeros<arma::vec>(p));
+  std::vector<int> id_counts(n_subj, 0);
   for (int i = 0; i < n; ++i) {
-    int curr_id = id[i];
-    if (id_to_bb1.find(curr_id) == id_to_bb1.end()) id_to_bb1[curr_id] = arma::zeros<arma::vec>(p);
-    
+    int idx = static_cast<int>(std::round(id[i])) - 1;
+    if (idx < 0 || idx >= n_subj) continue;
+    id_counts[idx] += 1;
+
     if (delta[i] == 1.0 && kerval[i] > 0 && (X[i] - obs_times[i]) > 0) {
       double S0_sum = 0.0;
       arma::vec S1_sum = arma::zeros<arma::vec>(p);
@@ -291,26 +296,26 @@ arma::mat calc_B(const arma::vec& beta, const arma::vec& gamma, double s, double
         arma::vec S1 = S1_sum / S0_sum;
         double inner_i = alpha_XX[i] + cov_beta[i];
         double t_val = trans_fun_d1o1(inner_i, s);
-        id_to_bb1[curr_id] += (S1 - trans(covariates.row(i))) * t_val * kerval[i];
+        id_to_bb1[idx] += (S1 - trans(covariates.row(i))) * t_val * kerval[i];
       }
     }
   }
   
   int n_quad = lq_x.n_elem;
-  std::map<int, arma::vec> id_to_bb2;
-  for(int i = 0; i < n; ++i) id_to_bb2[id[i]] = arma::zeros<arma::vec>(p);
+  std::vector<arma::vec> id_to_bb2(n_subj, arma::zeros<arma::vec>(p));
   
   for (int q = 0; q < n_quad; ++q) {
     double tt = 0.5 * lq_x[q] + 0.5;
     double weight = 0.5 * lq_w[q];
     double alpha_tt = dot(trans(bsmat_tt_all.row(q)), gamma);
     
-    std::map<int, double> id_to_r1;
+    // vector for temporary r1 values per subject
+    std::vector<double> id_to_r1(n_subj, 0.0);
     
     for (int j = 0; j < p; ++j) {
       for (int i = 0; i < n; ++i) {
-        int curr_id = id[i];
-        if (id_to_r1.find(curr_id) == id_to_r1.end()) id_to_r1[curr_id] = 0.0;
+        int idx = static_cast<int>(std::round(id[i])) - 1;
+        if (idx < 0 || idx >= n_subj) continue;
         if (tt <= X[i]) {
           double k_tt = kerval_tt_all(q, i);
           if (k_tt > 0) {
@@ -333,21 +338,24 @@ arma::mat calc_B(const arma::vec& beta, const arma::vec& gamma, double s, double
             if (S0_tt_sum > 0) {
                double S1_tt = S1_tt_sum / S0_tt_sum;
                double in_val = alpha_tt + dot(covariates.row(i), beta);
-               id_to_r1[curr_id] += trans_fun_d(in_val, s) * k_tt * (S1_tt - covariates(i, j));
+               id_to_r1[idx] += trans_fun_d(in_val, s) * k_tt * (S1_tt - covariates(i, j));
             }
           }
         }
       }
-      for(auto const& imap: id_to_r1) {
-         id_to_bb2[imap.first](j) += weight * imap.second / std::count(id.begin(), id.end(), imap.first);
+      for (int subj = 0; subj < n_subj; ++subj) {
+         int count = id_counts[subj];
+         if (count > 0) {
+           id_to_bb2[subj](j) += weight * id_to_r1[subj] / static_cast<double>(count);
+         }
       }
-      id_to_r1.clear();
+      std::fill(id_to_r1.begin(), id_to_r1.end(), 0.0);
     }
   }
   
   arma::mat B_est = arma::zeros<arma::mat>(p, p);
-  for(auto const& imap: id_to_bb1) {
-    arma::vec bb_diff = imap.second - id_to_bb2[imap.first];
+  for (int subj = 0; subj < n_subj; ++subj) {
+    arma::vec bb_diff = id_to_bb1[subj] - id_to_bb2[subj];
     B_est += bb_diff * trans(bb_diff);
   }
   
