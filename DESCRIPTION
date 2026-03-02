@@ -22,3 +22,10 @@ Imports:
     dplyr,
     tibble,
     nleqslv
+Suggests: 
+    knitr,
+    rmarkdown,
+    bench,
+    ggbeeswarm,
+    SurvSparse
+VignetteBuilder: knitr
