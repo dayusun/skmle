@@ -7,7 +7,7 @@
 kee_cox(formula, data, id, obs_times, h)
 }
 \arguments{
-\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function. The model must include at least one covariate (intercept-only formulas are not supported).}
+\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function.}
 
 \item{data}{A data.frame in which to interpret the variables named in the formula, or in the \code{id} argument.}
 
@@ -46,12 +46,25 @@ dat <- sim_skmle_data(
     cen = 0.7 # censoring parameter
 )
 
-# Fit the Cox model using kernel estimating equations
+# `dat$covariates` is a two‑column matrix.  you can either supply the
+# matrix directly in the formula or split it into separate columns:
+
+## matrix interface (model.matrix will expand into covariates1, covariates2)
 fit_cox <- kee_cox(Surv(X, delta) ~ covariates,
     data = dat, id = id, obs_times = obs_times,
     h = 0.5
 )
+
+## explicit columns
+dat$Z1 <- dat$covariates[, 1]
+dat$Z2 <- dat$covariates[, 2]
+fit_cox2 <- kee_cox(Surv(X, delta) ~ Z1 + Z2,
+    data = dat, id = id, obs_times = obs_times,
+    h = 0.5
+)
+
 summary(fit_cox)
+summary(fit_cox2)
 }
 
 }

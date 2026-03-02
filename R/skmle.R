@@ -122,7 +122,9 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
   id_vec <- as.integer(factor(id_vec))
 
   kerfun <- function(xx) {
-    pmax((1 - xx^2) * 0.75, 0)
+    res <- (1 - xx^2) * 0.75
+    res[res < 0] <- 0
+    res
   }
 
   n <- length(unique(id_vec))
@@ -137,15 +139,11 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
 
   # Precompute for quadrature points (matrix form only)
   n_quad <- length(lq_x)
-  bsmat_tt_mat <- matrix(0, nrow = n_quad, ncol = ncol(bsmat))
-  kerval_tt_all <- matrix(0, nrow = n_quad, ncol = length(X_time))
+  tts <- 0.5 * lq_x + 0.5
 
-  for (q in seq_len(n_quad)) {
-    tt <- 0.5 * lq_x[q] + 0.5
-    dist_tt <- tt - obs_times_vec
-    kerval_tt_all[q, ] <- kerfun(dist_tt / h) / h * as.numeric(dist_tt > 0)
-    bsmat_tt_mat[q, ] <- splines::ns(rep(tt, 2), knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))[1, , drop = TRUE]
-  }
+  dist_tt_mat <- outer(tts, obs_times_vec, "-")
+  kerval_tt_all <- kerfun(dist_tt_mat / h) / h * as.numeric(dist_tt_mat > 0)
+  bsmat_tt_mat <- as.matrix(splines::ns(tts, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1)))
 
   # inequality constraints matrix, may be empty if no rows satisfy the filter
   ineqmat <- matrix(numeric(0), nrow = 0, ncol = ncol(Z) + ncol(bsmat))

@@ -23,7 +23,8 @@ skmle(
 
 \item{data}{A data.frame in which to interpret the variables named in the formula, or in the \code{id} argument.}
 
-\item{id}{A vector identifying subjects in the data. Values are coerced to integer codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.}
+\item{id}{A vector identifying subjects in the data. Values are coerced to integer
+codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.}
 
 \item{obs_times}{The observation times for the subjects.}
 
@@ -74,13 +75,24 @@ dat <- sim_skmle_data(
   cen = 0.7 # censoring parameter
 )
 
-# 'covariates' column from sim_skmle_data is a matrix containing both covariates
-# Fit the SMKLE model with Box-Cox parameter s = 0
+# 'covariates' column from sim_skmle_data is a two-column matrix; there are two
+# ways to include it in the model. Using the matrix directly will result in a
+# design matrix with columns `covariates1`, `covariates2`.  You may also split
+# it into separate variables, e.g. `Z1`, `Z2`.
 fit <- skmle(Surv(X, delta) ~ covariates,
   data = dat, id = id, obs_times = obs_times,
   s = 0, h = 0.5, nknots = 3
 )
+
+# or create named covariate columns yourself:
+dat$Z1 <- dat$covariates[, 1]
+dat$Z2 <- dat$covariates[, 2]
+fit2 <- skmle(Surv(X, delta) ~ Z1 + Z2,
+  data = dat, id = id, obs_times = obs_times,
+  s = 0, h = 0.5, nknots = 3
+)
 summary(fit)
+summary(fit2)
 plot(fit)
 }
 
