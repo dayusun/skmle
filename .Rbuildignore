@@ -12,3 +12,5 @@
 ^.*\.pdf$
 ^.*\.diff$
 ^test_.*\.R$
+^doc$
+^Meta$

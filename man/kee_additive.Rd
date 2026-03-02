@@ -7,7 +7,7 @@
 kee_additive(formula, data, id, obs_times, h, lq_nodes = 64)
 }
 \arguments{
-\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function. The model must include at least one covariate (intercept-only formulas are not supported).}
+\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function. The model must include at least one covariate (intercept-only formulas are unsupported).}
 
 \item{data}{A data.frame in which to interpret the variables named in the formula, or in the \code{id} argument.}
 
@@ -48,6 +48,8 @@ dat <- sim_skmle_data(
 )
 
 # Fit the additive hazards model using kernel estimating equations
+# dat$covariates is a two-column matrix; you may use it directly or split
+# into separate columns as desired.
 fit_add <- kee_additive(Surv(X, delta) ~ covariates,
     data = dat, id = id, obs_times = obs_times,
     h = 0.5
