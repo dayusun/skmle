@@ -66,6 +66,19 @@ summary(fit_ph)
 plot(fit_ph)
 ```
 
+## Benchmarking
+
+We benchmarked the additive and transformed hazards implementations in `skmle` against the equivalent estimating and joint-optimization techniques in the `SurvSparse` package using a simulated dataset of $N=200$ subjects containing sparsely measured longitudinal variables (`h = n^(-0.5)`).
+
+`skmle` drastically outperforms baseline R solvers due to its highly optimized Armadillo C++ backend.
+
+| Model Evaluation                | `SurvSparse` | `skmle` | Speedup         |
+| :------------------------------ | :----------- | :------ | :-------------- |
+| **Additive Hazards** (`s=1`)    | ~229 ms      | ~80 ms  | **~3x Faster**  |
+| **Transformed Hazards** (`s=0`) | ~2.54 s      | ~244 ms | **~10x Faster** |
+
+For the complete breakdown of evaluation iterations and syntax, refer to the package vignette `vignettes("benchmark_survsparse")`.
+
 ## References
 
 The theoretical foundation and methodology for this package are thoroughly detailed in:
