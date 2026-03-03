@@ -25,3 +25,11 @@ calc_B <- function(beta, gamma, s, h, covariates, bsmat, X, obs_times, delta, ke
     .Call(`_skmle_calc_B`, beta, gamma, s, h, covariates, bsmat, X, obs_times, delta, kerval, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj)
 }
 
+skmle_eval_nll_cpp <- function(n, p, gammap, s, h, beta, gamma, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all) {
+    .Call(`_skmle_skmle_eval_nll_cpp`, n, p, gammap, s, h, beta, gamma, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all)
+}
+
+skmle_cv_cpp <- function(n, p, gammap, s, h_grid, K, fold_id, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, maxeval, xtol_rel, quiet) {
+    .Call(`_skmle_skmle_cv_cpp`, n, p, gammap, s, h_grid, K, fold_id, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, maxeval, xtol_rel, quiet)
+}
+
