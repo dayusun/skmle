@@ -69,6 +69,8 @@ struct skmle_data {
 // Objective function for NLOPT
 double nll_obj(unsigned n_vars, const double *x, double *grad,
                void *my_func_data) {
+  Rcpp::checkUserInterrupt();
+
   skmle_data *data = (skmle_data *)my_func_data;
 
   vec beta(const_cast<double *>(x), data->p, false);
@@ -249,6 +251,8 @@ arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
   arma::vec cov_beta = covariates * beta;
 
   for (int i = 0; i < n; ++i) {
+    if (i % 100 == 0) Rcpp::checkUserInterrupt();
+
     if (delta[i] == 1.0 && kerval[i] > 0) {
       double S0_sum = 0.0;
       arma::vec S1_sum = arma::zeros<arma::vec>(p);
@@ -303,6 +307,8 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
   std::vector<arma::vec> id_to_bb1(n_subj, arma::zeros<arma::vec>(p));
   std::vector<int> id_counts(n_subj, 0);
   for (int i = 0; i < n; ++i) {
+    if (i % 100 == 0) Rcpp::checkUserInterrupt();
+
     int idx = static_cast<int>(std::round(id[i])) - 1;
     if (idx < 0 || idx >= n_subj)
       continue;
@@ -339,6 +345,8 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
   std::vector<arma::vec> id_to_bb2(n_subj, arma::zeros<arma::vec>(p));
 
   for (int q = 0; q < n_quad; ++q) {
+    Rcpp::checkUserInterrupt();
+
     double tt = 0.5 * lq_x[q] + 0.5;
     double weight = 0.5 * lq_w[q];
     double alpha_tt = dot(trans(bsmat_tt_all.row(q)), gamma);
@@ -470,6 +478,8 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
   }
 
   for (int hi = 0; hi < n_h; ++hi) {
+    Rcpp::checkUserInterrupt();
+
     double h = h_grid[hi];
     if (!quiet) {
       Rcout << "Evaluating bandwidth h = " << h << "\n";
@@ -477,6 +487,8 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
     double loss_sum = 0.0;
 
     for (int k = 1; k <= K; ++k) {
+      Rcpp::checkUserInterrupt();
+
       // Find indices for test and train
       std::vector<int> test_subj;
       std::vector<int> train_subj;
