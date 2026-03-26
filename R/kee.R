@@ -1,18 +1,20 @@
-#' Fit the Cox model using estimating equations
+#' Fit a Cox-Type KEE Model
 #'
-#' @description Fits the proportional hazards (Cox) model for survival data with
-#' sparse longitudinal covariates using a kernel-weighted estimating equations approach.
+#' @description
+#' Fit the proportional hazards model for sparse longitudinal covariate data using
+#' a kernel estimating-equation approach.
 #'
-#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function.
-#' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
-#' @param id A vector identifying subjects in the data. Values are coerced to integer codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.
-#' @param obs_times The observation times for the subjects.
-#' @param h The bandwidth parameter for kernel smoothing. Must be positive.
+#' @param formula A model formula with a `survival::Surv()` response.
+#' @param data Data frame containing all variables used in the fit.
+#' @param id Subject identifier aligned row-wise with `data`.
+#' @param obs_times Longitudinal observation times aligned row-wise with `data`.
+#' @param h Positive kernel bandwidth.
 #'
 #' @details
-#' `kee_cox` uses a kernel-smoothed partial likelihood estimating equation to estimate
-#' regression coefficients when covariates are measured intermittently and sparsely.
-#' It circumvents the estimation of the unknown nonparametric baseline hazard function.
+#' `kee_cox()` targets the proportional hazards case without estimating a nonparametric
+#' baseline component. It is therefore a useful specialized alternative to `skmle()`
+#' when the scientific model is Cox-type and the main interest is in the regression
+#' coefficients.
 #'
 #' @references
 #' Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
@@ -22,45 +24,35 @@
 #' Cao, Hongyuan, et al. "Inference for Cox models with sparse longitudinal covariates."
 #' *Biometrika* (2015).
 #'
-#' @return A list of class `kee` containing the estimation results, including
-#' estimated coefficients, variance-covariance matrix, and optimization details.
+#' @return
+#' An object of class `kee` containing coefficient estimates, the estimated
+#' variance-covariance matrix, the estimating-equation matrices, convergence status,
+#' and the original function call.
 #'
 #' @examples
-#' \dontrun{
 #' library(survival)
 #'
-#' # Simulate data for 200 subjects under the proportional hazards model (s = 0)
 #' set.seed(123)
 #' dat <- sim_skmle_data(
-#'     n = 200,
-#'     mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
-#'     mu_bar = 8,
-#'     alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
-#'     beta = c(1, -0.5), # True coefficients
-#'     s = 0, # proportional hazards
-#'     cen = 0.7 # censoring parameter
+#'   n = 80,
+#'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'   mu_bar = 8,
+#'   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'   beta = c(1, -0.5),
+#'   s = 0,
+#'   cen = 0.7
 #' )
 #'
-#' # `dat$covariates` is a two‑column matrix.  you can either supply the
-#' # matrix directly in the formula or split it into separate columns:
-#'
-#' ## matrix interface (model.matrix will expand into covariates1, covariates2)
-#' fit_cox <- kee_cox(Surv(X, delta) ~ covariates,
-#'     data = dat, id = id, obs_times = obs_times,
-#'     h = 0.5
+#' fit_cox <- kee_cox(
+#'   Surv(X, delta) ~ covariates,
+#'   data = dat,
+#'   id = id,
+#'   obs_times = obs_times,
+#'   h = 0.5
 #' )
 #'
-#' ## explicit columns
-#' dat$Z1 <- dat$covariates[, 1]
-#' dat$Z2 <- dat$covariates[, 2]
-#' fit_cox2 <- kee_cox(Surv(X, delta) ~ Z1 + Z2,
-#'     data = dat, id = id, obs_times = obs_times,
-#'     h = 0.5
-#' )
-#'
+#' fit_cox
 #' summary(fit_cox)
-#' summary(fit_cox2)
-#' }
 #'
 #' @importFrom survival Surv
 #' @importFrom stats model.frame model.matrix model.response
@@ -175,21 +167,23 @@ kee_cox <- function(formula, data, id, obs_times, h) {
     return(out)
 }
 
-#' Fit the Additive model using estimating equations
+#' Fit an Additive Hazards KEE Model
 #'
-#' @description Fits the additive hazards model for survival data with
-#' sparse longitudinal covariates using a kernel-weighted estimating equations approach.
+#' @description
+#' Fit the additive hazards model for sparse longitudinal covariate data using
+#' a kernel estimating-equation approach.
 #'
-#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function. The model must include at least one covariate (intercept-only formulas are unsupported).
-#' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
-#' @param id A vector identifying subjects in the data. Values are coerced to integer codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.
-#' @param obs_times The observation times for the subjects.
-#' @param h The bandwidth parameter for kernel smoothing. Must be positive.
-#' @param lq_nodes The number of Legendre-Gauss quadrature nodes for the integral. Default is 64.
+#' @param formula A model formula with a `survival::Surv()` response.
+#' @param data Data frame containing all variables used in the fit.
+#' @param id Subject identifier aligned row-wise with `data`.
+#' @param obs_times Longitudinal observation times aligned row-wise with `data`.
+#' @param h Positive kernel bandwidth.
+#' @param lq_nodes Number of quadrature nodes used in the numerical integration step.
 #'
 #' @details
-#' `kee_additive` uses a kernel-smoothed martingale-based estimating equation to estimate
-#' regression coefficients in the additive hazards model when covariates are measured intermittently and sparsely.
+#' `kee_additive()` is the specialized additive-hazards counterpart to `kee_cox()`.
+#' It uses a kernel-smoothed martingale estimating equation and typically runs faster
+#' than the general `skmle(s = 1)` fit because it solves a more specialized problem.
 #'
 #' @references
 #' Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
@@ -199,34 +193,35 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #' Sun, Dayu, Hongyuan Cao, and Yining Chen. "Additive hazards models with sparse
 #' longitudinal covariates." *Lifetime Data Analysis* (2022).
 #'
-#' @return A list of class `kee` containing the estimation results, including
-#' estimated coefficients, and variance-covariance matrix.
+#' @return
+#' An object of class `kee` containing coefficient estimates, an estimated
+#' variance-covariance matrix, intermediate matrices used for sandwich variance
+#' estimation, and model metadata.
 #'
 #' @examples
-#' \dontrun{
 #' library(survival)
 #'
-#' # Simulate data for 200 subjects under the additive hazards model (s = 1)
 #' set.seed(123)
 #' dat <- sim_skmle_data(
-#'     n = 200,
-#'     mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
-#'     mu_bar = 8,
-#'     alpha = function(tt) 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
-#'     beta = c(1, -0.5), # True coefficients
-#'     s = 1, # additive hazards
-#'     cen = 0.7 # censoring parameter
+#'   n = 80,
+#'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'   mu_bar = 8,
+#'   alpha = function(tt) 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'   beta = c(1, -0.5),
+#'   s = 1,
+#'   cen = 0.7
 #' )
 #'
-#' # Fit the additive hazards model using kernel estimating equations
-#' # dat$covariates is a two-column matrix; you may use it directly or split
-#' # into separate columns as desired.
-#' fit_add <- kee_additive(Surv(X, delta) ~ covariates,
-#'     data = dat, id = id, obs_times = obs_times,
-#'     h = 0.5
+#' fit_add <- kee_additive(
+#'   Surv(X, delta) ~ covariates,
+#'   data = dat,
+#'   id = id,
+#'   obs_times = obs_times,
+#'   h = 0.5
 #' )
+#'
+#' fit_add
 #' summary(fit_add)
-#' }
 #'
 #' @importFrom survival Surv
 #' @importFrom stats model.frame model.matrix model.response

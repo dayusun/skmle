@@ -2,70 +2,60 @@
 % Please edit documentation in R/kee.R
 \name{kee_cox}
 \alias{kee_cox}
-\title{Fit the Cox model using estimating equations}
+\title{Fit a Cox-Type KEE Model}
 \usage{
 kee_cox(formula, data, id, obs_times, h)
 }
 \arguments{
-\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function.}
+\item{formula}{A model formula with a \code{survival::Surv()} response.}
 
-\item{data}{A data.frame in which to interpret the variables named in the formula, or in the \code{id} argument.}
+\item{data}{Data frame containing all variables used in the fit.}
 
-\item{id}{A vector identifying subjects in the data. Values are coerced to integer codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.}
+\item{id}{Subject identifier aligned row-wise with \code{data}.}
 
-\item{obs_times}{The observation times for the subjects.}
+\item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
-\item{h}{The bandwidth parameter for kernel smoothing. Must be positive.}
+\item{h}{Positive kernel bandwidth.}
 }
 \value{
-A list of class \code{kee} containing the estimation results, including
-estimated coefficients, variance-covariance matrix, and optimization details.
+An object of class \code{kee} containing coefficient estimates, the estimated
+variance-covariance matrix, the estimating-equation matrices, convergence status,
+and the original function call.
 }
 \description{
-Fits the proportional hazards (Cox) model for survival data with
-sparse longitudinal covariates using a kernel-weighted estimating equations approach.
+Fit the proportional hazards model for sparse longitudinal covariate data using
+a kernel estimating-equation approach.
 }
 \details{
-\code{kee_cox} uses a kernel-smoothed partial likelihood estimating equation to estimate
-regression coefficients when covariates are measured intermittently and sparsely.
-It circumvents the estimation of the unknown nonparametric baseline hazard function.
+\code{kee_cox()} targets the proportional hazards case without estimating a nonparametric
+baseline component. It is therefore a useful specialized alternative to \code{skmle()}
+when the scientific model is Cox-type and the main interest is in the regression
+coefficients.
 }
 \examples{
-\dontrun{
 library(survival)
 
-# Simulate data for 200 subjects under the proportional hazards model (s = 0)
 set.seed(123)
 dat <- sim_skmle_data(
-    n = 200,
-    mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
-    mu_bar = 8,
-    alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
-    beta = c(1, -0.5), # True coefficients
-    s = 0, # proportional hazards
-    cen = 0.7 # censoring parameter
+  n = 80,
+  mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+  mu_bar = 8,
+  alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+  beta = c(1, -0.5),
+  s = 0,
+  cen = 0.7
 )
 
-# `dat$covariates` is a two‑column matrix.  you can either supply the
-# matrix directly in the formula or split it into separate columns:
-
-## matrix interface (model.matrix will expand into covariates1, covariates2)
-fit_cox <- kee_cox(Surv(X, delta) ~ covariates,
-    data = dat, id = id, obs_times = obs_times,
-    h = 0.5
+fit_cox <- kee_cox(
+  Surv(X, delta) ~ covariates,
+  data = dat,
+  id = id,
+  obs_times = obs_times,
+  h = 0.5
 )
 
-## explicit columns
-dat$Z1 <- dat$covariates[, 1]
-dat$Z2 <- dat$covariates[, 2]
-fit_cox2 <- kee_cox(Surv(X, delta) ~ Z1 + Z2,
-    data = dat, id = id, obs_times = obs_times,
-    h = 0.5
-)
-
+fit_cox
 summary(fit_cox)
-summary(fit_cox2)
-}
 
 }
 \references{

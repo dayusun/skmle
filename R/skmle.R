@@ -1,74 +1,96 @@
-#' Fit skmle model
+#' Fit a Transformed Hazards Model by SMKLE
 #'
-#' @description Fits a transformed hazards model for survival data with sparsely
-#' and intermittently observed longitudinal covariates using the sieve maximum
-#' kernel-weighted log-likelihood estimator (SMKLE).
+#' @description
+#' Fit a transformed hazards model for survival data with sparsely and intermittently
+#' observed longitudinal covariates using the sieve maximum kernel-weighted
+#' log-likelihood estimator (SMKLE).
 #'
-#' @param formula A formula object, with the response on the left of a `~` operator, and the terms on the right. The response must be a survival object as returned by the `Surv` function. The model must include at least one covariate (intercept-only formulas are unsupported).
-#' @param data A data.frame in which to interpret the variables named in the formula, or in the `id` argument.
-#' @param id A vector identifying subjects in the data. Values are coerced to integer
-#'   codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.
-#' @param obs_times The observation times for the subjects.
-#' @param s The s parameter for the Box-Cox transformation function. `s = 0` corresponds to the proportional hazards model, and `s = 1` corresponds to the additive hazards model.
-#' @param h The bandwidth parameter for kernel smoothing. Must be positive.
-#' @param nknots The number of knots for the B-splines used to approximate the baseline hazard function. Default is 3.
-#' @param norder The order of the B-splines. Default is 3 (cubic splines).
-#' @param lq_nodes The number of Legendre-Gauss quadrature nodes for the integral of the baseline hazard. Default is 64.
-#' @param maxeval Maximum number of evaluations for nlopt optimization. Default is 10000.
-#' @param xtol_rel Relative tolerance for nlopt optimization. Default is 1e-6.
+#' @param formula A model formula. The left-hand side must be a `survival::Surv()`
+#'   response and the right-hand side must contain at least one covariate.
+#' @param data Data frame containing the variables used in `formula`, `id`, and
+#'   `obs_times`.
+#' @param id Subject identifier. Non-numeric identifiers are allowed and are internally
+#'   converted to integer subject codes.
+#' @param obs_times Longitudinal observation times aligned row-wise with `data`.
+#' @param s Box-Cox transformation parameter. `s = 0` gives the proportional hazards
+#'   model and `s = 1` gives the additive hazards model.
+#' @param h Positive kernel bandwidth.
+#' @param nknots Number of interior knots used in the sieve approximation of the
+#'   baseline component.
+#' @param norder Order parameter supplied to the high-level interface for the spline
+#'   approximation.
+#' @param lq_nodes Number of Legendre-Gauss quadrature nodes used in numerical
+#'   integration.
+#' @param maxeval Maximum number of optimizer evaluations.
+#' @param xtol_rel Relative convergence tolerance passed to the optimizer.
 #'
 #' @details
-#' The `skmle` function implements the Sieve Maximum Kernel-weighted Log-likelihood
-#' Estimator proposed by Sun et al. (2025). The method combines kernel weighting
-#' on the log-likelihood (to handle sparse longitudinal covariates evaluated at event
-#' or censoring times) with a B-spline sieve approximation for the unknown
-#' nonparametric baseline hazard function. The estimation is optimized using an
-#' efficient C++ backend via `Rcpp` and `nloptr`.
+#' `skmle()` is the main model-fitting function in the package. It combines:
+#'
+#' * kernel weighting to handle intermittently observed longitudinal covariates,
+#' * a sieve approximation for the unknown baseline component, and
+#' * a C++-backed numerical optimizer for the joint estimation problem.
+#'
+#' The returned object follows the usual R model pattern: print the fitted coefficients
+#' with `print()`, obtain inferential output with `summary()`, and visualize the
+#' estimated baseline component with `plot()`.
 #'
 #' @references
 #' Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 #' "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
 #' *Journal of the American Statistical Association* (2025): 1-12.
 #'
-#' @return A list of class `skmle` containing the estimation results, including
-#' estimated coefficients, variance-covariance matrix, log-likelihood, and optimization details.
+#' @return
+#' An object of class `skmle` containing:
+#'
+#' * `coefficients`: regression coefficient estimates,
+#' * `var`: estimated variance-covariance matrix for the regression coefficients,
+#' * `gamma`: estimated spline coefficients for the baseline component,
+#' * `loglik`: maximized log-likelihood,
+#' * `convergence`: optimizer status code,
+#' * model metadata such as `n`, `s`, `h`, and `call`.
 #'
 #' @examples
-#' \dontrun{
 #' library(survival)
 #'
-#' # Simulate data for 200 subjects under the proportional hazards model (s = 0)
 #' set.seed(123)
 #' dat <- sim_skmle_data(
-#'   n = 200,
+#'   n = 80,
 #'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
 #'   mu_bar = 8,
 #'   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
-#'   beta = c(1, -0.5), # True coefficients
-#'   s = 0, # proportional hazards
-#'   cen = 0.7 # censoring parameter
+#'   beta = c(1, -0.5),
+#'   s = 0,
+#'   cen = 0.7
 #' )
 #'
-#' # 'covariates' column from sim_skmle_data is a two-column matrix; there are two
-#' # ways to include it in the model. Using the matrix directly will result in a
-#' # design matrix with columns `covariates1`, `covariates2`.  You may also split
-#' # it into separate variables, e.g. `Z1`, `Z2`.
-#' fit <- skmle(Surv(X, delta) ~ covariates,
-#'   data = dat, id = id, obs_times = obs_times,
-#'   s = 0, h = 0.5, nknots = 3
+#' fit <- skmle(
+#'   Surv(X, delta) ~ covariates,
+#'   data = dat,
+#'   id = id,
+#'   obs_times = obs_times,
+#'   s = 0,
+#'   h = 0.5,
+#'   nknots = 3
 #' )
 #'
-#' # or create named covariate columns yourself:
+#' fit
+#' summary(fit)
+#'
+#' # If you prefer explicit covariate names, split the matrix column first.
 #' dat$Z1 <- dat$covariates[, 1]
 #' dat$Z2 <- dat$covariates[, 2]
-#' fit2 <- skmle(Surv(X, delta) ~ Z1 + Z2,
-#'   data = dat, id = id, obs_times = obs_times,
-#'   s = 0, h = 0.5, nknots = 3
+#' fit_named <- skmle(
+#'   Surv(X, delta) ~ Z1 + Z2,
+#'   data = dat,
+#'   id = id,
+#'   obs_times = obs_times,
+#'   s = 0,
+#'   h = 0.5,
+#'   nknots = 3
 #' )
-#' summary(fit)
-#' summary(fit2)
-#' plot(fit)
-#' }
+#'
+#' summary(fit_named)
 #'
 #' @importFrom survival Surv
 #' @importFrom stats model.frame model.matrix model.response

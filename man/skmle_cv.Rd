@@ -2,7 +2,7 @@
 % Please edit documentation in R/skmle_cv.R
 \name{skmle_cv}
 \alias{skmle_cv}
-\title{Bandwidth Selection for skmle Model using Cross-Validation}
+\title{Select the Bandwidth by Cross-Validation}
 \usage{
 skmle_cv(
   formula,
@@ -22,38 +22,89 @@ skmle_cv(
 )
 }
 \arguments{
-\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function. The model must include at least one covariate (intercept-only formulas are unsupported).}
+\item{formula}{A model formula. The left-hand side must be a \code{survival::Surv()}
+response and the right-hand side must contain at least one covariate.}
 
-\item{data}{A data.frame in which to interpret the variables named in the formula, or in the \code{id} argument.}
+\item{data}{Data frame containing the variables used in \code{formula}, \code{id}, and
+\code{obs_times}.}
 
-\item{id}{A vector identifying subjects in the data. Values are coerced to integer
-codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.}
+\item{id}{Subject identifier. Non-numeric identifiers are allowed and are internally
+converted to integer subject codes.}
 
-\item{obs_times}{The observation times for the subjects.}
+\item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
-\item{s}{The s parameter for the Box-Cox transformation function. \code{s = 0} corresponds to the proportional hazards model, and \code{s = 1} corresponds to the additive hazards model.}
+\item{s}{Box-Cox transformation parameter. \code{s = 0} gives the proportional hazards
+model and \code{s = 1} gives the additive hazards model.}
 
-\item{K}{Number of folds for cross-validation. Default is 5.}
+\item{K}{Number of folds.}
 
-\item{h_grid}{Optional numeric vector of bandwidth candidates. If NULL, a grid is generated automatically based on observation spacings.}
+\item{h_grid}{Optional numeric vector of candidate bandwidth values. If \code{NULL},
+a grid is generated automatically from the observed time gaps.}
 
-\item{n_h}{Number of bandwidths to generate if \code{h_grid} is NULL. Default is 10.}
+\item{n_h}{Number of candidate bandwidths to generate when \code{h_grid} is \code{NULL}.}
 
-\item{nknots}{The number of knots for the B-splines used to approximate the baseline hazard function. Default is 3.}
+\item{nknots}{Number of interior knots used in the sieve approximation of the
+baseline component.}
 
-\item{norder}{The order of the B-splines. Default is 3 (cubic splines).}
+\item{norder}{Order parameter supplied to the high-level interface for the spline
+approximation.}
 
-\item{lq_nodes}{The number of Legendre-Gauss quadrature nodes for the integral of the baseline hazard. Default is 64.}
+\item{lq_nodes}{Number of Legendre-Gauss quadrature nodes used in numerical
+integration.}
 
-\item{maxeval}{Maximum number of evaluations for nlopt optimization. Default is 10000.}
+\item{maxeval}{Maximum number of optimizer evaluations.}
 
-\item{xtol_rel}{Relative tolerance for nlopt optimization. Default is 1e-6.}
+\item{xtol_rel}{Relative convergence tolerance passed to the optimizer.}
 
-\item{quiet}{Whether to suppress progress messages. Default is FALSE.}
+\item{quiet}{Logical; if \code{TRUE}, suppress progress output.}
 }
 \value{
-A list of class \code{cv.skmle} containing the optimal bandwidth \code{h}, the estimated model with optimal bandwidth (\code{fit}), a data.frame of \code{cv_results}, and \code{h_grid}.
+An object of class \code{cv.skmle} with components:
+\itemize{
+\item \code{h_cv}: selected bandwidth,
+\item \code{fit}: \code{skmle} fit refit on the full data,
+\item \code{cv_results}: data frame of candidate bandwidths and CV losses,
+\item \code{h_grid}: bandwidth grid used in the search.
+}
 }
 \description{
-Performs K-fold cross-validation to select the optimal bandwidth \code{h} for the \code{skmle} model.
+Perform K-fold cross-validation to select the kernel bandwidth for \code{skmle()}.
+}
+\details{
+\code{skmle_cv()} splits subjects, not rows, across folds. This is the appropriate
+unit for cross-validation because multiple rows belong to the same subject in the
+long-format data structure.
+
+After choosing the bandwidth with the smallest average validation loss, the
+function refits \code{skmle()} on the full data set using the selected value.
+}
+\examples{
+library(survival)
+
+set.seed(123)
+dat <- sim_skmle_data(
+  n = 60,
+  mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+  mu_bar = 8,
+  alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+  beta = c(1, -0.5),
+  s = 0,
+  cen = 0.7
+)
+
+cv_fit <- skmle_cv(
+  Surv(X, delta) ~ covariates,
+  data = dat,
+  id = id,
+  obs_times = obs_times,
+  s = 0,
+  K = 3,
+  h_grid = c(0.3, 0.4, 0.5),
+  quiet = TRUE
+)
+
+cv_fit$h_cv
+cv_fit$cv_results
+summary(cv_fit$fit)
+
 }

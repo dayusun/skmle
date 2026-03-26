@@ -2,60 +2,61 @@
 % Please edit documentation in R/kee.R
 \name{kee_additive}
 \alias{kee_additive}
-\title{Fit the Additive model using estimating equations}
+\title{Fit an Additive Hazards KEE Model}
 \usage{
 kee_additive(formula, data, id, obs_times, h, lq_nodes = 64)
 }
 \arguments{
-\item{formula}{A formula object, with the response on the left of a \code{~} operator, and the terms on the right. The response must be a survival object as returned by the \code{Surv} function. The model must include at least one covariate (intercept-only formulas are unsupported).}
+\item{formula}{A model formula with a \code{survival::Surv()} response.}
 
-\item{data}{A data.frame in which to interpret the variables named in the formula, or in the \code{id} argument.}
+\item{data}{Data frame containing all variables used in the fit.}
 
-\item{id}{A vector identifying subjects in the data. Values are coerced to integer codes internally (e.g. via \code{factor}) so non-integer identifiers are allowed.}
+\item{id}{Subject identifier aligned row-wise with \code{data}.}
 
-\item{obs_times}{The observation times for the subjects.}
+\item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
-\item{h}{The bandwidth parameter for kernel smoothing. Must be positive.}
+\item{h}{Positive kernel bandwidth.}
 
-\item{lq_nodes}{The number of Legendre-Gauss quadrature nodes for the integral. Default is 64.}
+\item{lq_nodes}{Number of quadrature nodes used in the numerical integration step.}
 }
 \value{
-A list of class \code{kee} containing the estimation results, including
-estimated coefficients, and variance-covariance matrix.
+An object of class \code{kee} containing coefficient estimates, an estimated
+variance-covariance matrix, intermediate matrices used for sandwich variance
+estimation, and model metadata.
 }
 \description{
-Fits the additive hazards model for survival data with
-sparse longitudinal covariates using a kernel-weighted estimating equations approach.
+Fit the additive hazards model for sparse longitudinal covariate data using
+a kernel estimating-equation approach.
 }
 \details{
-\code{kee_additive} uses a kernel-smoothed martingale-based estimating equation to estimate
-regression coefficients in the additive hazards model when covariates are measured intermittently and sparsely.
+\code{kee_additive()} is the specialized additive-hazards counterpart to \code{kee_cox()}.
+It uses a kernel-smoothed martingale estimating equation and typically runs faster
+than the general \code{skmle(s = 1)} fit because it solves a more specialized problem.
 }
 \examples{
-\dontrun{
 library(survival)
 
-# Simulate data for 200 subjects under the additive hazards model (s = 1)
 set.seed(123)
 dat <- sim_skmle_data(
-    n = 200,
-    mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
-    mu_bar = 8,
-    alpha = function(tt) 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
-    beta = c(1, -0.5), # True coefficients
-    s = 1, # additive hazards
-    cen = 0.7 # censoring parameter
+  n = 80,
+  mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+  mu_bar = 8,
+  alpha = function(tt) 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+  beta = c(1, -0.5),
+  s = 1,
+  cen = 0.7
 )
 
-# Fit the additive hazards model using kernel estimating equations
-# dat$covariates is a two-column matrix; you may use it directly or split
-# into separate columns as desired.
-fit_add <- kee_additive(Surv(X, delta) ~ covariates,
-    data = dat, id = id, obs_times = obs_times,
-    h = 0.5
+fit_add <- kee_additive(
+  Surv(X, delta) ~ covariates,
+  data = dat,
+  id = id,
+  obs_times = obs_times,
+  h = 0.5
 )
+
+fit_add
 summary(fit_add)
-}
 
 }
 \references{

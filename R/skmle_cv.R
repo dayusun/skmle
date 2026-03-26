@@ -1,14 +1,59 @@
-#' Bandwidth Selection for skmle Model using Cross-Validation
+#' Select the Bandwidth by Cross-Validation
 #'
-#' @description Performs K-fold cross-validation to select the optimal bandwidth `h` for the `skmle` model.
+#' @description
+#' Perform K-fold cross-validation to select the kernel bandwidth for `skmle()`.
 #'
 #' @inheritParams skmle
-#' @param K Number of folds for cross-validation. Default is 5.
-#' @param h_grid Optional numeric vector of bandwidth candidates. If NULL, a grid is generated automatically based on observation spacings.
-#' @param n_h Number of bandwidths to generate if `h_grid` is NULL. Default is 10.
-#' @param quiet Whether to suppress progress messages. Default is FALSE.
+#' @param K Number of folds.
+#' @param h_grid Optional numeric vector of candidate bandwidth values. If `NULL`,
+#'   a grid is generated automatically from the observed time gaps.
+#' @param n_h Number of candidate bandwidths to generate when `h_grid` is `NULL`.
+#' @param quiet Logical; if `TRUE`, suppress progress output.
 #'
-#' @return A list of class `cv.skmle` containing the optimal bandwidth `h`, the estimated model with optimal bandwidth (`fit`), a data.frame of `cv_results`, and `h_grid`.
+#' @details
+#' `skmle_cv()` splits subjects, not rows, across folds. This is the appropriate
+#' unit for cross-validation because multiple rows belong to the same subject in the
+#' long-format data structure.
+#'
+#' After choosing the bandwidth with the smallest average validation loss, the
+#' function refits `skmle()` on the full data set using the selected value.
+#'
+#' @return
+#' An object of class `cv.skmle` with components:
+#'
+#' * `h_cv`: selected bandwidth,
+#' * `fit`: `skmle` fit refit on the full data,
+#' * `cv_results`: data frame of candidate bandwidths and CV losses,
+#' * `h_grid`: bandwidth grid used in the search.
+#'
+#' @examples
+#' library(survival)
+#'
+#' set.seed(123)
+#' dat <- sim_skmle_data(
+#'   n = 60,
+#'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'   mu_bar = 8,
+#'   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'   beta = c(1, -0.5),
+#'   s = 0,
+#'   cen = 0.7
+#' )
+#'
+#' cv_fit <- skmle_cv(
+#'   Surv(X, delta) ~ covariates,
+#'   data = dat,
+#'   id = id,
+#'   obs_times = obs_times,
+#'   s = 0,
+#'   K = 3,
+#'   h_grid = c(0.3, 0.4, 0.5),
+#'   quiet = TRUE
+#' )
+#'
+#' cv_fit$h_cv
+#' cv_fit$cv_results
+#' summary(cv_fit$fit)
 #'
 #' @export
 skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL, n_h = 10, nknots = 3, norder = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, quiet = FALSE) {
