@@ -1,121 +1,168 @@
 ---
-title: "Benchmarking skmle against SurvSparse"
+title: "Benchmarking skmle Against SurvSparse"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Benchmarking skmle against SurvSparse}
+  %\VignetteIndexEntry{Benchmarking skmle Against SurvSparse}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-    collapse = TRUE,
-    comment = "#>",
-    fig.width = 7,
-    fig.height = 5
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4
 )
 ```
 
-## Introduction
+## Overview
 
-The `skmle` package handles survival data with sparsely and intermittently observed longitudinal covariates using a general Box-Cox transformed hazards model. This vignette benchmarks the performance of `skmle` against the `SurvSparse` package, which caters to similar designs. 
+This vignette benchmarks `skmle` against the `SurvSparse` package on the same sparse longitudinal survival-data setting.
 
-Specifically, we compare:
-1. **Additive Hazards Model**: `SurvSparse::add.haz` vs. `skmle::skmle(s=1)` vs. `skmle::kee_additive`.
-2. **Transformed Hazards Model**: `SurvSparse::trans.haz` vs. `skmle::skmle(s=0)`.
+We compare:
 
-```{r, warning=FALSE, message=FALSE}
+1. `SurvSparse::add.haz()` against `skmle::kee_additive()` and `skmle::skmle(s = 1)`.
+2. `SurvSparse::trans.haz()` against `skmle::skmle(s = 0)`.
+
+The goal is not to claim a universal speed ratio for every problem size, but to show how the package behaves across a small grid of representative settings.
+
+```{r setup, warning=FALSE, message=FALSE}
 library(skmle)
 library(SurvSparse)
 library(survival)
 library(dplyr)
 library(bench)
-library(ggplot2)
 ```
 
-## Data Simulation
+## Data Generation
 
-We will generate a simulated dataset using `sim_skmle_data` for $n=200$ subjects. `SurvSparse` expects the covariates matrix structure to be a particular format, so we prepare the data accordingly.
+We simulate sparse longitudinal survival data using `sim_skmle_data()`. For a fair comparison with `SurvSparse`, which expects a single longitudinal covariate in these benchmark calls, we use the first simulated covariate.
 
-```{r setup, message=FALSE, warning=FALSE, eval=TRUE}
-set.seed(42)
-n <- 200
+```{r}
+make_benchmark_data <- function(n, s_val) {
+  dat <- sim_skmle_data(
+    n = n,
+    mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+    mu_bar = 8,
+    alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+    beta = c(1, -0.5),
+    s = s_val,
+    cen = 1.0
+  )
 
-# Function to simulate dataset for a specific transformation
-get_benchmark_data <- function(s_val) {
-    dat <- sim_skmle_data(
-        n = n,
-        mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
-        mu_bar = 8,
-        alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
-        beta = c(1, -0.5), # True coefficients
-        s = s_val, # Transformation parameter
-        cen = 1.0 # Censoring parameter
-    )
+  dat %>%
+    dplyr::rename(covariates_old = covariates) %>%
+    dplyr::mutate(
+      covariates = covariates_old[, 1],
+      X = X,
+      delta = delta,
+      obs_times = obs_times,
+      id = as.integer(factor(id))
+    ) %>%
+    dplyr::select(id, X, covariates, obs_times, delta) %>%
+    as.data.frame()
+}
+```
 
-    survsparse_data <- dat %>%
-        dplyr::rename(covariates_old = covariates) %>%
-        dplyr::mutate(
-            covariates = as.numeric(covariates_old[, 1]), # Force vector format
-            X = as.numeric(X),
-            delta = as.integer(delta),
-            obs_times = as.numeric(obs_times),
-            id = as.integer(factor(id))
-        ) %>%
-        dplyr::select(id, X, covariates, obs_times, delta)
+## Benchmark Helpers
 
-    return(as.data.frame(survsparse_data))
+```{r}
+run_additive_benchmark <- function(n, iterations = 5) {
+  dat <- make_benchmark_data(n, s_val = 1)
+  h_val <- n^(-0.5)
+
+  res <- bench::mark(
+    SurvSparse_add_haz = add.haz(
+      data = dat, n = n, tau = 1, h = h_val, method = 3
+    ),
+    skmle_kee_additive = kee_additive(
+      Surv(X, delta) ~ covariates,
+      data = dat, id = id, obs_times = obs_times, h = h_val
+    ),
+    skmle_spline = skmle(
+      Surv(X, delta) ~ covariates,
+      data = dat, id = id, obs_times = obs_times,
+      s = 1, h = h_val, nknots = 3, norder = 3
+    ),
+    iterations = iterations,
+    check = FALSE
+  )
+
+  as.data.frame(res[, c("expression", "median", "itr/sec")]) %>%
+    dplyr::mutate(expression = as.character(expression)) %>%
+    dplyr::mutate(
+      scenario = sprintf("Additive (n = %d)", n),
+      median_ms = as.numeric(median) / 1e6
+    ) %>%
+    dplyr::select(scenario, expression, median_ms, `itr/sec`)
 }
 
-h_val <- n^(-0.5)
+run_transformed_benchmark <- function(n, iterations = 5) {
+  dat <- make_benchmark_data(n, s_val = 0)
+  h_val <- n^(-0.5)
+
+  res <- bench::mark(
+    SurvSparse_trans_haz = trans.haz(
+      data = dat, n = n, nknots = 3, norder = 3, tau = 1, s = 0, h = h_val
+    ),
+    skmle_spline = skmle(
+      Surv(X, delta) ~ covariates,
+      data = dat, id = id, obs_times = obs_times,
+      s = 0, h = h_val, nknots = 3, norder = 3
+    ),
+    iterations = iterations,
+    check = FALSE
+  )
+
+  as.data.frame(res[, c("expression", "median", "itr/sec")]) %>%
+    dplyr::mutate(expression = as.character(expression)) %>%
+    dplyr::mutate(
+      scenario = sprintf("Transformed (n = %d)", n),
+      median_ms = as.numeric(median) / 1e6
+    ) %>%
+    dplyr::select(scenario, expression, median_ms, `itr/sec`)
+}
 ```
 
-## Additive Hazards Model Benchmark
+## Results Across Multiple Scenarios
 
-Firstly, we will benchmark the additive hazards model (`s = 1`). `SurvSparse::add.haz` computes the estimator using a closed-form generalized estimating equation optimized for exactly one additive covariate. 
+```{r benchmark-grid, warning=FALSE, message=FALSE}
+set.seed(20260325)
 
-`skmle` offers two separate approaches to this problem:
-1. `kee_additive()`: Computes a closed-form estimating equation similar to `SurvSparse`.
-2. `skmle(s=1)`: Jointly optimizes the additive parameters alongside a non-parametric B-spline baseline hazard function utilizing the `nlopt` iterative solver.
-
-```{r add_haz_benchmark, eval=TRUE, warning=FALSE, message=FALSE, fig.width=8, fig.height=4}
-add_data <- get_benchmark_data(s_val = 1)
-
-res_add <- bench::mark(
-    SurvSparse_add_haz = add.haz(data = add_data, n = n, tau = 1, h = h_val, method = 3),
-    skmle_kee_additive = kee_additive(Surv(X, delta) ~ covariates, data = add_data, id = id, obs_times = obs_times, h = h_val),
-    skmle_spline_framework = skmle(Surv(X, delta) ~ covariates, data = add_data, id = id, obs_times = obs_times, s = 1, h = h_val, nknots = 3, norder = 3),
-    iterations = 10,
-    check = FALSE
+benchmark_results <- dplyr::bind_rows(
+  run_additive_benchmark(200, iterations = 5),
+  run_additive_benchmark(500, iterations = 5),
+  run_transformed_benchmark(100, iterations = 5),
+  run_transformed_benchmark(200, iterations = 5)
 )
 
-print(res_add)
-plot(res_add) + ggplot2::ggtitle("Additive Hazards Benchmark (s=1)")
+benchmark_results
 ```
 
-**Analysis**:
-- `skmle::kee_additive` evaluates estimating equations using a highly optimized C++ backend via `RcppArmadillo`, beating `SurvSparse::add.haz` significantly **(~3-4x faster)**.
-- `skmle_spline_framework` runs slower than estimating equations (~335ms vs 260ms), but this is absolutely expected because it must iterate numerically numerous times to jointly maximize the general B-spline log-likelihood, rather than relying on a 1-pass closed-form additive hazard structural simplification.
+To make the speed comparison easier to read, the next table reports the ratio relative to the `skmle` method of interest in each scenario.
 
-## Transformed Hazards Model Benchmark
+```{r speedup-table}
+baseline_rows <- benchmark_results %>%
+  dplyr::filter(
+    (grepl("^Additive", scenario) & expression == "skmle_kee_additive") |
+      (grepl("^Transformed", scenario) & expression == "skmle_spline")
+  ) %>%
+  dplyr::transmute(scenario, baseline_ms = median_ms)
 
-For a truly isomorphic test against `skmle`'s primary capability—the evaluation of general transformed Box-Cox models (`s = 0`)—we evaluate `skmle(s=0)` against `SurvSparse::trans.haz`.
+speed_summary <- benchmark_results %>%
+  dplyr::left_join(baseline_rows, by = "scenario") %>%
+  dplyr::mutate(speedup_vs_baseline = median_ms / baseline_ms)
 
-```{r trans_haz_benchmark, eval=TRUE, warning=FALSE, message=FALSE, fig.width=8, fig.height=3}
-trans_data <- get_benchmark_data(s_val = 0)
-
-res_trans <- bench::mark(
-    SurvSparse_trans_haz = trans.haz(data = trans_data, n = n, nknots = 3, norder = 3, tau = 1, s = 0, h = h_val),
-    skmle_spline_framework = skmle(Surv(X, delta) ~ covariates, data = trans_data, id = id, obs_times = obs_times, s = 0, h = h_val, nknots = 3, norder = 3),
-    iterations = 5,
-    check = FALSE
-)
-
-print(res_trans)
-plot(res_trans) + ggplot2::ggtitle("Transformed Hazards Benchmark (s=0)")
+speed_summary
 ```
 
-**Analysis**:
-When evaluating the comprehensive generalized structure, `skmle` evaluates the underlying identical math at drastically faster speeds. The `SurvSparse` implementation computes operations directly in R, whereas `skmle` pushes evaluation, B-spline generation matrices, iterations, and optimizations cleanly into highly efficient `C++`.
+## Interpretation
 
-The result is that **`skmle` evaluates over 11x faster** than `SurvSparse::trans.haz` for equivalent setups.
+The benchmark shows a stable pattern:
+
+- For the additive comparison, `kee_additive()` is substantially faster than `SurvSparse::add.haz()`.
+- For the transformed hazards comparison, `skmle(s = 0)` is much faster than `SurvSparse::trans.haz()` in these runs.
+- The general spline-based `skmle(s = 1)` fit is slower than `kee_additive()`, which is expected because it solves the broader joint optimization problem rather than a specialized estimating equation.
+
+In short, the package-level Rcpp implementation preserves the prototype method while moving the computational bottlenecks out of pure R.
