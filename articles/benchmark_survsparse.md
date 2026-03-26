@@ -134,16 +134,16 @@ benchmark_results <- dplyr::bind_rows(
 
 benchmark_results
 #>                 scenario           expression    median_ms   itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 1.928072e-07  4.067242
-#> 2     Additive (n = 200)   skmle_kee_additive 8.901329e-08  8.362877
-#> 3     Additive (n = 200)         skmle_spline 1.285037e-07  7.633587
-#> 4     Additive (n = 500)   SurvSparse_add_haz 6.437917e-07  1.370087
-#> 5     Additive (n = 500)   skmle_kee_additive 9.458923e-08 10.574923
-#> 6     Additive (n = 500)         skmle_spline 1.967785e-07  5.051369
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.353481e-07  1.820871
-#> 8  Transformed (n = 100)         skmle_spline 1.004819e-07  9.774958
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 9.928638e-07  0.979364
-#> 10 Transformed (n = 200)         skmle_spline 1.150552e-07  8.558166
+#> 1     Additive (n = 200)   SurvSparse_add_haz 1.939722e-07  4.112356
+#> 2     Additive (n = 200)   skmle_kee_additive 8.961051e-08  8.420316
+#> 3     Additive (n = 200)         skmle_spline 1.294883e-07  7.611179
+#> 4     Additive (n = 500)   SurvSparse_add_haz 6.360851e-07  1.395166
+#> 5     Additive (n = 500)   skmle_kee_additive 9.536044e-08 10.522224
+#> 6     Additive (n = 500)         skmle_spline 1.972343e-07  5.026943
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.326037e-07  1.858655
+#> 8  Transformed (n = 100)         skmle_spline 1.006332e-07  9.776990
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 9.878093e-07  0.985307
+#> 10 Transformed (n = 200)         skmle_spline 1.146735e-07  8.551878
 ```
 
 To make the speed comparison easier to read, the next table reports the
@@ -163,27 +163,27 @@ speed_summary <- benchmark_results %>%
 
 speed_summary
 #>                 scenario           expression    median_ms   itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 1.928072e-07  4.067242
-#> 2     Additive (n = 200)   skmle_kee_additive 8.901329e-08  8.362877
-#> 3     Additive (n = 200)         skmle_spline 1.285037e-07  7.633587
-#> 4     Additive (n = 500)   SurvSparse_add_haz 6.437917e-07  1.370087
-#> 5     Additive (n = 500)   skmle_kee_additive 9.458923e-08 10.574923
-#> 6     Additive (n = 500)         skmle_spline 1.967785e-07  5.051369
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.353481e-07  1.820871
-#> 8  Transformed (n = 100)         skmle_spline 1.004819e-07  9.774958
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 9.928638e-07  0.979364
-#> 10 Transformed (n = 200)         skmle_spline 1.150552e-07  8.558166
+#> 1     Additive (n = 200)   SurvSparse_add_haz 1.939722e-07  4.112356
+#> 2     Additive (n = 200)   skmle_kee_additive 8.961051e-08  8.420316
+#> 3     Additive (n = 200)         skmle_spline 1.294883e-07  7.611179
+#> 4     Additive (n = 500)   SurvSparse_add_haz 6.360851e-07  1.395166
+#> 5     Additive (n = 500)   skmle_kee_additive 9.536044e-08 10.522224
+#> 6     Additive (n = 500)         skmle_spline 1.972343e-07  5.026943
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.326037e-07  1.858655
+#> 8  Transformed (n = 100)         skmle_spline 1.006332e-07  9.776990
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 9.878093e-07  0.985307
+#> 10 Transformed (n = 200)         skmle_spline 1.146735e-07  8.551878
 #>     baseline_ms speedup_vs_baseline
-#> 1  8.901329e-08            2.166050
-#> 2  8.901329e-08            1.000000
-#> 3  8.901329e-08            1.443646
-#> 4  9.458923e-08            6.806184
-#> 5  9.458923e-08            1.000000
-#> 6  9.458923e-08            2.080347
-#> 7  1.004819e-07            5.327806
-#> 8  1.004819e-07            1.000000
-#> 9  1.150552e-07            8.629455
-#> 10 1.150552e-07            1.000000
+#> 1  8.961051e-08            2.164615
+#> 2  8.961051e-08            1.000000
+#> 3  8.961051e-08            1.445012
+#> 4  9.536044e-08            6.670325
+#> 5  9.536044e-08            1.000000
+#> 6  9.536044e-08            2.068303
+#> 7  1.006332e-07            5.292526
+#> 8  1.006332e-07            1.000000
+#> 9  1.146735e-07            8.614105
+#> 10 1.146735e-07            1.000000
 ```
 
 ## Interpretation
