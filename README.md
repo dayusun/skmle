@@ -1,4 +1,4 @@
-# skmle <img src="man/figures/logo.png" align="right" height="139" alt="" />
+# skmle
 
 <!-- badges: start -->
 <!-- badges: end -->

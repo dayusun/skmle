@@ -65,7 +65,7 @@ The key columns are:
 
 The `covariates` column returned by `sim_skmle_data()` is a matrix. You can either use it directly in the formula or split it into separate columns. Using the matrix directly is convenient for routine work.
 
-```{r}
+```{r, eval=FALSE}
 fit_skmle <- skmle(
   Surv(X, delta) ~ covariates,
   data = dat,
@@ -82,7 +82,7 @@ fit_skmle
 
 The printed object gives the fitted coefficients. As in many R model objects, the formatted inferential output is produced by `summary()`.
 
-```{r}
+```{r, eval=FALSE}
 summary(fit_skmle)
 ```
 
@@ -95,7 +95,7 @@ The summary table reports:
 
 ## Plot the Estimated Baseline Component
 
-```{r}
+```{r, eval=FALSE}
 plot(fit_skmle)
 ```
 
@@ -107,7 +107,7 @@ When the model of interest matches one of the specialized settings, the package 
 
 ### Cox-Type Estimator
 
-```{r}
+```{r, eval=FALSE}
 fit_kee_cox <- kee_cox(
   Surv(X, delta) ~ covariates,
   data = dat,
@@ -123,7 +123,7 @@ summary(fit_kee_cox)
 
 For the additive hazards estimator, simulate data under `s = 1`.
 
-```{r}
+```{r, eval=FALSE}
 set.seed(456)
 
 dat_add <- sim_skmle_data(
@@ -151,7 +151,7 @@ summary(fit_kee_add)
 
 Bandwidth selection can be handled by `skmle_cv()`.
 
-```{r}
+```{r, eval=FALSE}
 set.seed(999)
 
 if ("skmle_cv" %in% getNamespaceExports("skmle")) {
@@ -183,7 +183,7 @@ The returned object contains:
 
 You can then inspect the final refit in the usual way.
 
-```{r}
+```{r, eval=FALSE}
 if (exists("cv_fit")) {
   summary(cv_fit$fit)
 }

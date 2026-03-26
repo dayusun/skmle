@@ -1,0 +1,70 @@
+url: https://dayusun.github.io/skmle/
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#1f5aa6"
+    secondary: "#5b6b7a"
+    success: "#217346"
+    info: "#0f766e"
+    warning: "#b45309"
+    danger: "#b42318"
+
+home:
+  title: skmle
+  description: >
+    R package for transformed hazards models with sparse longitudinal covariates.
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [github]
+  components:
+    intro:
+      text: Get Started
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Articles
+      menu:
+      - text: Getting Started with skmle
+        href: articles/tutorial.html
+      - text: Benchmarking skmle Against SurvSparse
+        href: articles/benchmark_survsparse.html
+    news:
+      text: Changelog
+      href: news/index.html
+    github:
+      icon: fab fa-github
+      href: https://github.com/dayusun/skmle
+
+reference:
+- title: Main modeling functions
+  contents:
+  - skmle
+  - skmle_cv
+  - kee_cox
+  - kee_additive
+
+- title: Simulation
+  contents:
+  - sim_skmle_data
+
+- title: Model summaries and plots
+  contents:
+  - plot.skmle
+  - summary.skmle
+  - summary.kee
+  - print.skmle
+  - print.kee
+  - print.summary.skmle
+  - print.summary.kee
+
+articles:
+- title: Articles
+  navbar: Articles
+  contents:
+  - tutorial
+  - benchmark_survsparse

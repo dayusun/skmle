@@ -11,6 +11,8 @@ Description: Implements estimation and inference for transformed hazards models
     kernel estimating-equation estimators for the proportional hazards
     and additive hazards models, together with simulation and
     cross-validation utilities.
+URL: https://dayusun.github.io/skmle/, https://github.com/dayusun/skmle
+BugReports: https://github.com/dayusun/skmle/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -31,6 +33,7 @@ Imports:
     nleqslv
 Suggests: 
     knitr,
+    pkgdown,
     rmarkdown,
     bench,
     ggbeeswarm,
