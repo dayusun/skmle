@@ -1,6 +1,6 @@
 Package: skmle
 Title: Sieve Kernel Maximum Likelihood Estimation for Survival Models
-Version: 0.0.0.9000
+Version: 0.1.0
 Author: Dayu Sun [aut, cre] (<dayu.sun@example.com>)
 Maintainer: Dayu Sun <dayu.sun@example.com>
 Description: Implements the smoothed maximum likelihood estimation (skmle) method with efficient C++ backend using Rcpp, enabling fast estimation of semiparametric transformation models. Provides kernel-weighted and sieve estimators for transformed hazards models with sparse longitudinal covariates.
