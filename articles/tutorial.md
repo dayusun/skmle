@@ -19,6 +19,7 @@ model, inspect the summary output, plot the estimated baseline
 component, and select a bandwidth by cross-validation.
 
 ``` r
+library(nloptr)
 library(skmle)
 library(survival)
 ```
@@ -29,7 +30,7 @@ library(survival)
 set.seed(123)
 
 dat <- sim_skmle_data(
-  n = 200,
+  n = 80,
   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
   mu_bar = 8,
   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
@@ -82,6 +83,13 @@ fit_skmle <- skmle(
 )
 
 fit_skmle
+#> Call:
+#> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
+#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3, norder = 3)
+#> 
+#> Coefficients:
+#> covariates1 covariates2 
+#>   0.9215573  -0.5463503
 ```
 
 The printed object gives the fitted coefficients. As in many R model
@@ -90,6 +98,19 @@ objects, the formatted inferential output is produced by
 
 ``` r
 summary(fit_skmle)
+#> Call:
+#> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
+#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3, norder = 3)
+#> 
+#>   n= 80
+#> 
+#>             Estimate Std. Error z value Pr(>|z|)   
+#> covariates1  0.92156    0.31342  2.9403 0.003279 **
+#> covariates2 -0.54635    0.34045 -1.6048 0.108543   
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#> 
+#> Log-likelihood: -0.0753
 ```
 
 The summary table reports:
@@ -104,6 +125,8 @@ The summary table reports:
 ``` r
 plot(fit_skmle)
 ```
+
+![](tutorial_files/figure-html/unnamed-chunk-5-1.png)
 
 This plot visualizes the estimated nonparametric baseline component from
 the sieve fit.
@@ -125,6 +148,17 @@ fit_kee_cox <- kee_cox(
 )
 
 summary(fit_kee_cox)
+#> Call:
+#> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
+#>     obs_times = obs_times, h = 0.5)
+#> 
+#>   n= 80
+#> 
+#>             Estimate Std. Error z value Pr(>|z|)   
+#> covariates1  0.85832    0.29253  2.9341 0.003345 **
+#> covariates2 -0.49833    0.34661 -1.4377 0.150516   
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
 ### Additive Hazards Estimator
@@ -135,7 +169,7 @@ For the additive hazards estimator, simulate data under `s = 1`.
 set.seed(456)
 
 dat_add <- sim_skmle_data(
-  n = 200,
+  n = 80,
   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
   mu_bar = 8,
   alpha = function(tt) 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
@@ -153,6 +187,17 @@ fit_kee_add <- kee_additive(
 )
 
 summary(fit_kee_add)
+#> Call:
+#> kee_additive(formula = Surv(X, delta) ~ covariates, data = dat_add, 
+#>     id = id, obs_times = obs_times, h = 0.5)
+#> 
+#>   n= 80
+#> 
+#>             Estimate Std. Error z value Pr(>|z|)  
+#> covariates1  1.19769    0.52669  2.2740  0.02297 *
+#> covariates2  0.26643    0.68259  0.3903  0.69630  
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
 ## Select a Bandwidth by Cross-Validation
@@ -163,25 +208,26 @@ Bandwidth selection can be handled by
 ``` r
 set.seed(999)
 
-if ("skmle_cv" %in% getNamespaceExports("skmle")) {
-  cv_fit <- skmle_cv(
-    Surv(X, delta) ~ covariates,
-    data = dat,
-    id = id,
-    obs_times = obs_times,
-    s = 0,
-    K = 3,
-    n_h = 4,
-    nknots = 3,
-    norder = 3,
-    quiet = TRUE
-  )
+cv_fit <- skmle_cv(
+  Surv(X, delta) ~ covariates,
+  data = dat,
+  id = id,
+  obs_times = obs_times,
+  s = 0,
+  K = 3,
+  h_grid = c(0.3, 0.4, 0.5),
+  nknots = 3,
+  norder = 3,
+  quiet = TRUE
+)
 
-  cv_fit$h_cv
-  cv_fit$cv_results
-} else {
-  cat("`skmle_cv()` is present in the source tree but is not available in the currently installed package namespace used for this render.\n")
-}
+cv_fit$h_cv
+#> [1] 0.3
+cv_fit$cv_results
+#>     h    cvloss
+#> 1 0.3 0.5407370
+#> 2 0.4 0.5948207
+#> 3 0.5 0.6147337
 ```
 
 The returned object contains:
@@ -193,9 +239,21 @@ The returned object contains:
 You can then inspect the final refit in the usual way.
 
 ``` r
-if (exists("cv_fit")) {
-  summary(cv_fit$fit)
-}
+summary(cv_fit$fit)
+#> Call:
+#> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 
+#>     id = id, obs_times = obs_times, s = 0, h = 0.3, nknots = 3, 
+#>     norder = 3)
+#> 
+#>   n= 80
+#> 
+#>             Estimate Std. Error z value Pr(>|z|)   
+#> covariates1  1.06391    0.34671  3.0686 0.002151 **
+#> covariates2 -0.53609    0.38391 -1.3964 0.162594   
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#> 
+#> Log-likelihood: 0.06305
 ```
 
 ## Typical Workflow

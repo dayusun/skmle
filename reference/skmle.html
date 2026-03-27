@@ -168,12 +168,29 @@ estimated baseline component with <code><a href="https://rdrr.io/r/graphics/plot
 <span class="r-in"><span>  h <span class="op">=</span> <span class="fl">0.5</span>,</span></span>
 <span class="r-in"><span>  nknots <span class="op">=</span> <span class="fl">3</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in skmle_cpp_fit(n = n, p = ncol(Z), gammap = ncol(bsmat), s = s,     h = h, covariates = as.matrix(Z), bsmat = as.matrix(bsmat),     X = as.numeric(X_time), obs_times = as.numeric(obs_times_vec),     delta = as.numeric(delta), kerval = as.numeric(kerval), lq_x = as.numeric(lq_x),     lq_w = as.numeric(lq_w), bsmat_tt_all = bsmat_tt_mat, kerval_tt_all = as.matrix(kerval_tt_all),     ineqmat = as.matrix(ineqmat), maxeval = maxeval, xtol_rel = xtol_rel):</span> function 'nlopt_create' not provided by package 'nloptr'</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">fit</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'fit' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1 covariates2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.9215573  -0.5463503 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'fit' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n= 80</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  0.92156    0.31342  2.9403 0.003279 **</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.54635    0.34045 -1.6048 0.108543   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.0753 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># If you prefer explicit covariate names, split the matrix column first.</span></span></span>
 <span class="r-in"><span><span class="va">dat</span><span class="op">$</span><span class="va">Z1</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">$</span><span class="va">covariates</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span></span>
@@ -187,10 +204,21 @@ estimated baseline component with <code><a href="https://rdrr.io/r/graphics/plot
 <span class="r-in"><span>  h <span class="op">=</span> <span class="fl">0.5</span>,</span></span>
 <span class="r-in"><span>  nknots <span class="op">=</span> <span class="fl">3</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in skmle_cpp_fit(n = n, p = ncol(Z), gammap = ncol(bsmat), s = s,     h = h, covariates = as.matrix(Z), bsmat = as.matrix(bsmat),     X = as.numeric(X_time), obs_times = as.numeric(obs_times_vec),     delta = as.numeric(delta), kerval = as.numeric(kerval), lq_x = as.numeric(lq_x),     lq_w = as.numeric(lq_w), bsmat_tt_all = bsmat_tt_mat, kerval_tt_all = as.matrix(kerval_tt_all),     ineqmat = as.matrix(ineqmat), maxeval = maxeval, xtol_rel = xtol_rel):</span> function 'nlopt_create' not provided by package 'nloptr'</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_named</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'fit_named' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> skmle(formula = Surv(X, delta) ~ Z1 + Z2, data = dat, id = id, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n= 80</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Estimate Std. Error z value Pr(&gt;|z|)   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Z1  0.92156    0.31342  2.9403 0.003279 **</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Z2 -0.54635    0.34045 -1.6048 0.108543   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.0753 </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

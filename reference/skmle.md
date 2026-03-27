@@ -143,12 +143,29 @@ fit <- skmle(
   h = 0.5,
   nknots = 3
 )
-#> Error in skmle_cpp_fit(n = n, p = ncol(Z), gammap = ncol(bsmat), s = s,     h = h, covariates = as.matrix(Z), bsmat = as.matrix(bsmat),     X = as.numeric(X_time), obs_times = as.numeric(obs_times_vec),     delta = as.numeric(delta), kerval = as.numeric(kerval), lq_x = as.numeric(lq_x),     lq_w = as.numeric(lq_w), bsmat_tt_all = bsmat_tt_mat, kerval_tt_all = as.matrix(kerval_tt_all),     ineqmat = as.matrix(ineqmat), maxeval = maxeval, xtol_rel = xtol_rel): function 'nlopt_create' not provided by package 'nloptr'
 
 fit
-#> Error: object 'fit' not found
+#> Call:
+#> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
+#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
+#> 
+#> Coefficients:
+#> covariates1 covariates2 
+#>   0.9215573  -0.5463503 
 summary(fit)
-#> Error: object 'fit' not found
+#> Call:
+#> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
+#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
+#> 
+#>   n= 80
+#> 
+#>             Estimate Std. Error z value Pr(>|z|)   
+#> covariates1  0.92156    0.31342  2.9403 0.003279 **
+#> covariates2 -0.54635    0.34045 -1.6048 0.108543   
+#> ---
+#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> 
+#> Log-likelihood: -0.0753 
 
 # If you prefer explicit covariate names, split the matrix column first.
 dat$Z1 <- dat$covariates[, 1]
@@ -162,8 +179,19 @@ fit_named <- skmle(
   h = 0.5,
   nknots = 3
 )
-#> Error in skmle_cpp_fit(n = n, p = ncol(Z), gammap = ncol(bsmat), s = s,     h = h, covariates = as.matrix(Z), bsmat = as.matrix(bsmat),     X = as.numeric(X_time), obs_times = as.numeric(obs_times_vec),     delta = as.numeric(delta), kerval = as.numeric(kerval), lq_x = as.numeric(lq_x),     lq_w = as.numeric(lq_w), bsmat_tt_all = bsmat_tt_mat, kerval_tt_all = as.matrix(kerval_tt_all),     ineqmat = as.matrix(ineqmat), maxeval = maxeval, xtol_rel = xtol_rel): function 'nlopt_create' not provided by package 'nloptr'
 
 summary(fit_named)
-#> Error: object 'fit_named' not found
+#> Call:
+#> skmle(formula = Surv(X, delta) ~ Z1 + Z2, data = dat, id = id, 
+#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
+#> 
+#>   n= 80
+#> 
+#>    Estimate Std. Error z value Pr(>|z|)   
+#> Z1  0.92156    0.31342  2.9403 0.003279 **
+#> Z2 -0.54635    0.34045 -1.6048 0.108543   
+#> ---
+#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> 
+#> Log-likelihood: -0.0753 
 ```

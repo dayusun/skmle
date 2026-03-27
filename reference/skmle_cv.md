@@ -140,12 +140,26 @@ cv_fit <- skmle_cv(
   h_grid = c(0.3, 0.4, 0.5),
   quiet = TRUE
 )
-#> Error in skmle_cv_cpp(n = n, p = ncol(Z), gammap = ncol(bsmat_tt_mat),     s = as.numeric(s), h_grid = as.numeric(h_grid), K = as.integer(K),     fold_id = as.numeric(fold_id_subj), id_vec = as.numeric(id_vec),     covariates = as.matrix(Z), bsmat = as.matrix(splines::ns(X_time,         knots = knots, intercept = TRUE, Boundary.knots = c(0,             1))), X = as.numeric(X_time), obs_times = as.numeric(obs_times_vec),     delta = as.numeric(delta), lq_x = as.numeric(lq_x), lq_w = as.numeric(lq_w),     bsmat_tt_all = as.matrix(bsmat_tt_mat), maxeval = as.integer(maxeval),     xtol_rel = as.numeric(xtol_rel), quiet = as.logical(quiet)): function 'nlopt_create' not provided by package 'nloptr'
 
 cv_fit$h_cv
-#> Error: object 'cv_fit' not found
+#> [1] 0.5
 cv_fit$cv_results
-#> Error: object 'cv_fit' not found
+#>     h    cvloss
+#> 1 0.3 1.4038655
+#> 2 0.4 1.0726099
+#> 3 0.5 0.8953098
 summary(cv_fit$fit)
-#> Error: object 'cv_fit' not found
+#> Call:
+#> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 
+#>     id = id, obs_times = obs_times, s = 0, h = 0.5)
+#> 
+#>   n= 60
+#> 
+#>             Estimate Std. Error z value Pr(>|z|)  
+#> covariates1  0.84088    0.35747  2.3523  0.01866 *
+#> covariates2 -0.34645    0.41266 -0.8396  0.40115  
+#> ---
+#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> 
+#> Log-likelihood: -0.1247 
 ```
