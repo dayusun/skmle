@@ -28,6 +28,7 @@ We compare:
 The goal is not to claim a universal speed ratio for every problem size, but to show how the package behaves across a small grid of representative settings.
 
 ```{r setup, warning=FALSE, message=FALSE}
+library(nloptr)
 library(skmle)
 library(SurvSparse)
 library(survival)

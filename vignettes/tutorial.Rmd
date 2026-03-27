@@ -29,6 +29,7 @@ The package currently provides three main user-facing workflows:
 This vignette shows the usual modeling workflow: simulate data, fit a model, inspect the summary output, plot the estimated baseline component, and select a bandwidth by cross-validation.
 
 ```{r setup, warning=FALSE, message=FALSE}
+library(nloptr)
 library(skmle)
 library(survival)
 ```
