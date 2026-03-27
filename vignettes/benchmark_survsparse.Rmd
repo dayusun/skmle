@@ -34,6 +34,7 @@ library(SurvSparse)
 library(survival)
 library(dplyr)
 library(bench)
+library(ggplot2)
 ```
 
 ## Data Generation
@@ -138,6 +139,17 @@ benchmark_results <- dplyr::bind_rows(
   run_transformed_benchmark(200, iterations = 5)
 )
 
+benchmark_results <- benchmark_results %>%
+  dplyr::mutate(
+    method = dplyr::recode(
+      expression,
+      SurvSparse_add_haz = "SurvSparse add.haz",
+      SurvSparse_trans_haz = "SurvSparse trans.haz",
+      skmle_kee_additive = "skmle kee_additive",
+      skmle_spline = "skmle spline"
+    )
+  )
+
 benchmark_results
 ```
 
@@ -156,6 +168,57 @@ speed_summary <- benchmark_results %>%
   dplyr::mutate(speedup_vs_baseline = median_ms / baseline_ms)
 
 speed_summary
+```
+
+## Runtime Visualization
+
+The first plot shows the median runtime in milliseconds for each method and scenario.
+
+```{r runtime-plot, fig.height=5}
+ggplot(
+  benchmark_results,
+  aes(x = scenario, y = median_ms, fill = method)
+) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  labs(
+    x = NULL,
+    y = "Median runtime (ms)",
+    fill = NULL,
+    title = "Benchmark runtime across representative scenarios"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_text(angle = 20, hjust = 1)
+  )
+```
+
+The second plot normalizes each scenario by the `skmle` method of interest:
+
+- additive scenarios use `kee_additive()` as the baseline
+- transformed scenarios use `skmle(s = 0)` as the baseline
+
+Values greater than `1` indicate slower methods than the `skmle` baseline for that scenario.
+
+```{r speedup-plot, fig.height=5}
+ggplot(
+  speed_summary,
+  aes(x = scenario, y = speedup_vs_baseline, color = method, group = method)
+) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray50") +
+  geom_point(size = 3) +
+  geom_line(linewidth = 0.8) +
+  labs(
+    x = NULL,
+    y = "Relative runtime vs. skmle baseline",
+    color = NULL,
+    title = "Relative speed comparison by scenario"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_text(angle = 20, hjust = 1)
+  )
 ```
 
 ## Interpretation
