@@ -89,7 +89,8 @@ representative settings.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SurvSparse</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bench.r-lib.org/" class="external-link">bench</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bench.r-lib.org/" class="external-link">bench</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="data-generation">Data Generation<a class="anchor" aria-label="anchor" href="#data-generation"></a>
@@ -196,18 +197,40 @@ in these benchmark calls, we use the first simulated covariate.</p>
 <span>  <span class="fu">run_transformed_benchmark</span><span class="op">(</span><span class="fl">200</span>, iterations <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="va">benchmark_results</span> <span class="op">&lt;-</span> <span class="va">benchmark_results</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/recode.html" class="external-link">recode</a></span><span class="op">(</span></span>
+<span>      <span class="va">expression</span>,</span>
+<span>      SurvSparse_add_haz <span class="op">=</span> <span class="st">"SurvSparse add.haz"</span>,</span>
+<span>      SurvSparse_trans_haz <span class="op">=</span> <span class="st">"SurvSparse trans.haz"</span>,</span>
+<span>      skmle_kee_additive <span class="op">=</span> <span class="st">"skmle kee_additive"</span>,</span>
+<span>      skmle_spline <span class="op">=</span> <span class="st">"skmle spline"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
 <span><span class="va">benchmark_results</span></span>
-<span><span class="co">#&gt;                 scenario           expression    median_ms   itr/sec</span></span>
-<span><span class="co">#&gt; 1     Additive (n = 200)   SurvSparse_add_haz 3.232287e-07  3.306787</span></span>
-<span><span class="co">#&gt; 2     Additive (n = 200)   skmle_kee_additive 8.970429e-08 11.005874</span></span>
-<span><span class="co">#&gt; 3     Additive (n = 200)         skmle_spline 1.272635e-07  7.728497</span></span>
-<span><span class="co">#&gt; 4     Additive (n = 500)   SurvSparse_add_haz 6.365453e-07  1.384430</span></span>
-<span><span class="co">#&gt; 5     Additive (n = 500)   skmle_kee_additive 9.459881e-08 10.527855</span></span>
-<span><span class="co">#&gt; 6     Additive (n = 500)         skmle_spline 1.949731e-07  5.069229</span></span>
-<span><span class="co">#&gt; 7  Transformed (n = 100) SurvSparse_trans_haz 5.178577e-07  1.938386</span></span>
-<span><span class="co">#&gt; 8  Transformed (n = 100)         skmle_spline 9.936801e-08  9.897646</span></span>
-<span><span class="co">#&gt; 9  Transformed (n = 200) SurvSparse_trans_haz 1.002256e-06  1.000100</span></span>
-<span><span class="co">#&gt; 10 Transformed (n = 200)         skmle_spline 1.155567e-07  8.479270</span></span></code></pre></div>
+<span><span class="co">#&gt;                 scenario           expression    median_ms    itr/sec</span></span>
+<span><span class="co">#&gt; 1     Additive (n = 200)   SurvSparse_add_haz 3.517894e-07  3.4816354</span></span>
+<span><span class="co">#&gt; 2     Additive (n = 200)   skmle_kee_additive 8.916625e-08 11.0983664</span></span>
+<span><span class="co">#&gt; 3     Additive (n = 200)         skmle_spline 1.281315e-07  7.6195376</span></span>
+<span><span class="co">#&gt; 4     Additive (n = 500)   SurvSparse_add_haz 6.539421e-07  1.3352959</span></span>
+<span><span class="co">#&gt; 5     Additive (n = 500)   skmle_kee_additive 9.535587e-08 10.4980174</span></span>
+<span><span class="co">#&gt; 6     Additive (n = 500)         skmle_spline 1.957475e-07  5.0882934</span></span>
+<span><span class="co">#&gt; 7  Transformed (n = 100) SurvSparse_trans_haz 5.283116e-07  1.9038964</span></span>
+<span><span class="co">#&gt; 8  Transformed (n = 100)         skmle_spline 1.005063e-07  9.8069518</span></span>
+<span><span class="co">#&gt; 9  Transformed (n = 200) SurvSparse_trans_haz 1.017921e-06  0.9565125</span></span>
+<span><span class="co">#&gt; 10 Transformed (n = 200)         skmle_spline 1.146743e-07  8.6125506</span></span>
+<span><span class="co">#&gt;                  method</span></span>
+<span><span class="co">#&gt; 1    SurvSparse add.haz</span></span>
+<span><span class="co">#&gt; 2    skmle kee_additive</span></span>
+<span><span class="co">#&gt; 3          skmle spline</span></span>
+<span><span class="co">#&gt; 4    SurvSparse add.haz</span></span>
+<span><span class="co">#&gt; 5    skmle kee_additive</span></span>
+<span><span class="co">#&gt; 6          skmle spline</span></span>
+<span><span class="co">#&gt; 7  SurvSparse trans.haz</span></span>
+<span><span class="co">#&gt; 8          skmle spline</span></span>
+<span><span class="co">#&gt; 9  SurvSparse trans.haz</span></span>
+<span><span class="co">#&gt; 10         skmle spline</span></span></code></pre></div>
 <p>To make the speed comparison easier to read, the next table reports
 the ratio relative to the <code>skmle</code> method of interest in each
 scenario.</p>
@@ -224,28 +247,82 @@ scenario.</p>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>speedup_vs_baseline <span class="op">=</span> <span class="va">median_ms</span> <span class="op">/</span> <span class="va">baseline_ms</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">speed_summary</span></span>
-<span><span class="co">#&gt;                 scenario           expression    median_ms   itr/sec</span></span>
-<span><span class="co">#&gt; 1     Additive (n = 200)   SurvSparse_add_haz 3.232287e-07  3.306787</span></span>
-<span><span class="co">#&gt; 2     Additive (n = 200)   skmle_kee_additive 8.970429e-08 11.005874</span></span>
-<span><span class="co">#&gt; 3     Additive (n = 200)         skmle_spline 1.272635e-07  7.728497</span></span>
-<span><span class="co">#&gt; 4     Additive (n = 500)   SurvSparse_add_haz 6.365453e-07  1.384430</span></span>
-<span><span class="co">#&gt; 5     Additive (n = 500)   skmle_kee_additive 9.459881e-08 10.527855</span></span>
-<span><span class="co">#&gt; 6     Additive (n = 500)         skmle_spline 1.949731e-07  5.069229</span></span>
-<span><span class="co">#&gt; 7  Transformed (n = 100) SurvSparse_trans_haz 5.178577e-07  1.938386</span></span>
-<span><span class="co">#&gt; 8  Transformed (n = 100)         skmle_spline 9.936801e-08  9.897646</span></span>
-<span><span class="co">#&gt; 9  Transformed (n = 200) SurvSparse_trans_haz 1.002256e-06  1.000100</span></span>
-<span><span class="co">#&gt; 10 Transformed (n = 200)         skmle_spline 1.155567e-07  8.479270</span></span>
-<span><span class="co">#&gt;     baseline_ms speedup_vs_baseline</span></span>
-<span><span class="co">#&gt; 1  8.970429e-08            3.603269</span></span>
-<span><span class="co">#&gt; 2  8.970429e-08            1.000000</span></span>
-<span><span class="co">#&gt; 3  8.970429e-08            1.418700</span></span>
-<span><span class="co">#&gt; 4  9.459881e-08            6.728893</span></span>
-<span><span class="co">#&gt; 5  9.459881e-08            1.000000</span></span>
-<span><span class="co">#&gt; 6  9.459881e-08            2.061053</span></span>
-<span><span class="co">#&gt; 7  9.936801e-08            5.211513</span></span>
-<span><span class="co">#&gt; 8  9.936801e-08            1.000000</span></span>
-<span><span class="co">#&gt; 9  1.155567e-07            8.673286</span></span>
-<span><span class="co">#&gt; 10 1.155567e-07            1.000000</span></span></code></pre></div>
+<span><span class="co">#&gt;                 scenario           expression    median_ms    itr/sec</span></span>
+<span><span class="co">#&gt; 1     Additive (n = 200)   SurvSparse_add_haz 3.517894e-07  3.4816354</span></span>
+<span><span class="co">#&gt; 2     Additive (n = 200)   skmle_kee_additive 8.916625e-08 11.0983664</span></span>
+<span><span class="co">#&gt; 3     Additive (n = 200)         skmle_spline 1.281315e-07  7.6195376</span></span>
+<span><span class="co">#&gt; 4     Additive (n = 500)   SurvSparse_add_haz 6.539421e-07  1.3352959</span></span>
+<span><span class="co">#&gt; 5     Additive (n = 500)   skmle_kee_additive 9.535587e-08 10.4980174</span></span>
+<span><span class="co">#&gt; 6     Additive (n = 500)         skmle_spline 1.957475e-07  5.0882934</span></span>
+<span><span class="co">#&gt; 7  Transformed (n = 100) SurvSparse_trans_haz 5.283116e-07  1.9038964</span></span>
+<span><span class="co">#&gt; 8  Transformed (n = 100)         skmle_spline 1.005063e-07  9.8069518</span></span>
+<span><span class="co">#&gt; 9  Transformed (n = 200) SurvSparse_trans_haz 1.017921e-06  0.9565125</span></span>
+<span><span class="co">#&gt; 10 Transformed (n = 200)         skmle_spline 1.146743e-07  8.6125506</span></span>
+<span><span class="co">#&gt;                  method  baseline_ms speedup_vs_baseline</span></span>
+<span><span class="co">#&gt; 1    SurvSparse add.haz 8.916625e-08            3.945320</span></span>
+<span><span class="co">#&gt; 2    skmle kee_additive 8.916625e-08            1.000000</span></span>
+<span><span class="co">#&gt; 3          skmle spline 8.916625e-08            1.436996</span></span>
+<span><span class="co">#&gt; 4    SurvSparse add.haz 9.535587e-08            6.857912</span></span>
+<span><span class="co">#&gt; 5    skmle kee_additive 9.535587e-08            1.000000</span></span>
+<span><span class="co">#&gt; 6          skmle spline 9.535587e-08            2.052810</span></span>
+<span><span class="co">#&gt; 7  SurvSparse trans.haz 1.005063e-07            5.256502</span></span>
+<span><span class="co">#&gt; 8          skmle spline 1.005063e-07            1.000000</span></span>
+<span><span class="co">#&gt; 9  SurvSparse trans.haz 1.146743e-07            8.876629</span></span>
+<span><span class="co">#&gt; 10         skmle spline 1.146743e-07            1.000000</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="runtime-visualization">Runtime Visualization<a class="anchor" aria-label="anchor" href="#runtime-visualization"></a>
+</h2>
+<p>The first plot shows the median runtime in milliseconds for each
+method and scenario.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
+<span>  <span class="va">benchmark_results</span>,</span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">scenario</span>, y <span class="op">=</span> <span class="va">median_ms</span>, fill <span class="op">=</span> <span class="va">method</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Median runtime (ms)"</span>,</span>
+<span>    fill <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    title <span class="op">=</span> <span class="st">"Benchmark runtime across representative scenarios"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>    legend.position <span class="op">=</span> <span class="st">"top"</span>,</span>
+<span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">20</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p><img src="benchmark_survsparse_files/figure-html/runtime-plot-1.png" class="r-plt" alt="" width="672"></p>
+<p>The second plot normalizes each scenario by the <code>skmle</code>
+method of interest:</p>
+<ul>
+<li>additive scenarios use <code><a href="../reference/kee_additive.html">kee_additive()</a></code> as the
+baseline</li>
+<li>transformed scenarios use <code>skmle(s = 0)</code> as the
+baseline</li>
+</ul>
+<p>Values greater than <code>1</code> indicate slower methods than the
+<code>skmle</code> baseline for that scenario.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
+<span>  <span class="va">speed_summary</span>,</span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">scenario</span>, y <span class="op">=</span> <span class="va">speedup_vs_baseline</span>, color <span class="op">=</span> <span class="va">method</span>, group <span class="op">=</span> <span class="va">method</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"gray50"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Relative runtime vs. skmle baseline"</span>,</span>
+<span>    color <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    title <span class="op">=</span> <span class="st">"Relative speed comparison by scenario"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>    legend.position <span class="op">=</span> <span class="st">"top"</span>,</span>
+<span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">20</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p><img src="benchmark_survsparse_files/figure-html/speedup-plot-1.png" class="r-plt" alt="" width="672"></p>
 </div>
 <div class="section level2">
 <h2 id="interpretation">Interpretation<a class="anchor" aria-label="anchor" href="#interpretation"></a>

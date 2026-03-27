@@ -25,6 +25,7 @@ library(SurvSparse)
 library(survival)
 library(dplyr)
 library(bench)
+library(ggplot2)
 ```
 
 ## Data Generation
@@ -133,18 +134,40 @@ benchmark_results <- dplyr::bind_rows(
   run_transformed_benchmark(200, iterations = 5)
 )
 
+benchmark_results <- benchmark_results %>%
+  dplyr::mutate(
+    method = dplyr::recode(
+      expression,
+      SurvSparse_add_haz = "SurvSparse add.haz",
+      SurvSparse_trans_haz = "SurvSparse trans.haz",
+      skmle_kee_additive = "skmle kee_additive",
+      skmle_spline = "skmle spline"
+    )
+  )
+
 benchmark_results
-#>                 scenario           expression    median_ms   itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 3.232287e-07  3.306787
-#> 2     Additive (n = 200)   skmle_kee_additive 8.970429e-08 11.005874
-#> 3     Additive (n = 200)         skmle_spline 1.272635e-07  7.728497
-#> 4     Additive (n = 500)   SurvSparse_add_haz 6.365453e-07  1.384430
-#> 5     Additive (n = 500)   skmle_kee_additive 9.459881e-08 10.527855
-#> 6     Additive (n = 500)         skmle_spline 1.949731e-07  5.069229
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.178577e-07  1.938386
-#> 8  Transformed (n = 100)         skmle_spline 9.936801e-08  9.897646
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 1.002256e-06  1.000100
-#> 10 Transformed (n = 200)         skmle_spline 1.155567e-07  8.479270
+#>                 scenario           expression    median_ms    itr/sec
+#> 1     Additive (n = 200)   SurvSparse_add_haz 3.517894e-07  3.4816354
+#> 2     Additive (n = 200)   skmle_kee_additive 8.916625e-08 11.0983664
+#> 3     Additive (n = 200)         skmle_spline 1.281315e-07  7.6195376
+#> 4     Additive (n = 500)   SurvSparse_add_haz 6.539421e-07  1.3352959
+#> 5     Additive (n = 500)   skmle_kee_additive 9.535587e-08 10.4980174
+#> 6     Additive (n = 500)         skmle_spline 1.957475e-07  5.0882934
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.283116e-07  1.9038964
+#> 8  Transformed (n = 100)         skmle_spline 1.005063e-07  9.8069518
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 1.017921e-06  0.9565125
+#> 10 Transformed (n = 200)         skmle_spline 1.146743e-07  8.6125506
+#>                  method
+#> 1    SurvSparse add.haz
+#> 2    skmle kee_additive
+#> 3          skmle spline
+#> 4    SurvSparse add.haz
+#> 5    skmle kee_additive
+#> 6          skmle spline
+#> 7  SurvSparse trans.haz
+#> 8          skmle spline
+#> 9  SurvSparse trans.haz
+#> 10         skmle spline
 ```
 
 To make the speed comparison easier to read, the next table reports the
@@ -163,29 +186,89 @@ speed_summary <- benchmark_results %>%
   dplyr::mutate(speedup_vs_baseline = median_ms / baseline_ms)
 
 speed_summary
-#>                 scenario           expression    median_ms   itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 3.232287e-07  3.306787
-#> 2     Additive (n = 200)   skmle_kee_additive 8.970429e-08 11.005874
-#> 3     Additive (n = 200)         skmle_spline 1.272635e-07  7.728497
-#> 4     Additive (n = 500)   SurvSparse_add_haz 6.365453e-07  1.384430
-#> 5     Additive (n = 500)   skmle_kee_additive 9.459881e-08 10.527855
-#> 6     Additive (n = 500)         skmle_spline 1.949731e-07  5.069229
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.178577e-07  1.938386
-#> 8  Transformed (n = 100)         skmle_spline 9.936801e-08  9.897646
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 1.002256e-06  1.000100
-#> 10 Transformed (n = 200)         skmle_spline 1.155567e-07  8.479270
-#>     baseline_ms speedup_vs_baseline
-#> 1  8.970429e-08            3.603269
-#> 2  8.970429e-08            1.000000
-#> 3  8.970429e-08            1.418700
-#> 4  9.459881e-08            6.728893
-#> 5  9.459881e-08            1.000000
-#> 6  9.459881e-08            2.061053
-#> 7  9.936801e-08            5.211513
-#> 8  9.936801e-08            1.000000
-#> 9  1.155567e-07            8.673286
-#> 10 1.155567e-07            1.000000
+#>                 scenario           expression    median_ms    itr/sec
+#> 1     Additive (n = 200)   SurvSparse_add_haz 3.517894e-07  3.4816354
+#> 2     Additive (n = 200)   skmle_kee_additive 8.916625e-08 11.0983664
+#> 3     Additive (n = 200)         skmle_spline 1.281315e-07  7.6195376
+#> 4     Additive (n = 500)   SurvSparse_add_haz 6.539421e-07  1.3352959
+#> 5     Additive (n = 500)   skmle_kee_additive 9.535587e-08 10.4980174
+#> 6     Additive (n = 500)         skmle_spline 1.957475e-07  5.0882934
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.283116e-07  1.9038964
+#> 8  Transformed (n = 100)         skmle_spline 1.005063e-07  9.8069518
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 1.017921e-06  0.9565125
+#> 10 Transformed (n = 200)         skmle_spline 1.146743e-07  8.6125506
+#>                  method  baseline_ms speedup_vs_baseline
+#> 1    SurvSparse add.haz 8.916625e-08            3.945320
+#> 2    skmle kee_additive 8.916625e-08            1.000000
+#> 3          skmle spline 8.916625e-08            1.436996
+#> 4    SurvSparse add.haz 9.535587e-08            6.857912
+#> 5    skmle kee_additive 9.535587e-08            1.000000
+#> 6          skmle spline 9.535587e-08            2.052810
+#> 7  SurvSparse trans.haz 1.005063e-07            5.256502
+#> 8          skmle spline 1.005063e-07            1.000000
+#> 9  SurvSparse trans.haz 1.146743e-07            8.876629
+#> 10         skmle spline 1.146743e-07            1.000000
 ```
+
+## Runtime Visualization
+
+The first plot shows the median runtime in milliseconds for each method
+and scenario.
+
+``` r
+ggplot(
+  benchmark_results,
+  aes(x = scenario, y = median_ms, fill = method)
+) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  labs(
+    x = NULL,
+    y = "Median runtime (ms)",
+    fill = NULL,
+    title = "Benchmark runtime across representative scenarios"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_text(angle = 20, hjust = 1)
+  )
+```
+
+![](benchmark_survsparse_files/figure-html/runtime-plot-1.png)
+
+The second plot normalizes each scenario by the `skmle` method of
+interest:
+
+- additive scenarios use
+  [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+  as the baseline
+- transformed scenarios use `skmle(s = 0)` as the baseline
+
+Values greater than `1` indicate slower methods than the `skmle`
+baseline for that scenario.
+
+``` r
+ggplot(
+  speed_summary,
+  aes(x = scenario, y = speedup_vs_baseline, color = method, group = method)
+) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray50") +
+  geom_point(size = 3) +
+  geom_line(linewidth = 0.8) +
+  labs(
+    x = NULL,
+    y = "Relative runtime vs. skmle baseline",
+    color = NULL,
+    title = "Relative speed comparison by scenario"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_text(angle = 20, hjust = 1)
+  )
+```
+
+![](benchmark_survsparse_files/figure-html/speedup-plot-1.png)
 
 ## Interpretation
 
