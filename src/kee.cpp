@@ -20,6 +20,8 @@ arma::vec kee_cox_estequ(const arma::vec &beta, const arma::mat &covariates,
   arma::vec expbeta = arma::exp(covariates * beta);
 
   for (int i = 0; i < n; ++i) {
+    if (i % 100 == 0) Rcpp::checkUserInterrupt();
+
     if (delta[i] == 1.0 && kerval[i] > 0) {
       part1 += kerval[i] * trans(covariates.row(i));
 
@@ -68,6 +70,8 @@ List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
   arma::vec expbeta = arma::exp(covariates * beta);
 
   for (int i = 0; i < n; ++i) {
+    if (i % 100 == 0) Rcpp::checkUserInterrupt();
+
     if (delta[i] == 1.0 && kerval[i] > 0) {
       double S0_XX_sum = 0.0;
       arma::vec S1_XX_sum = arma::zeros<arma::vec>(p);
@@ -133,6 +137,8 @@ List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
   std::vector<arma::mat> id_to_A(n_subj, arma::zeros<arma::mat>(p, p));
 
   for (int q = 0; q < n_quad; ++q) {
+    Rcpp::checkUserInterrupt();
+
     double tt = 0.5 * lq_x[q] + 0.5;
     double weight = 0.5 * lq_w[q];
 
@@ -187,6 +193,8 @@ List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
   std::vector<arma::vec> id_to_B(n_subj, arma::zeros<arma::vec>(p));
 
   for (int i = 0; i < n; ++i) {
+    if (i % 100 == 0) Rcpp::checkUserInterrupt();
+
     if (kerval[i] > 0) {
       double delta_i = delta[i]; // B uses delta according to kee formulation
       if (delta_i == 1.0) {
