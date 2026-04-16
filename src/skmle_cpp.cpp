@@ -351,51 +351,52 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
     double weight = 0.5 * lq_w[q];
     double alpha_tt = dot(trans(bsmat_tt_all.row(q)), gamma);
 
-    // vector for temporary r1 values per subject
-    std::vector<double> id_to_r1(n_subj, 0.0);
-
-    for (int j = 0; j < p; ++j) {
-      for (int i = 0; i < n; ++i) {
-        int idx = static_cast<int>(std::round(id[i])) - 1;
-        if (idx < 0 || idx >= n_subj)
-          continue;
-        if (tt <= X[i]) {
-          double k_tt = kerval_tt_all(q, i);
-          if (k_tt > 0) {
-            double S0_tt_sum = 0.0;
-            double S1_tt_sum = 0.0;
-            for (int k = 0; k < n; ++k) {
-              if (tt <= X[k]) {
-                double dist_k = tt - obs_times[k];
-                if (dist_k > 0) {
-                  double k_tt_k =
-                      std::max((1 - std::pow(dist_k / h, 2)) * 0.75, 0.0) / h;
-                  if (k_tt_k > 0) {
-                    double in_val = alpha_tt + dot(covariates.row(k), beta);
-                    double td = trans_fun_d12o1(in_val, s) * k_tt_k;
-                    S0_tt_sum += td;
-                    S1_tt_sum += td * covariates(k, j);
-                  }
-                }
-              }
-            }
-            if (S0_tt_sum > 0) {
-              double S1_tt = S1_tt_sum / S0_tt_sum;
-              double in_val = alpha_tt + dot(covariates.row(i), beta);
-              id_to_r1[idx] +=
-                  trans_fun_d(in_val, s) * k_tt * (S1_tt - covariates(i, j));
-            }
+    // The S0/S1 aggregates over `k` depend only on `q` (via tt and alpha_tt),
+    // not on the reference index `i` or covariate index `j`. Hoist the
+    // `k`-loop out of the i/j loops and precompute once per quadrature node.
+    double S0_tt_q = 0.0;
+    arma::vec S1_tt_q_vec = arma::zeros<arma::vec>(p);
+    for (int k = 0; k < n; ++k) {
+      if (tt <= X[k]) {
+        double dist_k = tt - obs_times[k];
+        if (dist_k > 0) {
+          double k_tt_k =
+              std::max((1 - std::pow(dist_k / h, 2)) * 0.75, 0.0) / h;
+          if (k_tt_k > 0) {
+            double in_val = alpha_tt + dot(covariates.row(k), beta);
+            double td = trans_fun_d12o1(in_val, s) * k_tt_k;
+            S0_tt_q += td;
+            S1_tt_q_vec += td * trans(covariates.row(k));
           }
         }
       }
-      for (int subj = 0; subj < n_subj; ++subj) {
-        int count = id_counts[subj];
-        if (count > 0) {
-          id_to_bb2[subj](j) +=
-              weight * id_to_r1[subj] / static_cast<double>(count);
+    }
+    if (S0_tt_q <= 0) continue;
+
+    arma::vec S1_tt_q = S1_tt_q_vec / S0_tt_q;
+
+    // per-subject r1 contribution for this quadrature node
+    std::vector<arma::vec> id_to_r1_vec(n_subj, arma::zeros<arma::vec>(p));
+    for (int i = 0; i < n; ++i) {
+      int idx = static_cast<int>(std::round(id[i])) - 1;
+      if (idx < 0 || idx >= n_subj) continue;
+      if (tt <= X[i]) {
+        double k_tt = kerval_tt_all(q, i);
+        if (k_tt > 0) {
+          double in_val = alpha_tt + dot(covariates.row(i), beta);
+          double factor = trans_fun_d(in_val, s) * k_tt;
+          id_to_r1_vec[idx] +=
+              factor * (S1_tt_q - trans(covariates.row(i)));
         }
       }
-      std::fill(id_to_r1.begin(), id_to_r1.end(), 0.0);
+    }
+
+    for (int subj = 0; subj < n_subj; ++subj) {
+      int count = id_counts[subj];
+      if (count > 0) {
+        id_to_bb2[subj] +=
+            weight * id_to_r1_vec[subj] / static_cast<double>(count);
+      }
     }
   }
 
