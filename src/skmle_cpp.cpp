@@ -8,37 +8,50 @@
 using namespace Rcpp;
 using namespace arma;
 
-// Utility functions
+// Box-Cox transform g(x) = (1 + s*x)^(1/s) (s > 0), exp(x) (s = 0).
+// Outside the feasibility region (base = 1 + s*x <= 0) the hazard is
+// mathematically 0 but the NLL depends on log(t_val). We therefore floor
+// the *value* at 2.22e-16 (machine eps): log(2.22e-16) ~= -36 becomes a
+// soft infeasibility penalty that SLSQP can see and move away from,
+// rather than a hard excluded region. Callers still guard log() with
+// `t_val > 0` so a future change to this floor cannot produce -Inf.
+static constexpr double kBoundaryValueFloor = 2.220446e-16;
+
 inline double trans_fun(double x, double s) {
-  if (s == 0.0)
-    return exp(x);
-  if (x < -1.0 / s)
-    return 2.220446e-16; // Machine epsilon approx
-  return std::pow(s * x + 1.0, 1.0 / s);
+  if (s == 0.0) return std::exp(x);
+  const double base = s * x + 1.0;
+  if (base <= 0.0) return kBoundaryValueFloor;
+  return std::pow(base, 1.0 / s);
 }
 
+// The derivative functions below are not logged; they feed into gradient
+// and sandwich-variance sums. In the infeasibility region:
+//   * g'(x)   -> 0     for 0 < s <= 1
+//   * g'/g    -> +Inf  (all s > 0)
+//   * g''/g   -> +/-Inf
+// Returning the 0 limit is safe and consistent with the ineqmat hard
+// constraints that actually gate feasibility at the data points; the
+// previous 2.22e-16 floor silently understated derivatives that truly
+// diverge, biasing SLSQP's gradient search for s > 1.
 inline double trans_fun_d(double x, double s) {
-  if (s == 0.0)
-    return exp(x);
-  if (x < -1.0 / s)
-    return 2.220446e-16;
-  return std::pow(s * x + 1.0, 1.0 / s - 1.0);
+  if (s == 0.0) return std::exp(x);
+  const double base = s * x + 1.0;
+  if (base <= 0.0) return 0.0;
+  return std::pow(base, 1.0 / s - 1.0);
 }
 
 inline double trans_fun_d1o1(double x, double s) {
-  if (s == 0.0)
-    return 1.0;
-  if (x < -1.0 / s)
-    return 2.220446e-16;
-  return std::pow(s * x + 1.0, -1.0);
+  if (s == 0.0) return 1.0;
+  const double base = s * x + 1.0;
+  if (base <= 0.0) return 0.0;
+  return 1.0 / base;
 }
 
 inline double trans_fun_d12o1(double x, double s) {
-  if (s == 0.0)
-    return exp(x);
-  if (x < -1.0 / s)
-    return 2.220446e-16;
-  return std::pow(s * x + 1.0, 1.0 / s - 2.0);
+  if (s == 0.0) return std::exp(x);
+  const double base = s * x + 1.0;
+  if (base <= 0.0) return 0.0;
+  return std::pow(base, 1.0 / s - 2.0);
 }
 
 // RAII wrapper for nlopt_opt so the optimizer is destroyed on any
