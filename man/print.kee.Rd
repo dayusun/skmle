@@ -11,6 +11,17 @@
 
 \item{...}{Further arguments passed to or from other methods.}
 }
+\value{
+\code{x}, invisibly. Called for its side effect of printing a brief
+summary of the call and estimated coefficients.
+}
 \description{
 Print kee object
+}
+\examples{
+\dontrun{
+fit <- kee_cox(Surv(X, delta) ~ covariates, data = dat, id = id,
+               obs_times = obs_times, h = 0.5)
+print(fit)
+}
 }

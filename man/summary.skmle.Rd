@@ -11,6 +11,19 @@
 
 \item{...}{Further arguments passed to or from other methods.}
 }
+\value{
+An object of class \code{summary.skmle} containing the call,
+a coefficient table with estimates, standard errors, z-statistics
+and p-values, the log-likelihood, convergence status, and the sample
+size \code{n}.
+}
 \description{
 Summary for skmle object
+}
+\examples{
+\dontrun{
+fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
+             obs_times = obs_times, s = 0, h = 0.5)
+summary(fit)
+}
 }

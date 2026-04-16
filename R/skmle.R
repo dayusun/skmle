@@ -268,6 +268,14 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
 #'
 #' @param x An object of class `skmle`.
 #' @param ... Further arguments passed to or from other methods.
+#' @return `x`, invisibly. Called for its side effect of printing a brief
+#'   summary of the call and estimated coefficients.
+#' @examples
+#' \dontrun{
+#' fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
+#'              obs_times = obs_times, s = 0, h = 0.5)
+#' print(fit)
+#' }
 #' @export
 print.skmle <- function(x, ...) {
   cat("Call:\n")
@@ -281,6 +289,16 @@ print.skmle <- function(x, ...) {
 #'
 #' @param object An object of class `skmle`.
 #' @param ... Further arguments passed to or from other methods.
+#' @return An object of class `summary.skmle` containing the call,
+#'   a coefficient table with estimates, standard errors, z-statistics
+#'   and p-values, the log-likelihood, convergence status, and the sample
+#'   size `n`.
+#' @examples
+#' \dontrun{
+#' fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
+#'              obs_times = obs_times, s = 0, h = 0.5)
+#' summary(fit)
+#' }
 #' @importFrom stats pnorm
 #' @export
 summary.skmle <- function(object, ...) {
@@ -311,6 +329,14 @@ summary.skmle <- function(object, ...) {
 #'
 #' @param x An object of class `summary.skmle`.
 #' @param ... Further arguments passed to or from other methods.
+#' @return `x`, invisibly. Called for its side effect of printing the
+#'   summary table.
+#' @examples
+#' \dontrun{
+#' fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
+#'              obs_times = obs_times, s = 0, h = 0.5)
+#' print(summary(fit))
+#' }
 #' @importFrom stats printCoefmat
 #' @export
 print.summary.skmle <- function(x, ...) {
@@ -336,6 +362,14 @@ print.summary.skmle <- function(x, ...) {
 #' @param x An object of class `skmle`.
 #' @param t_seq A numeric vector of time points to evaluate the baseline function. Default is `seq(0, 1, length.out = 100)`.
 #' @param ... Further arguments passed to or from other methods.
+#' @return A `ggplot` object showing the estimated nonparametric baseline
+#'   function evaluated on `t_seq`.
+#' @examples
+#' \dontrun{
+#' fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
+#'              obs_times = obs_times, s = 0, h = 0.5)
+#' plot(fit)
+#' }
 #' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal
 #' @importFrom splines ns
 #' @export

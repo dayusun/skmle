@@ -13,6 +13,17 @@
 
 \item{...}{Further arguments passed to or from other methods.}
 }
+\value{
+A \code{ggplot} object showing the estimated nonparametric baseline
+function evaluated on \code{t_seq}.
+}
 \description{
 Plot the estimated baseline function for skmle model
+}
+\examples{
+\dontrun{
+fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
+             obs_times = obs_times, s = 0, h = 0.5)
+plot(fit)
+}
 }

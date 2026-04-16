@@ -11,6 +11,17 @@
 
 \item{...}{Further arguments passed to or from other methods.}
 }
+\value{
+\code{x}, invisibly. Called for its side effect of printing a brief
+summary of the call and estimated coefficients.
+}
 \description{
 Print skmle object
+}
+\examples{
+\dontrun{
+fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
+             obs_times = obs_times, s = 0, h = 0.5)
+print(fit)
+}
 }

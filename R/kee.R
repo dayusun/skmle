@@ -333,6 +333,14 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
 #'
 #' @param x An object of class `kee`.
 #' @param ... Further arguments passed to or from other methods.
+#' @return `x`, invisibly. Called for its side effect of printing a brief
+#'   summary of the call and estimated coefficients.
+#' @examples
+#' \dontrun{
+#' fit <- kee_cox(Surv(X, delta) ~ covariates, data = dat, id = id,
+#'                obs_times = obs_times, h = 0.5)
+#' print(fit)
+#' }
 #' @export
 print.kee <- function(x, ...) {
     cat("Call:\n")
@@ -346,6 +354,15 @@ print.kee <- function(x, ...) {
 #'
 #' @param object An object of class `kee`.
 #' @param ... Further arguments passed to or from other methods.
+#' @return An object of class `summary.kee` containing the call,
+#'   a coefficient table with estimates, standard errors, z-statistics
+#'   and p-values, the convergence code, and the sample size `n`.
+#' @examples
+#' \dontrun{
+#' fit <- kee_cox(Surv(X, delta) ~ covariates, data = dat, id = id,
+#'                obs_times = obs_times, h = 0.5)
+#' summary(fit)
+#' }
 #' @importFrom stats pnorm
 #' @export
 summary.kee <- function(object, ...) {
@@ -375,6 +392,14 @@ summary.kee <- function(object, ...) {
 #'
 #' @param x An object of class `summary.kee`.
 #' @param ... Further arguments passed to or from other methods.
+#' @return `x`, invisibly. Called for its side effect of printing the
+#'   summary table.
+#' @examples
+#' \dontrun{
+#' fit <- kee_cox(Surv(X, delta) ~ covariates, data = dat, id = id,
+#'                obs_times = obs_times, h = 0.5)
+#' print(summary(fit))
+#' }
 #' @importFrom stats printCoefmat
 #' @export
 print.summary.kee <- function(x, ...) {
