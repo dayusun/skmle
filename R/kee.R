@@ -85,6 +85,9 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 
     X_time <- Y[, 1]
     delta <- Y[, 2]
+    if (anyNA(X_time) || anyNA(delta)) {
+        stop("missing values in survival response not permitted")
+    }
 
     Z <- model.matrix(formula, data = mf)
     # drop intercept if present
