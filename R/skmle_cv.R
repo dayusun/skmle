@@ -96,7 +96,11 @@ skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL, n_h 
   unique_ids <- unique(id_vec)
   n <- length(unique_ids)
   
-  if (K > n) K <- n
+  if (K > n) {
+    if (!quiet) message("Requested K = ", K, " exceeds n = ", n,
+                        " subjects; using K = ", n, " (leave-one-out).")
+    K <- n
+  }
   
   # generate h_grid if not provided
   if (is.null(h_grid)) {
