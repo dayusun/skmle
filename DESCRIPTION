@@ -1,42 +1,51 @@
 Package: skmle
 Title: Sieve Kernel Maximum Likelihood Estimation for Survival Models
 Version: 0.1.0
-Author: Dayu Sun [aut, cre] (<dayusun@iu.edu>)
-Maintainer: Dayu Sun <dayusun@iu.edu>
-Description: Implements estimation and inference for transformed hazards models
-    with sparse longitudinal covariates. The package combines
-    kernel-weighted log-likelihood and sieve maximum likelihood
-    estimation for semiparametric survival analysis when time-dependent
-    covariates are observed intermittently. It also provides specialized
-    kernel estimating-equation estimators for the proportional hazards
-    and additive hazards models, together with simulation and
-    cross-validation utilities.
-URL: https://dayusun.github.io/skmle/, https://github.com/dayusun/skmle
+Authors@R:
+    person(given = "Dayu",
+           family = "Sun",
+           role = c("aut", "cre", "cph"),
+           email = "dayusun@iu.edu")
+Description: Estimation and inference for transformed hazards models
+    with sparsely and intermittently observed longitudinal covariates.
+    Combines kernel-weighted log-likelihood and B-spline sieve maximum
+    likelihood estimation in a unified framework, implementing the
+    Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of
+    Sun, Sun, Zhao and Cao (2025) <doi:10.1080/01621459.2025.2476781>.
+    Specialized kernel estimating-equation estimators are provided for
+    the proportional hazards and additive hazards cases, along with
+    simulation and cross-validation utilities. The core numerical
+    routines use 'Rcpp', 'RcppArmadillo' and the 'nloptr' C API for
+    performance.
+URL: https://www.sundayu.me/skmle/, https://github.com/dayusun/skmle
 BugReports: https://github.com/dayusun/skmle/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-LinkingTo: 
+SystemRequirements: C++17
+LinkingTo:
     Rcpp,
     RcppArmadillo,
     nloptr
-Imports: 
+Imports:
+    dplyr,
     gaussquad,
     ggplot2,
+    MASS,
+    nleqslv,
     nloptr,
     Rcpp,
     splines,
     survival,
-    MASS,
-    dplyr,
-    tibble,
-    nleqslv
-Suggests: 
+    tibble
+Suggests:
+    bench,
+    ggbeeswarm,
     knitr,
     pkgdown,
     rmarkdown,
-    bench,
-    ggbeeswarm,
-    SurvSparse
+    SurvSparse,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3
