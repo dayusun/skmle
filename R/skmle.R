@@ -127,6 +127,7 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
   if (length(id_raw) != length(X_time) || length(obs_times_vec) != length(X_time)) {
     stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
   }
+  check_time_scale(X_time, obs_times_vec)
   id_vec <- as.integer(factor(id_raw))
 
   kerfun <- function(xx) {
@@ -220,13 +221,7 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
     n_subj = n
   )
 
-  var_est <- tryCatch(
-    solve(A_est) %*% B_est %*% solve(A_est) / n,
-    error = function(e) {
-      warning("variance estimation failed, A_est may be singular: ", e$message)
-      matrix(NA_real_, ncol(A_est), ncol(A_est))
-    }
-  )
+  var_est <- safe_sandwich(A_est, B_est, scale = 1 / n, what = "skmle variance")
 
   names(beta_est) <- colnames(Z)
   dimnames(var_est) <- list(colnames(Z), colnames(Z))

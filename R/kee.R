@@ -146,13 +146,7 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 
     W <- var_res$W
     Sigma <- var_res$Sigma
-    var_est <- tryCatch(
-        solve(W) %*% Sigma %*% solve(W),
-        error = function(e) {
-            warning("variance computation failed, W may be singular: ", e$message)
-            matrix(NA_real_, ncol(W), ncol(W))
-        }
-    )
+    var_est <- safe_sandwich(W, Sigma, scale = 1, what = "kee_cox variance")
 
     names(beta_est) <- colnames(Z)
     dimnames(var_est) <- list(colnames(Z), colnames(Z))
@@ -306,13 +300,7 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
     A <- res$A_est
     B <- res$B_est
     Sigma <- res$Sigma_est
-    var_est <- tryCatch(
-        solve(A) %*% Sigma %*% solve(A),
-        error = function(e) {
-            warning("variance computation failed, A may be singular: ", e$message)
-            matrix(NA_real_, ncol(A), ncol(A))
-        }
-    )
+    var_est <- safe_sandwich(A, Sigma, scale = 1, what = "kee_additive variance")
 
     names(beta_est) <- colnames(Z)
     dimnames(var_est) <- list(colnames(Z), colnames(Z))

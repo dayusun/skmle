@@ -43,6 +43,16 @@ test_that("skmle rejects intercept-only formula and bad inputs", {
   )
 })
 
+test_that("skmle rejects times outside [0, 1]", {
+  dat <- make_sim(n = 20)
+  dat$X <- dat$X * 10
+  expect_error(
+    skmle(survival::Surv(X, delta) ~ covariates, data = dat, id = id,
+          obs_times = obs_times, s = 0, h = 0.5),
+    "Event and observation times"
+  )
+})
+
 test_that("skmle accepts non-numeric (character/factor) id", {
   skip_on_cran()
   dat <- make_sim(n = 30)

@@ -18,6 +18,7 @@ skmle_cv(
   lq_nodes = 64,
   maxeval = 10000,
   xtol_rel = 1e-06,
+  seed = NULL,
   quiet = FALSE
 )
 }
@@ -56,6 +57,9 @@ integration.}
 
 \item{xtol_rel}{Relative convergence tolerance passed to the optimizer.}
 
+\item{seed}{Optional integer seed for the random subject-to-fold assignment.
+If \code{NULL}, the current RNG state is used and no explicit seed is set.}
+
 \item{quiet}{Logical; if \code{TRUE}, suppress progress output.}
 }
 \value{
@@ -64,7 +68,9 @@ An object of class \code{cv.skmle} with components:
 \item \code{h_cv}: selected bandwidth,
 \item \code{fit}: \code{skmle} fit refit on the full data,
 \item \code{cv_results}: data frame of candidate bandwidths and CV losses,
-\item \code{h_grid}: bandwidth grid used in the search.
+\item \code{h_grid}: bandwidth grid used in the search,
+\item \code{fold_id}: the subject-to-fold assignment vector (length \code{n}),
+\item \code{seed}: the value of \code{seed} supplied by the user, or \code{NULL}.
 }
 }
 \description{
@@ -77,6 +83,8 @@ long-format data structure.
 
 After choosing the bandwidth with the smallest average validation loss, the
 function refits \code{skmle()} on the full data set using the selected value.
+Because the fold assignment is random, pass \code{seed} (or \code{set.seed()} before
+calling) to make the grid selection reproducible.
 }
 \examples{
 \donttest{
@@ -101,6 +109,7 @@ cv_fit <- skmle_cv(
   s = 0,
   K = 3,
   h_grid = c(0.3, 0.4, 0.5),
+  seed = 2026,
   quiet = TRUE
 )
 
