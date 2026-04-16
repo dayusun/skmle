@@ -79,6 +79,7 @@ After choosing the bandwidth with the smallest average validation loss, the
 function refits \code{skmle()} on the full data set using the selected value.
 }
 \examples{
+\donttest{
 library(survival)
 
 set.seed(123)
@@ -106,5 +107,6 @@ cv_fit <- skmle_cv(
 cv_fit$h_cv
 cv_fit$cv_results
 summary(cv_fit$fit)
+}
 
 }

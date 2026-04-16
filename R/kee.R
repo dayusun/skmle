@@ -30,6 +30,7 @@
 #' and the original function call.
 #'
 #' @examples
+#' \donttest{
 #' library(survival)
 #'
 #' set.seed(123)
@@ -51,8 +52,8 @@
 #'   h = 0.5
 #' )
 #'
-#' fit_cox
 #' summary(fit_cox)
+#' }
 #'
 #' @importFrom survival Surv
 #' @importFrom stats model.frame model.matrix model.response
@@ -202,6 +203,7 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #' estimation, and model metadata.
 #'
 #' @examples
+#' \donttest{
 #' library(survival)
 #'
 #' set.seed(123)
@@ -223,8 +225,8 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #'   h = 0.5
 #' )
 #'
-#' fit_add
 #' summary(fit_add)
+#' }
 #'
 #' @importFrom survival Surv
 #' @importFrom stats model.frame model.matrix model.response

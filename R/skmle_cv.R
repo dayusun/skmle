@@ -27,6 +27,7 @@
 #' * `h_grid`: bandwidth grid used in the search.
 #'
 #' @examples
+#' \donttest{
 #' library(survival)
 #'
 #' set.seed(123)
@@ -54,6 +55,7 @@
 #' cv_fit$h_cv
 #' cv_fit$cv_results
 #' summary(cv_fit$fit)
+#' }
 #'
 #' @export
 skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL, n_h = 10, nknots = 3, norder = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, quiet = FALSE) {

@@ -33,6 +33,7 @@ when the scientific model is Cox-type and the main interest is in the regression
 coefficients.
 }
 \examples{
+\donttest{
 library(survival)
 
 set.seed(123)
@@ -54,8 +55,8 @@ fit_cox <- kee_cox(
   h = 0.5
 )
 
-fit_cox
 summary(fit_cox)
+}
 
 }
 \references{

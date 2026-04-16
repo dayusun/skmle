@@ -34,6 +34,7 @@ It uses a kernel-smoothed martingale estimating equation and typically runs fast
 than the general \code{skmle(s = 1)} fit because it solves a more specialized problem.
 }
 \examples{
+\donttest{
 library(survival)
 
 set.seed(123)
@@ -55,8 +56,8 @@ fit_add <- kee_additive(
   h = 0.5
 )
 
-fit_add
 summary(fit_add)
+}
 
 }
 \references{

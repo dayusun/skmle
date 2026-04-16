@@ -77,6 +77,7 @@ with \code{print()}, obtain inferential output with \code{summary()}, and visual
 estimated baseline component with \code{plot()}.
 }
 \examples{
+\donttest{
 library(survival)
 
 set.seed(123)
@@ -100,23 +101,8 @@ fit <- skmle(
   nknots = 3
 )
 
-fit
 summary(fit)
-
-# If you prefer explicit covariate names, split the matrix column first.
-dat$Z1 <- dat$covariates[, 1]
-dat$Z2 <- dat$covariates[, 2]
-fit_named <- skmle(
-  Surv(X, delta) ~ Z1 + Z2,
-  data = dat,
-  id = id,
-  obs_times = obs_times,
-  s = 0,
-  h = 0.5,
-  nknots = 3
-)
-
-summary(fit_named)
+}
 
 }
 \references{
