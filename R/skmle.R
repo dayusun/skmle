@@ -135,13 +135,13 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
   }
   if (ncol(Z) == 0) stop("model must contain at least one covariate")
 
-  id_vec <- as.numeric(model.extract(mf, "id"))
+  id_raw <- model.extract(mf, "id")
   obs_times_vec <- as.numeric(model.extract(mf, "obs_times"))
 
-  if (length(id_vec) != length(X_time) || length(obs_times_vec) != length(X_time)) {
+  if (length(id_raw) != length(X_time) || length(obs_times_vec) != length(X_time)) {
     stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
   }
-  id_vec <- as.integer(factor(id_vec))
+  id_vec <- as.integer(factor(id_raw))
 
   kerfun <- function(xx) {
     res <- (1 - xx^2) * 0.75

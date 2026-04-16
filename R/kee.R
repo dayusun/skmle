@@ -95,14 +95,14 @@ kee_cox <- function(formula, data, id, obs_times, h) {
         stop("model must contain at least one covariate")
     }
 
-    id_vec <- as.numeric(model.extract(mf, "id"))
+    id_raw <- model.extract(mf, "id")
     obs_times_vec <- as.numeric(model.extract(mf, "obs_times"))
-    # convert identifier to integer codes for safe use in C++
-    id_vec <- as.integer(factor(id_vec))
 
-    if (length(id_vec) != length(X_time) || length(obs_times_vec) != length(X_time)) {
+    if (length(id_raw) != length(X_time) || length(obs_times_vec) != length(X_time)) {
         stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
     }
+    # convert identifier to integer codes for safe use in C++
+    id_vec <- as.integer(factor(id_raw))
 
     kerfun <- function(xx) {
         pmax((1 - xx^2) * 0.75, 0)
@@ -265,13 +265,13 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
     if (ncol(Z) > 0 && colnames(Z)[1] == "(Intercept)") Z <- Z[, -1, drop = FALSE]
     if (ncol(Z) == 0) stop("model must contain at least one covariate")
 
-    id_vec <- as.numeric(model.extract(mf, "id"))
+    id_raw <- model.extract(mf, "id")
     obs_times_vec <- as.numeric(model.extract(mf, "obs_times"))
-    id_vec <- as.integer(factor(id_vec))
 
-    if (length(id_vec) != length(X_time) || length(obs_times_vec) != length(X_time)) {
+    if (length(id_raw) != length(X_time) || length(obs_times_vec) != length(X_time)) {
         stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
     }
+    id_vec <- as.integer(factor(id_raw))
 
     kerfun <- function(xx) {
         pmax((1 - xx^2) * 0.75, 0)
