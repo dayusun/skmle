@@ -96,12 +96,12 @@ head(sim_data)
 #> # A tibble: 6 × 6
 #>   id        X delta covariates[,1]  [,2] obs_times censoring
 #>   <chr> <dbl> <lgl>          <dbl> <dbl>     <dbl>     <dbl>
-#> 1 1     0.805 TRUE         -0.714      0     0.129     0.930
-#> 2 1     0.805 TRUE         -0.916      0     0.217     0.930
-#> 3 1     0.805 TRUE         -0.916      0     0.247     0.930
-#> 4 1     0.805 TRUE         -0.387      0     0.433     0.930
-#> 5 1     0.805 TRUE         -0.0782     0     0.798     0.930
-#> 6 2     0.504 TRUE          0.402      1     0.288     0.865
+#> 1 1     0.827 TRUE          -0.226     0     0.129     0.930
+#> 2 1     0.827 TRUE          -0.864     0     0.217     0.930
+#> 3 1     0.827 TRUE          -0.864     0     0.247     0.930
+#> 4 1     0.827 TRUE          -0.834     0     0.433     0.930
+#> 5 1     0.827 TRUE           0.110     0     0.798     0.930
+#> 6 2     0.509 TRUE           0.418     1     0.288     0.865
 table(sim_data$delta)
 #> 
 #> FALSE  TRUE 
@@ -113,12 +113,12 @@ sim_data$Z1 <- sim_data$covariates[, 1]
 sim_data$Z2 <- sim_data$covariates[, 2]
 head(sim_data[, c("id", "X", "delta", "obs_times", "Z1", "Z2")])
 #> # A tibble: 6 × 6
-#>   id        X delta obs_times      Z1    Z2
-#>   <chr> <dbl> <lgl>     <dbl>   <dbl> <dbl>
-#> 1 1     0.805 TRUE      0.129 -0.714      0
-#> 2 1     0.805 TRUE      0.217 -0.916      0
-#> 3 1     0.805 TRUE      0.247 -0.916      0
-#> 4 1     0.805 TRUE      0.433 -0.387      0
-#> 5 1     0.805 TRUE      0.798 -0.0782     0
-#> 6 2     0.504 TRUE      0.288  0.402      1
+#>   id        X delta obs_times     Z1    Z2
+#>   <chr> <dbl> <lgl>     <dbl>  <dbl> <dbl>
+#> 1 1     0.827 TRUE      0.129 -0.226     0
+#> 2 1     0.827 TRUE      0.217 -0.864     0
+#> 3 1     0.827 TRUE      0.247 -0.864     0
+#> 4 1     0.827 TRUE      0.433 -0.834     0
+#> 5 1     0.827 TRUE      0.798  0.110     0
+#> 6 2     0.509 TRUE      0.288  0.418     1
 ```

@@ -174,10 +174,10 @@ function refits <code><a href="skmle.html">skmle()</a></code> on the full data s
 <span class="r-in"><span><span class="va">cv_fit</span><span class="op">$</span><span class="va">h_cv</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.5</span>
 <span class="r-in"><span><span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     h    cvloss</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.3 1.4038655</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.4 1.0726099</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.5 0.8953098</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     h   cvloss</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.3 1.468460</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.4 1.190105</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.5 1.026529</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, </span>
@@ -186,12 +186,12 @@ function refits <code><a href="skmle.html">skmle()</a></code> on the full data s
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 60</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  0.84088    0.35747  2.3523  0.01866 *</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.34645    0.41266 -0.8396  0.40115  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.04545    0.41413  2.5245  0.01159 *</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.45917    0.44770 -1.0256  0.30507  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.1247 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.1861 </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

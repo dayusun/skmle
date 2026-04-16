@@ -109,12 +109,12 @@ component, and select a bandwidth by cross-validation.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
 <span><span class="co">#&gt;   id        X delta covariates[,1]  [,2] obs_times censoring</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.714</span>      0     0.129     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.916</span>      0     0.217     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.916</span>      0     0.247     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.387</span>      0     0.433     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.078</span><span style="color: #BB0000; text-decoration: underline;">2</span>     0     0.798     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 2     0.504 TRUE          0.402      1     0.288     0.865</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1     0.827 TRUE          -<span style="color: #BB0000;">0.226</span>     0     0.129     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1     0.827 TRUE          -<span style="color: #BB0000;">0.864</span>     0     0.217     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1     0.827 TRUE          -<span style="color: #BB0000;">0.864</span>     0     0.247     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1     0.827 TRUE          -<span style="color: #BB0000;">0.834</span>     0     0.433     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1     0.827 TRUE           0.110     0     0.798     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 2     0.509 TRUE           0.418     1     0.288     0.865</span></span></code></pre></div>
 <p>The simulated data are stored in long format. Each row corresponds to
 one observed longitudinal measurement time for one subject.</p>
 <p>The key columns are:</p>
@@ -158,7 +158,7 @@ matrix directly is convenient for routine work.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Coefficients:</span></span>
 <span><span class="co">#&gt; covariates1 covariates2 </span></span>
-<span><span class="co">#&gt;   0.9215573  -0.5463503</span></span></code></pre></div>
+<span><span class="co">#&gt;   1.1034515  -0.6214752</span></span></code></pre></div>
 <p>The printed object gives the fitted coefficients. As in many R model
 objects, the formatted inferential output is produced by
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>.</p>
@@ -171,12 +171,12 @@ objects, the formatted inferential output is produced by
 <span><span class="co">#&gt;   n= 80</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)   </span></span>
-<span><span class="co">#&gt; covariates1  0.92156    0.31342  2.9403 0.003279 **</span></span>
-<span><span class="co">#&gt; covariates2 -0.54635    0.34045 -1.6048 0.108543   </span></span>
+<span><span class="co">#&gt; covariates1  1.10345    0.34655  3.1841 0.001452 **</span></span>
+<span><span class="co">#&gt; covariates2 -0.62148    0.35735 -1.7391 0.082015 . </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Log-likelihood: -0.0753</span></span></code></pre></div>
+<span><span class="co">#&gt; Log-likelihood: -0.1486</span></span></code></pre></div>
 <p>The summary table reports:</p>
 <ul>
 <li>coefficient estimates</li>
@@ -219,8 +219,8 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span><span class="co">#&gt;   n= 80</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)   </span></span>
-<span><span class="co">#&gt; covariates1  0.85832    0.29253  2.9341 0.003345 **</span></span>
-<span><span class="co">#&gt; covariates2 -0.49833    0.34661 -1.4377 0.150516   </span></span>
+<span><span class="co">#&gt; covariates1  1.01867    0.33405  3.0495 0.002292 **</span></span>
+<span><span class="co">#&gt; covariates2 -0.57047    0.36633 -1.5572 0.119414   </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 </div>
@@ -257,9 +257,9 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   n= 80</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)  </span></span>
-<span><span class="co">#&gt; covariates1  1.19769    0.52669  2.2740  0.02297 *</span></span>
-<span><span class="co">#&gt; covariates2  0.26643    0.68259  0.3903  0.69630  </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)   </span></span>
+<span><span class="co">#&gt; covariates1  1.28942    0.48935  2.6349 0.008415 **</span></span>
+<span><span class="co">#&gt; covariates2  0.18235    0.61387  0.2970 0.766429   </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 </div>
@@ -288,9 +288,9 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span><span class="co">#&gt; [1] 0.3</span></span>
 <span><span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span>
 <span><span class="co">#&gt;     h    cvloss</span></span>
-<span><span class="co">#&gt; 1 0.3 0.5407370</span></span>
-<span><span class="co">#&gt; 2 0.4 0.5948207</span></span>
-<span><span class="co">#&gt; 3 0.5 0.6147337</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 0.3 0.4468373</span></span>
+<span><span class="co">#&gt; 2 0.4 0.5407109</span></span>
+<span><span class="co">#&gt; 3 0.5 0.5761745</span></span></code></pre></div>
 <p>The returned object contains:</p>
 <ul>
 <li>the selected bandwidth</li>
@@ -307,13 +307,13 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   n= 80</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)   </span></span>
-<span><span class="co">#&gt; covariates1  1.06391    0.34671  3.0686 0.002151 **</span></span>
-<span><span class="co">#&gt; covariates2 -0.53609    0.38391 -1.3964 0.162594   </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value  Pr(&gt;|z|)    </span></span>
+<span><span class="co">#&gt; covariates1  1.25336    0.37824  3.3136 0.0009209 ***</span></span>
+<span><span class="co">#&gt; covariates2 -0.59265    0.39263 -1.5094 0.1311920    </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Log-likelihood: 0.06305</span></span></code></pre></div>
+<span><span class="co">#&gt; Log-likelihood: -0.04403</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="typical-workflow">Typical Workflow<a class="anchor" aria-label="anchor" href="#typical-workflow"></a>

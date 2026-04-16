@@ -43,12 +43,12 @@ head(dat)
 #> # A tibble: 6 × 6
 #>   id        X delta covariates[,1]  [,2] obs_times censoring
 #>   <chr> <dbl> <lgl>          <dbl> <dbl>     <dbl>     <dbl>
-#> 1 1     0.805 TRUE         -0.714      0     0.129     0.930
-#> 2 1     0.805 TRUE         -0.916      0     0.217     0.930
-#> 3 1     0.805 TRUE         -0.916      0     0.247     0.930
-#> 4 1     0.805 TRUE         -0.387      0     0.433     0.930
-#> 5 1     0.805 TRUE         -0.0782     0     0.798     0.930
-#> 6 2     0.504 TRUE          0.402      1     0.288     0.865
+#> 1 1     0.827 TRUE          -0.226     0     0.129     0.930
+#> 2 1     0.827 TRUE          -0.864     0     0.217     0.930
+#> 3 1     0.827 TRUE          -0.864     0     0.247     0.930
+#> 4 1     0.827 TRUE          -0.834     0     0.433     0.930
+#> 5 1     0.827 TRUE           0.110     0     0.798     0.930
+#> 6 2     0.509 TRUE           0.418     1     0.288     0.865
 ```
 
 The simulated data are stored in long format. Each row corresponds to
@@ -89,7 +89,7 @@ fit_skmle
 #> 
 #> Coefficients:
 #> covariates1 covariates2 
-#>   0.9215573  -0.5463503
+#>   1.1034515  -0.6214752
 ```
 
 The printed object gives the fitted coefficients. As in many R model
@@ -105,12 +105,12 @@ summary(fit_skmle)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  0.92156    0.31342  2.9403 0.003279 **
-#> covariates2 -0.54635    0.34045 -1.6048 0.108543   
+#> covariates1  1.10345    0.34655  3.1841 0.001452 **
+#> covariates2 -0.62148    0.35735 -1.7391 0.082015 . 
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> Log-likelihood: -0.0753
+#> Log-likelihood: -0.1486
 ```
 
 The summary table reports:
@@ -155,8 +155,8 @@ summary(fit_kee_cox)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  0.85832    0.29253  2.9341 0.003345 **
-#> covariates2 -0.49833    0.34661 -1.4377 0.150516   
+#> covariates1  1.01867    0.33405  3.0495 0.002292 **
+#> covariates2 -0.57047    0.36633 -1.5572 0.119414   
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -193,9 +193,9 @@ summary(fit_kee_add)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  1.19769    0.52669  2.2740  0.02297 *
-#> covariates2  0.26643    0.68259  0.3903  0.69630  
+#>             Estimate Std. Error z value Pr(>|z|)   
+#> covariates1  1.28942    0.48935  2.6349 0.008415 **
+#> covariates2  0.18235    0.61387  0.2970 0.766429   
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -225,9 +225,9 @@ cv_fit$h_cv
 #> [1] 0.3
 cv_fit$cv_results
 #>     h    cvloss
-#> 1 0.3 0.5407370
-#> 2 0.4 0.5948207
-#> 3 0.5 0.6147337
+#> 1 0.3 0.4468373
+#> 2 0.4 0.5407109
+#> 3 0.5 0.5761745
 ```
 
 The returned object contains:
@@ -247,13 +247,13 @@ summary(cv_fit$fit)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.06391    0.34671  3.0686 0.002151 **
-#> covariates2 -0.53609    0.38391 -1.3964 0.162594   
+#>             Estimate Std. Error z value  Pr(>|z|)    
+#> covariates1  1.25336    0.37824  3.3136 0.0009209 ***
+#> covariates2 -0.59265    0.39263 -1.5094 0.1311920    
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> Log-likelihood: 0.06305
+#> Log-likelihood: -0.04403
 ```
 
 ## Typical Workflow

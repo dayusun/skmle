@@ -176,7 +176,7 @@ estimated baseline component with <code><a href="https://rdrr.io/r/graphics/plot
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> covariates1 covariates2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.9215573  -0.5463503 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   1.1034515  -0.6214752 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, </span>
@@ -185,12 +185,12 @@ estimated baseline component with <code><a href="https://rdrr.io/r/graphics/plot
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 80</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  0.92156    0.31342  2.9403 0.003279 **</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.54635    0.34045 -1.6048 0.108543   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.10345    0.34655  3.1841 0.001452 **</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.62148    0.35735 -1.7391 0.082015 . </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.0753 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.1486 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># If you prefer explicit covariate names, split the matrix column first.</span></span></span>
 <span class="r-in"><span><span class="va">dat</span><span class="op">$</span><span class="va">Z1</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">$</span><span class="va">covariates</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span></span></span>
@@ -213,12 +213,12 @@ estimated baseline component with <code><a href="https://rdrr.io/r/graphics/plot
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 80</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    Estimate Std. Error z value Pr(&gt;|z|)   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Z1  0.92156    0.31342  2.9403 0.003279 **</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Z2 -0.54635    0.34045 -1.6048 0.108543   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Z1  1.10345    0.34655  3.1841 0.001452 **</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Z2 -0.62148    0.35735 -1.7391 0.082015 . </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.0753 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.1486 </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

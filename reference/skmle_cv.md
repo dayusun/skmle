@@ -144,10 +144,10 @@ cv_fit <- skmle_cv(
 cv_fit$h_cv
 #> [1] 0.5
 cv_fit$cv_results
-#>     h    cvloss
-#> 1 0.3 1.4038655
-#> 2 0.4 1.0726099
-#> 3 0.5 0.8953098
+#>     h   cvloss
+#> 1 0.3 1.468460
+#> 2 0.4 1.190105
+#> 3 0.5 1.026529
 summary(cv_fit$fit)
 #> Call:
 #> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 
@@ -156,10 +156,10 @@ summary(cv_fit$fit)
 #>   n= 60
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  0.84088    0.35747  2.3523  0.01866 *
-#> covariates2 -0.34645    0.41266 -0.8396  0.40115  
+#> covariates1  1.04545    0.41413  2.5245  0.01159 *
+#> covariates2 -0.45917    0.44770 -1.0256  0.30507  
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 
-#> Log-likelihood: -0.1247 
+#> Log-likelihood: -0.1861 
 ```
