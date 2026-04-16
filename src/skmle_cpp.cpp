@@ -1,5 +1,6 @@
 #include <RcppArmadillo.h>
-#include <algorithm> // for std::count and other utilities
+#include <algorithm>
+#include <memory>
 #include <nloptrAPI.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -39,6 +40,17 @@ inline double trans_fun_d12o1(double x, double s) {
     return 2.220446e-16;
   return std::pow(s * x + 1.0, 1.0 / s - 2.0);
 }
+
+// RAII wrapper for nlopt_opt so the optimizer is destroyed on any
+// unwind path (including Rcpp interrupt exceptions raised inside
+// `Rcpp::checkUserInterrupt()`).
+struct NloptOptDeleter {
+  void operator()(nlopt_opt opt) const noexcept {
+    if (opt != nullptr) nlopt_destroy(opt);
+  }
+};
+using NloptOptPtr =
+    std::unique_ptr<std::remove_pointer<nlopt_opt>::type, NloptOptDeleter>;
 
 // Data structure to pass to nlopt
 struct skmle_data {
@@ -213,26 +225,20 @@ List skmle_cpp_fit(int n, int p, int gammap, double s, double h,
   int n_vars = p + gammap;
   std::vector<double> x(n_vars, 0.0);
 
-  nlopt_opt opt;
-  if (s == 0.0) {
-    opt = nlopt_create(NLOPT_LD_SLSQP, n_vars);
-  } else {
-    opt = nlopt_create(NLOPT_LD_SLSQP, n_vars);
-    if (ineqmat.n_rows > 0) {
-      std::vector<double> tol(ineqmat.n_rows, 1e-8);
-      nlopt_add_inequality_mconstraint(opt, ineqmat.n_rows, ineq_constraints,
-                                       &data, tol.data());
-    }
+  NloptOptPtr opt(nlopt_create(NLOPT_LD_SLSQP, n_vars));
+  if (s != 0.0 && ineqmat.n_rows > 0) {
+    std::vector<double> tol(ineqmat.n_rows, 1e-8);
+    nlopt_add_inequality_mconstraint(opt.get(), ineqmat.n_rows,
+                                     ineq_constraints, &data, tol.data());
   }
 
-  nlopt_set_min_objective(opt, nll_obj, &data);
-  nlopt_set_xtol_rel(opt, xtol_rel);
-  nlopt_set_maxeval(opt, maxeval);
+  nlopt_set_min_objective(opt.get(), nll_obj, &data);
+  nlopt_set_xtol_rel(opt.get(), xtol_rel);
+  nlopt_set_maxeval(opt.get(), maxeval);
 
   double minf;
-  nlopt_result res = nlopt_optimize(opt, x.data(), &minf);
+  nlopt_result res = nlopt_optimize(opt.get(), x.data(), &minf);
 
-  nlopt_destroy(opt);
   return List::create(Named("status") = static_cast<int>(res),
                       Named("minimum") = minf, Named("solution") = x);
 }
@@ -592,25 +598,27 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
       int n_vars = p + gammap;
       std::vector<double> x_est(n_vars, 0.0);
 
-      nlopt_opt opt;
-      if (s == 0.0) {
-        opt = nlopt_create(NLOPT_LD_SLSQP, n_vars);
-      } else {
-        opt = nlopt_create(NLOPT_LD_SLSQP, n_vars);
-        if (ineqmat_train.n_rows > 0) {
-          std::vector<double> tol(ineqmat_train.n_rows, 1e-8);
-          nlopt_add_inequality_mconstraint(opt, ineqmat_train.n_rows,
-                                           ineq_constraints, &train_data,
-                                           tol.data());
-        }
+      NloptOptPtr opt(nlopt_create(NLOPT_LD_SLSQP, n_vars));
+      if (s != 0.0 && ineqmat_train.n_rows > 0) {
+        std::vector<double> tol(ineqmat_train.n_rows, 1e-8);
+        nlopt_add_inequality_mconstraint(opt.get(), ineqmat_train.n_rows,
+                                         ineq_constraints, &train_data,
+                                         tol.data());
       }
-      nlopt_set_min_objective(opt, nll_obj, &train_data);
-      nlopt_set_xtol_rel(opt, xtol_rel);
-      nlopt_set_maxeval(opt, maxeval);
+      nlopt_set_min_objective(opt.get(), nll_obj, &train_data);
+      nlopt_set_xtol_rel(opt.get(), xtol_rel);
+      nlopt_set_maxeval(opt.get(), maxeval);
 
       double minf;
-      nlopt_optimize(opt, x_est.data(), &minf);
-      nlopt_destroy(opt);
+      nlopt_result train_res =
+          nlopt_optimize(opt.get(), x_est.data(), &minf);
+
+      // If the training fit failed we cannot trust the test-fold NLL:
+      // let this bandwidth lose the grid outright.
+      if (train_res < 0) {
+        loss_sum = R_PosInf;
+        break;
+      }
 
       // Extract beta and gamma
       arma::vec beta_est(x_est.data(), p);
