@@ -3,7 +3,6 @@
 ^dev/
 ^\.gitignore$
 ^\.github/
-^tests/
 ^paper/
 ^src/.*\.(o|so|dll|obj)$
 ^\.git/
@@ -14,3 +13,13 @@
 ^test_.*\.R$
 ^doc$
 ^Meta$
+^CLAUDE\.md$
+^cran-comments\.md$
+^_pkgdown\.yml$
+^docs/
+^\.github$
+^tests/verify_.*\.R$
+^tests/verify_0\.R$
+^tests/multiple_Cao_.*\.R$
+^tests/test_plot\.R$
+^tests/test_plot\.png$
