@@ -147,4 +147,4 @@ This gives a coherent way to compare and fit related hazard models within one es
 
 ## References
 
-Sun, D., Sun, Z., Zhao, X., & Cao, H. (2025). Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates. *Journal of the American Statistical Association, 120*(552), 2580-2591. https://doi-org.proxy.ulib.uits.iu.edu/10.1080/01621459.2025.2476781
+Sun, D., Sun, Z., Zhao, X., & Cao, H. (2025). Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates. *Journal of the American Statistical Association, 120*(552), 2580-2591. <https://doi.org/10.1080/01621459.2025.2476781>
