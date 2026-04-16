@@ -176,7 +176,7 @@ void ineq_constraints(unsigned m, double *result, unsigned n_vars,
     result[i] = -val - 1.0 / data->s;
 
     if (grad) {
-      for (int k = 0; k < n_vars; ++k) {
+      for (unsigned int k = 0; k < n_vars; ++k) {
         grad[i * n_vars + k] = -(*data->ineqmat)(i, k);
       }
     }
