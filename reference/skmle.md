@@ -121,6 +121,7 @@ Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
 ## Examples
 
 ``` r
+# \donttest{
 library(survival)
 
 set.seed(123)
@@ -144,14 +145,6 @@ fit <- skmle(
   nknots = 3
 )
 
-fit
-#> Call:
-#> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
-#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
-#> 
-#> Coefficients:
-#> covariates1 covariates2 
-#>   1.1034515  -0.6214752 
 summary(fit)
 #> Call:
 #> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
@@ -160,38 +153,11 @@ summary(fit)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.10345    0.34655  3.1841 0.001452 **
-#> covariates2 -0.62148    0.35735 -1.7391 0.082015 . 
+#> covariates1  0.92156    0.31342  2.9403 0.003279 **
+#> covariates2 -0.54635    0.34045 -1.6048 0.108543   
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 
-#> Log-likelihood: -0.1486 
-
-# If you prefer explicit covariate names, split the matrix column first.
-dat$Z1 <- dat$covariates[, 1]
-dat$Z2 <- dat$covariates[, 2]
-fit_named <- skmle(
-  Surv(X, delta) ~ Z1 + Z2,
-  data = dat,
-  id = id,
-  obs_times = obs_times,
-  s = 0,
-  h = 0.5,
-  nknots = 3
-)
-
-summary(fit_named)
-#> Call:
-#> skmle(formula = Surv(X, delta) ~ Z1 + Z2, data = dat, id = id, 
-#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
-#> 
-#>   n= 80
-#> 
-#>    Estimate Std. Error z value Pr(>|z|)   
-#> Z1  1.10345    0.34655  3.1841 0.001452 **
-#> Z2 -0.62148    0.35735 -1.7391 0.082015 . 
-#> ---
-#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-#> 
-#> Log-likelihood: -0.1486 
+#> Log-likelihood: -0.0753 
+# }
 ```

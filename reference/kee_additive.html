@@ -100,7 +100,8 @@ longitudinal covariates." <em>Lifetime Data Analysis</em> (2022).</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_skmle_data.html">sim_skmle_data</a></span><span class="op">(</span></span></span>
@@ -121,14 +122,6 @@ longitudinal covariates." <em>Lifetime Data Analysis</em> (2022).</p>
 <span class="r-in"><span>  h <span class="op">=</span> <span class="fl">0.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">fit_add</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> kee_additive(formula = Surv(X, delta) ~ covariates, data = dat, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     id = id, obs_times = obs_times, h = 0.5)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1 covariates2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    1.599221   -0.740066 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_add</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> kee_additive(formula = Surv(X, delta) ~ covariates, data = dat, </span>
@@ -137,10 +130,11 @@ longitudinal covariates." <em>Lifetime Data Analysis</em> (2022).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 80</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.59922    0.70427  2.2707  0.02316 *</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.74007    0.80563 -0.9186  0.35829  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.26747    0.66610  1.9028  0.05706 .</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.54733    0.75574 -0.7242  0.46892  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

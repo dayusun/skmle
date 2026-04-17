@@ -63,6 +63,7 @@ sparse longitudinal covariates." *Lifetime Data Analysis* (2022).
 ## Examples
 
 ``` r
+# \donttest{
 library(survival)
 
 set.seed(123)
@@ -84,14 +85,6 @@ fit_add <- kee_additive(
   h = 0.5
 )
 
-fit_add
-#> Call:
-#> kee_additive(formula = Surv(X, delta) ~ covariates, data = dat, 
-#>     id = id, obs_times = obs_times, h = 0.5)
-#> 
-#> Coefficients:
-#> covariates1 covariates2 
-#>    1.599221   -0.740066 
 summary(fit_add)
 #> Call:
 #> kee_additive(formula = Surv(X, delta) ~ covariates, data = dat, 
@@ -100,8 +93,9 @@ summary(fit_add)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  1.59922    0.70427  2.2707  0.02316 *
-#> covariates2 -0.74007    0.80563 -0.9186  0.35829  
+#> covariates1  1.26747    0.66610  1.9028  0.05706 .
+#> covariates2 -0.54733    0.75574 -0.7242  0.46892  
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# }
 ```

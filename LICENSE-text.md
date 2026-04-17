@@ -1,4 +1,4 @@
 # License
 
     YEAR: 2026
-    COPYRIGHT HOLDER: First Last
+    COPYRIGHT HOLDER: Dayu Sun

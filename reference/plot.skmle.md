@@ -23,3 +23,18 @@ plot(x, t_seq = seq(0, 1, length.out = 100), ...)
 - ...:
 
   Further arguments passed to or from other methods.
+
+## Value
+
+A `ggplot` object showing the estimated nonparametric baseline function
+evaluated on `t_seq`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
+             obs_times = obs_times, s = 0, h = 0.5)
+plot(fit)
+} # }
+```

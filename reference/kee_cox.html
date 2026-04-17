@@ -97,7 +97,8 @@ coefficients.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_skmle_data.html">sim_skmle_data</a></span><span class="op">(</span></span></span>
@@ -118,14 +119,6 @@ coefficients.</p>
 <span class="r-in"><span>  h <span class="op">=</span> <span class="fl">0.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">fit_cox</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     obs_times = obs_times, h = 0.5)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1 covariates2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   1.0186701  -0.5704703 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_cox</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, </span>
@@ -134,10 +127,11 @@ coefficients.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 80</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.01867    0.33405  3.0495 0.002292 **</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.57047    0.36633 -1.5572 0.119414   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  0.85832    0.29253  2.9341 0.003345 **</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.49833    0.34661 -1.4377 0.150516   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

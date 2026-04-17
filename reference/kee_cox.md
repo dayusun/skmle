@@ -60,6 +60,7 @@ covariates." *Biometrika* (2015).
 ## Examples
 
 ``` r
+# \donttest{
 library(survival)
 
 set.seed(123)
@@ -81,14 +82,6 @@ fit_cox <- kee_cox(
   h = 0.5
 )
 
-fit_cox
-#> Call:
-#> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
-#>     obs_times = obs_times, h = 0.5)
-#> 
-#> Coefficients:
-#> covariates1 covariates2 
-#>   1.0186701  -0.5704703 
 summary(fit_cox)
 #> Call:
 #> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
@@ -97,8 +90,9 @@ summary(fit_cox)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.01867    0.33405  3.0495 0.002292 **
-#> covariates2 -0.57047    0.36633 -1.5572 0.119414   
+#> covariates1  0.85832    0.29253  2.9341 0.003345 **
+#> covariates2 -0.49833    0.34661 -1.4377 0.150516   
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# }
 ```
