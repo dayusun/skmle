@@ -43,6 +43,7 @@ frameworks.
 Install the development version from GitHub:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("dayusun/skmle")
 ```
@@ -53,6 +54,7 @@ as `Rtools` on Windows or the Xcode command line tools on macOS.
 ## Typical Workflow
 
 ``` r
+
 library(skmle)
 library(survival)
 
@@ -95,6 +97,7 @@ The returned objects use a standard R model style:
 If you want a specialized estimator instead of the full SMKLE fit:
 
 ``` r
+
 fit_cox <- kee_cox(
   Surv(X, delta) ~ covariates,
   data = dat,
@@ -110,6 +113,7 @@ Bandwidth selection is available through
 [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md):
 
 ``` r
+
 cv_fit <- skmle_cv(
   Surv(X, delta) ~ covariates,
   data = dat,
@@ -133,12 +137,12 @@ The package includes a benchmark vignette comparing `skmle` with
 
 In the current benchmark sweep:
 
-| Scenario                       | `SurvSparse` median |          `skmle` median | Relative result     |
-|:-------------------------------|--------------------:|------------------------:|:--------------------|
-| Additive hazards, `n = 200`    |             ~288 ms |  `kee_additive`: ~87 ms | `skmle` faster      |
-| Additive hazards, `n = 500`    |             ~835 ms | `kee_additive`: ~116 ms | `skmle` faster      |
-| Transformed hazards, `n = 100` |            ~1096 ms | `skmle(s = 0)`: ~137 ms | `skmle` much faster |
-| Transformed hazards, `n = 200` |            ~2238 ms | `skmle(s = 0)`: ~216 ms | `skmle` much faster |
+| Scenario | `SurvSparse` median | `skmle` median | Relative result |
+|:---|---:|---:|:---|
+| Additive hazards, `n = 200` | ~288 ms | `kee_additive`: ~87 ms | `skmle` faster |
+| Additive hazards, `n = 500` | ~835 ms | `kee_additive`: ~116 ms | `skmle` faster |
+| Transformed hazards, `n = 100` | ~1096 ms | `skmle(s = 0)`: ~137 ms | `skmle` much faster |
+| Transformed hazards, `n = 200` | ~2238 ms | `skmle(s = 0)`: ~216 ms | `skmle` much faster |
 
 The additive comparison also includes the general spline-based
 `skmle(s = 1)` fit, which remains competitive but is slower than
@@ -149,12 +153,14 @@ specialized estimating equation.
 For the full code and benchmark setup, see the vignette:
 
 ``` r
+
 vignette("benchmark_survsparse", package = "skmle")
 ```
 
 For a package tutorial, see:
 
 ``` r
+
 vignette("tutorial", package = "skmle")
 ```
 

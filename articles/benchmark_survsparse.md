@@ -19,6 +19,7 @@ but to show how the package behaves across a small grid of
 representative settings.
 
 ``` r
+
 library(nloptr)
 library(skmle)
 library(SurvSparse)
@@ -37,6 +38,7 @@ longitudinal covariate in these benchmark calls, we use the first
 simulated covariate.
 
 ``` r
+
 make_benchmark_data <- function(n, s_val) {
   dat <- sim_skmle_data(
     n = n,
@@ -65,6 +67,7 @@ make_benchmark_data <- function(n, s_val) {
 ## Benchmark Helpers
 
 ``` r
+
 run_additive_benchmark <- function(n, iterations = 5) {
   dat <- make_benchmark_data(n, s_val = 1)
   h_val <- n^(-0.5)
@@ -125,6 +128,7 @@ run_transformed_benchmark <- function(n, iterations = 5) {
 ## Results Across Multiple Scenarios
 
 ``` r
+
 set.seed(20260325)
 
 benchmark_results <- dplyr::bind_rows(
@@ -147,16 +151,16 @@ benchmark_results <- benchmark_results %>%
 
 benchmark_results
 #>                 scenario           expression    median_ms    itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 3.274693e-07  3.6229746
-#> 2     Additive (n = 200)   skmle_kee_additive 8.979038e-08 10.9835866
-#> 3     Additive (n = 200)         skmle_spline 1.151824e-07  8.5043567
-#> 4     Additive (n = 500)   SurvSparse_add_haz 6.339809e-07  1.3839274
-#> 5     Additive (n = 500)   skmle_kee_additive 9.490045e-08 10.5569238
-#> 6     Additive (n = 500)         skmle_spline 1.431386e-07  6.8995719
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.170792e-07  1.9505868
-#> 8  Transformed (n = 100)         skmle_spline 9.701162e-08 10.0422958
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 1.016178e-06  0.9673586
-#> 10 Transformed (n = 200)         skmle_spline 1.075795e-07  9.1597049
+#> 1     Additive (n = 200)   SurvSparse_add_haz 3.257932e-07  3.3558735
+#> 2     Additive (n = 200)   skmle_kee_additive 8.941147e-08 10.9714784
+#> 3     Additive (n = 200)         skmle_spline 1.166059e-07  8.3855199
+#> 4     Additive (n = 500)   SurvSparse_add_haz 6.307944e-07  1.3983460
+#> 5     Additive (n = 500)   skmle_kee_additive 9.505000e-08 10.4878616
+#> 6     Additive (n = 500)         skmle_spline 1.522652e-07  6.5372265
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.214040e-07  1.9179889
+#> 8  Transformed (n = 100)         skmle_spline 9.998425e-08  9.7987102
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 1.059714e-06  0.9384746
+#> 10 Transformed (n = 200)         skmle_spline 1.098746e-07  8.9934219
 #>                  method
 #> 1    SurvSparse add.haz
 #> 2    skmle kee_additive
@@ -174,6 +178,7 @@ To make the speed comparison easier to read, the next table reports the
 ratio relative to the `skmle` method of interest in each scenario.
 
 ``` r
+
 baseline_rows <- benchmark_results %>%
   dplyr::filter(
     (grepl("^Additive", scenario) & expression == "skmle_kee_additive") |
@@ -187,27 +192,27 @@ speed_summary <- benchmark_results %>%
 
 speed_summary
 #>                 scenario           expression    median_ms    itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 3.274693e-07  3.6229746
-#> 2     Additive (n = 200)   skmle_kee_additive 8.979038e-08 10.9835866
-#> 3     Additive (n = 200)         skmle_spline 1.151824e-07  8.5043567
-#> 4     Additive (n = 500)   SurvSparse_add_haz 6.339809e-07  1.3839274
-#> 5     Additive (n = 500)   skmle_kee_additive 9.490045e-08 10.5569238
-#> 6     Additive (n = 500)         skmle_spline 1.431386e-07  6.8995719
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.170792e-07  1.9505868
-#> 8  Transformed (n = 100)         skmle_spline 9.701162e-08 10.0422958
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 1.016178e-06  0.9673586
-#> 10 Transformed (n = 200)         skmle_spline 1.075795e-07  9.1597049
+#> 1     Additive (n = 200)   SurvSparse_add_haz 3.257932e-07  3.3558735
+#> 2     Additive (n = 200)   skmle_kee_additive 8.941147e-08 10.9714784
+#> 3     Additive (n = 200)         skmle_spline 1.166059e-07  8.3855199
+#> 4     Additive (n = 500)   SurvSparse_add_haz 6.307944e-07  1.3983460
+#> 5     Additive (n = 500)   skmle_kee_additive 9.505000e-08 10.4878616
+#> 6     Additive (n = 500)         skmle_spline 1.522652e-07  6.5372265
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.214040e-07  1.9179889
+#> 8  Transformed (n = 100)         skmle_spline 9.998425e-08  9.7987102
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 1.059714e-06  0.9384746
+#> 10 Transformed (n = 200)         skmle_spline 1.098746e-07  8.9934219
 #>                  method  baseline_ms speedup_vs_baseline
-#> 1    SurvSparse add.haz 8.979038e-08            3.647042
-#> 2    skmle kee_additive 8.979038e-08            1.000000
-#> 3          skmle spline 8.979038e-08            1.282792
-#> 4    SurvSparse add.haz 9.490045e-08            6.680484
-#> 5    skmle kee_additive 9.490045e-08            1.000000
-#> 6          skmle spline 9.490045e-08            1.508303
-#> 7  SurvSparse trans.haz 9.701162e-08            5.330075
-#> 8          skmle spline 9.701162e-08            1.000000
-#> 9  SurvSparse trans.haz 1.075795e-07            9.445826
-#> 10         skmle spline 1.075795e-07            1.000000
+#> 1    SurvSparse add.haz 8.941147e-08            3.643752
+#> 2    skmle kee_additive 8.941147e-08            1.000000
+#> 3          skmle spline 8.941147e-08            1.304150
+#> 4    SurvSparse add.haz 9.505000e-08            6.636449
+#> 5    skmle kee_additive 9.505000e-08            1.000000
+#> 6          skmle spline 9.505000e-08            1.601949
+#> 7  SurvSparse trans.haz 9.998425e-08            5.214861
+#> 8          skmle spline 9.998425e-08            1.000000
+#> 9  SurvSparse trans.haz 1.098746e-07            9.644761
+#> 10         skmle spline 1.098746e-07            1.000000
 ```
 
 ## Runtime Visualization
@@ -216,6 +221,7 @@ The first plot shows the median runtime in milliseconds for each method
 and scenario.
 
 ``` r
+
 ggplot(
   benchmark_results,
   aes(x = scenario, y = median_ms, fill = method)
@@ -248,6 +254,7 @@ Values greater than `1` indicate slower methods than the `skmle`
 baseline for that scenario.
 
 ``` r
+
 ggplot(
   speed_summary,
   aes(x = scenario, y = speedup_vs_baseline, color = method, group = method)

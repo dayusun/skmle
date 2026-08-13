@@ -19,6 +19,7 @@ model, inspect the summary output, plot the estimated baseline
 component, and select a bandwidth by cross-validation.
 
 ``` r
+
 library(nloptr)
 library(skmle)
 library(survival)
@@ -27,6 +28,7 @@ library(survival)
 ## Simulate Example Data
 
 ``` r
+
 set.seed(123)
 
 dat <- sim_skmle_data(
@@ -71,6 +73,7 @@ into separate columns. Using the matrix directly is convenient for
 routine work.
 
 ``` r
+
 fit_skmle <- skmle(
   Surv(X, delta) ~ covariates,
   data = dat,
@@ -97,6 +100,7 @@ objects, the formatted inferential output is produced by
 [`summary()`](https://rdrr.io/r/base/summary.html).
 
 ``` r
+
 summary(fit_skmle)
 #> Call:
 #> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
@@ -123,6 +127,7 @@ The summary table reports:
 ## Plot the Estimated Baseline Component
 
 ``` r
+
 plot(fit_skmle)
 ```
 
@@ -139,6 +144,7 @@ package also provides dedicated estimating-equation estimators.
 ### Cox-Type Estimator
 
 ``` r
+
 fit_kee_cox <- kee_cox(
   Surv(X, delta) ~ covariates,
   data = dat,
@@ -166,6 +172,7 @@ summary(fit_kee_cox)
 For the additive hazards estimator, simulate data under `s = 1`.
 
 ``` r
+
 set.seed(456)
 
 dat_add <- sim_skmle_data(
@@ -206,6 +213,7 @@ Bandwidth selection can be handled by
 [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md).
 
 ``` r
+
 set.seed(999)
 
 cv_fit <- skmle_cv(
@@ -239,6 +247,7 @@ The returned object contains:
 You can then inspect the final refit in the usual way.
 
 ``` r
+
 summary(cv_fit$fit)
 #> Call:
 #> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = list(
