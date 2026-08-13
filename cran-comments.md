@@ -4,10 +4,12 @@ This is the initial CRAN submission of `skmle`.
 
 ## Test environments
 
-* local: Ubuntu 24.04, R 4.6.1
+* local: Ubuntu 24.04, R 4.6.1 -- 0 errors | 0 warnings | 0 notes
+* macOS builder (mac.r-project.org), macOS Tahoe 26.6, aarch64-apple-darwin23,
+  R 4.6.1 Patched -- Status: OK (errors: no, warnings: no, notes: no)
+* win-builder R-devel and R-release -- submitted; TODO record results here
+  before submitting to CRAN
 * GitHub Actions: R-devel, R-release, R-oldrel on Linux / macOS / Windows
-* win-builder: TODO before submitting -- run devtools::check_win_devel() and
-  devtools::check_win_release(), then record the results here.
 
 ## R CMD check results
 
