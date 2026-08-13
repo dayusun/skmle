@@ -7,14 +7,18 @@ This is the initial CRAN submission of `skmle`.
 * local: Ubuntu 24.04, R 4.6.1 -- 0 errors | 0 warnings | 0 notes
 * macOS builder (mac.r-project.org), macOS Tahoe 26.6, aarch64-apple-darwin23,
   R 4.6.1 Patched -- Status: OK (errors: no, warnings: no, notes: no)
-* win-builder, Windows Server 2022 x64, x86_64-w64-mingw32, gcc 14.3.0:
-  - R Under development (2026-08-12 r90394 ucrt) -- Windows binary built,
-    no example or test failures reported
-  - R version 4.6.1 (2026-06-24 ucrt) -- Windows binary built, no example
-    or test failures reported
-  win-builder truncates its published 00check.log at the CRAN incoming
-  feasibility step, so no Status line is quoted for these two runs.
-* GitHub Actions: R-devel, R-release, R-oldrel on Linux / macOS / Windows
+* GitHub Actions -- all Status: OK
+  - Windows Server 2022 x64, x86_64-w64-mingw32, R 4.6.1 ucrt
+  - macOS, aarch64-apple-darwin23, R 4.6.1
+  - Ubuntu, x86_64-pc-linux-gnu, R Under development (2026-06-21 r90185)
+  - Ubuntu, x86_64-pc-linux-gnu, R 4.6.1
+  - Ubuntu, x86_64-pc-linux-gnu, R 4.5.3 (oldrel-1)
+* win-builder, Windows Server 2022 x64, x86_64-w64-mingw32, gcc 14.3.0,
+  under R-devel (r90394 ucrt) and R 4.6.1 ucrt -- Windows binaries built with
+  no example or test failures. win-builder truncates its published
+  00check.log at the CRAN incoming feasibility step, so no Status line is
+  quoted for those two runs; the Windows GitHub Actions job above covers
+  the same platform and reports Status: OK.
 
 ## R CMD check results
 
