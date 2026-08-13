@@ -252,9 +252,22 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
 #' @return `x`, invisibly. Called for its side effect of printing a brief
 #'   summary of the call and estimated coefficients.
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' library(survival)
+#'
+#' set.seed(123)
+#' dat <- sim_skmle_data(
+#'   n = 60,
+#'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'   mu_bar = 8,
+#'   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'   beta = c(1, -0.5),
+#'   s = 0,
+#'   cen = 0.7
+#' )
+#'
 #' fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
-#'              obs_times = obs_times, s = 0, h = 0.5)
+#'              obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
 #' print(fit)
 #' }
 #' @export
@@ -275,9 +288,22 @@ print.skmle <- function(x, ...) {
 #'   and p-values, the log-likelihood, convergence status, and the sample
 #'   size `n`.
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' library(survival)
+#'
+#' set.seed(123)
+#' dat <- sim_skmle_data(
+#'   n = 60,
+#'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'   mu_bar = 8,
+#'   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'   beta = c(1, -0.5),
+#'   s = 0,
+#'   cen = 0.7
+#' )
+#'
 #' fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
-#'              obs_times = obs_times, s = 0, h = 0.5)
+#'              obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
 #' summary(fit)
 #' }
 #' @importFrom stats pnorm
@@ -313,9 +339,22 @@ summary.skmle <- function(object, ...) {
 #' @return `x`, invisibly. Called for its side effect of printing the
 #'   summary table.
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' library(survival)
+#'
+#' set.seed(123)
+#' dat <- sim_skmle_data(
+#'   n = 60,
+#'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'   mu_bar = 8,
+#'   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'   beta = c(1, -0.5),
+#'   s = 0,
+#'   cen = 0.7
+#' )
+#'
 #' fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
-#'              obs_times = obs_times, s = 0, h = 0.5)
+#'              obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
 #' print(summary(fit))
 #' }
 #' @importFrom stats printCoefmat
@@ -346,9 +385,22 @@ print.summary.skmle <- function(x, ...) {
 #' @return A `ggplot` object showing the estimated nonparametric baseline
 #'   function evaluated on `t_seq`.
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' library(survival)
+#'
+#' set.seed(123)
+#' dat <- sim_skmle_data(
+#'   n = 60,
+#'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'   mu_bar = 8,
+#'   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'   beta = c(1, -0.5),
+#'   s = 0,
+#'   cen = 0.7
+#' )
+#'
 #' fit <- skmle(Surv(X, delta) ~ covariates, data = dat, id = id,
-#'              obs_times = obs_times, s = 0, h = 0.5)
+#'              obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
 #' plot(fit)
 #' }
 #' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal

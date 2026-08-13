@@ -2,6 +2,7 @@
 #' @import nloptr
 #' @importFrom Rcpp sourceCpp
 #' @importFrom stats model.extract rnorm
+#' @importFrom utils globalVariables
 NULL
 
-utils::globalVariables(c("Time", "Baseline"))
+globalVariables(c("Time", "Baseline"))

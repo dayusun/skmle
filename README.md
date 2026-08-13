@@ -1,6 +1,7 @@
 # skmle
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/dayusun/skmle/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/dayusun/skmle/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `skmle` fits transformed hazards survival models when longitudinal covariates are observed sparsely and intermittently over time. The package combines kernel weighting and sieve maximum likelihood estimation to make semiparametric regression feasible in settings where the full covariate trajectory is not observed.

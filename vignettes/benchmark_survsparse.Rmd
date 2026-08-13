@@ -8,12 +8,25 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+# The benchmark needs packages that are only in Suggests; skip every chunk when
+# any of them is unavailable so the vignette still builds.
+has_deps <- all(vapply(
+  c("SurvSparse", "bench", "dplyr", "ggplot2"),
+  requireNamespace, logical(1), quietly = TRUE
+))
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 7,
-  fig.height = 4
+  fig.height = 4,
+  eval = has_deps
 )
+```
+
+```{r, echo = FALSE, eval = !has_deps, results = "asis"}
+cat("> This vignette was built without `SurvSparse`, `bench`, `dplyr` or",
+    "`ggplot2` installed, so the benchmark code below is shown but not run.\n")
 ```
 
 ## Overview

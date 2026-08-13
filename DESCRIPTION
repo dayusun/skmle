@@ -22,7 +22,6 @@ BugReports: https://github.com/dayusun/skmle/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 SystemRequirements: C++17
 LinkingTo:
     Rcpp,
@@ -37,11 +36,12 @@ Imports:
     nloptr,
     Rcpp,
     splines,
+    stats,
     survival,
-    tibble
+    tibble,
+    utils
 Suggests:
     bench,
-    ggbeeswarm,
     knitr,
     pkgdown,
     rmarkdown,
@@ -49,3 +49,4 @@ Suggests:
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0

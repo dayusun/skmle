@@ -4,16 +4,20 @@ This is the initial CRAN submission of `skmle`.
 
 ## Test environments
 
-* local: Ubuntu 24.04, R 4.5.3
-* GitHub Actions (planned): R-devel, R-release, R-oldrel on
-  Linux / macOS / Windows
-* R-hub and win-builder (planned)
+* local: Ubuntu 24.04, R 4.6.1
+* GitHub Actions: R-devel, R-release, R-oldrel on Linux / macOS / Windows
+* win-builder: TODO before submitting -- run devtools::check_win_devel() and
+  devtools::check_win_release(), then record the results here.
 
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
 
 * Note: new submission.
+
+The benchmark vignette uses `SurvSparse`, `bench`, `dplyr` and `ggplot2`
+from Suggests; all of its chunks are gated on `requireNamespace()` so the
+vignette builds when those packages are unavailable.
 
 ## Method reference
 
