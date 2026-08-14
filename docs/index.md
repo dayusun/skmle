@@ -1,42 +1,66 @@
 # skmle
 
-`skmle` fits transformed hazards survival models when longitudinal
-covariates are observed sparsely and intermittently over time. The
-package combines kernel weighting and sieve maximum likelihood
-estimation to make semiparametric regression feasible in settings where
-the full covariate trajectory is not observed.
+Longitudinal covariates are rarely measured when you need them. A
+biomarker is drawn at a handful of clinic visits; the event you are
+modelling happens somewhere between two of them, and the outcome you are
+modelling is recorded on a schedule of its own. Carrying the last value
+forward answers a different question, and smoothing the covariate first
+and substituting it is regression calibration, which is not consistent
+when the sampling is sparse.
 
-The core numerical work is implemented in C++ through `Rcpp` and
-`RcppArmadillo`, so the user-facing interface follows ordinary R
-modeling conventions while the expensive likelihood and
-estimating-equation calculations run in compiled code.
+`skmle` handles the mismatch directly, by weighting each observation
+according to how far its measurement time sits from the time being
+modelled. It covers two settings:
 
-The model class is indexed by the Box-Cox transformation parameter `s`.
-In practice:
+**Survival outcomes.** The transformed hazards family, with covariates
+observed sparsely and intermittently. The Box-Cox parameter `s` indexes
+the family: `s = 0` is proportional hazards, `s = 1` is additive
+hazards, and other values interpolate. This is the Sieve Maximum
+Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and
+Cao (2025), plus faster specialised estimating equations for the two
+named cases.
 
-- `s = 0` corresponds to the proportional hazards model.
-- `s = 1` corresponds to the additive hazards model.
-- other values of `s` interpolate within the transformed hazards family.
+**Longitudinal outcomes.** Generalised linear models where the response
+and the covariate are measured on *different* time grids and never
+observed together — the asynchronous case. This is the kernel-weighted
+estimating equations of Cao, Zeng and Fine (2015), with either
+time-invariant coefficients or a coefficient curve `β(t)`.
 
-This is one of the main motivations for `skmle`: it provides a single
-interface for a broader transformed hazards family rather than treating
-proportional and additive hazards as completely separate modeling
-frameworks.
+Both settings share one idea and one implementation: a kernel weight
+bridging mismatched time grids, with the heavy numerical work in C++ via
+`Rcpp` and `RcppArmadillo`, behind an ordinary R modelling interface.
 
 ## Main Functions
 
-- [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md): fit
-  the general transformed hazards model by sieve maximum kernel-weighted
+**Survival outcomes**
+
+- [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) — the
+  general transformed hazards model, by sieve maximum kernel-weighted
   likelihood.
-- [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md):
-  choose the kernel bandwidth by subject-level cross-validation and
-  refit the final model.
-- [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md):
-  fit the proportional hazards estimating-equation model.
-- [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md):
-  fit the additive hazards estimating-equation model.
-- [`sim_skmle_data()`](https://dayusun.github.io/skmle/reference/sim_skmle_data.md):
-  simulate sparse longitudinal survival data in long format.
+- [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) —
+  proportional hazards, by kernel estimating equation.
+- [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+  — additive hazards, closed form.
+- [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+  — bandwidth selection by subject-level cross-validation, with a refit
+  on the full data.
+- [`sim_skmle_data()`](https://dayusun.github.io/skmle/reference/sim_skmle_data.md)
+  — simulate sparse longitudinal survival data.
+
+**Asynchronous longitudinal outcomes**
+
+- [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
+  — time-invariant coefficients.
+- [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+  — a coefficient curve `β(t)`, estimated pointwise.
+- [`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
+  — simulate a response and a covariate on independent observation-time
+  streams.
+
+Every estimator takes `one_sided`, choosing between a half kernel (only
+measurements *before* the modelled time contribute, the causal reading
+and the risk-set restriction of a hazard model) and a full, two-sided
+kernel.
 
 ## Installation
 
@@ -51,7 +75,7 @@ devtools::install_github("dayusun/skmle")
 Because the package compiles C++ code, you need a working toolchain such
 as `Rtools` on Windows or the Xcode command line tools on macOS.
 
-## Typical Workflow
+## Survival Outcomes
 
 ``` r
 
@@ -75,60 +99,89 @@ fit <- skmle(
   data = dat,
   id = id,
   obs_times = obs_times,
-  s = 0,   # proportional hazards model
+  s = 0,
   h = 0.5,
   nknots = 3
 )
 
-fit
 summary(fit)
-plot(fit)
+plot(fit)   # estimated baseline component
 ```
 
-The returned objects use a standard R model style:
+The returned objects follow standard R model conventions:
+[`print()`](https://rdrr.io/r/base/print.html) shows the call and
+coefficients, [`summary()`](https://rdrr.io/r/base/summary.html) reports
+estimates with standard errors, z statistics and p-values, and
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws the
+estimated baseline.
 
-- [`print()`](https://rdrr.io/r/base/print.html) shows the call and
-  fitted coefficients.
-- [`summary()`](https://rdrr.io/r/base/summary.html) reports estimates,
-  standard errors, z statistics, and p-values.
-- [`plot()`](https://rdrr.io/r/graphics/plot.default.html) is available
-  for `skmle` fits to visualize the estimated baseline component.
-
-If you want a specialized estimator instead of the full SMKLE fit:
+If the scientific model is proportional or additive hazards
+specifically, the specialised estimating equations are considerably
+faster than the full sieve fit:
 
 ``` r
 
 fit_cox <- kee_cox(
   Surv(X, delta) ~ covariates,
-  data = dat,
-  id = id,
-  obs_times = obs_times,
-  h = 0.5
+  data = dat, id = id, obs_times = obs_times, h = 0.5
 )
-
-summary(fit_cox)
 ```
 
-Bandwidth selection is available through
-[`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md):
+Bandwidth selection:
 
 ``` r
 
 cv_fit <- skmle_cv(
   Surv(X, delta) ~ covariates,
-  data = dat,
-  id = id,
-  obs_times = obs_times,
-  s = 0,   # proportional hazards model
-  K = 3,
-  h_grid = c(0.3, 0.4, 0.5),
-  quiet = TRUE
+  data = dat, id = id, obs_times = obs_times,
+  s = 0, K = 3, h_grid = c(0.3, 0.4, 0.5), quiet = TRUE
 )
 
 cv_fit$h_cv
-cv_fit$cv_results
 summary(cv_fit$fit)
 ```
+
+## Asynchronous Longitudinal Outcomes
+
+Here the outcome is itself a sparsely observed process, and its
+measurement times do not line up with the covariate’s. The two are
+supplied as separate tables, because there is no single data frame
+holding both without inventing rows:
+
+``` r
+
+set.seed(202)
+d <- sim_async_data(n = 300, beta = c(0.5, 1.5))
+
+head(d$y)   # id, time, y   -- response occasions
+head(d$x)   # id, time, x   -- covariate occasions, on a different grid
+
+fit_a <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = 0.25)
+summary(fit_a)
+```
+
+Each (response, covariate) pair within a subject contributes in
+proportion to its time separation, so nothing is discarded and nothing
+is carried forward. The estimator converges at the smoothing rate
+`(nh)^(1/2)`, not at `sqrt(n)`.
+
+If the coefficients vary with time,
+[`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+estimates the curve pointwise. Both time arguments are smoothed there,
+so it converges at the bivariate rate `(n h1 h2)^(1/2)` and the bands
+are correspondingly wide:
+
+``` r
+
+fit_td <- kee_async_td(
+  d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
+  times = seq(0.2, 0.8, by = 0.05), h = 0.25
+)
+
+plot(fit_td)   # beta_j(t) with pointwise 95% bands
+```
+
+Identity, log and logistic links are supported in both.
 
 ## Benchmarking Against SurvSparse
 
@@ -157,29 +210,12 @@ For the full code and benchmark setup, see the vignette:
 vignette("benchmark_survsparse", package = "skmle")
 ```
 
-For a package tutorial, see:
+For a package tutorial covering both settings, see:
 
 ``` r
 
 vignette("tutorial", package = "skmle")
 ```
-
-## Box-Cox Transformation in This Package
-
-The transformed hazards model used by `skmle` is indexed by the Box-Cox
-parameter `s`. This parameter determines how the hazard-scale model is
-linked to the linear predictor and the nonparametric baseline component.
-
-From a user perspective, the key interpretation is:
-
-- choose `s = 0` if you want the proportional hazards model;
-- choose `s = 1` if you want the additive hazards model;
-- choose another fixed value of `s` if your application calls for an
-  intermediate transformed hazards specification.
-
-This gives a coherent way to compare and fit related hazard models
-within one estimation framework, using the same long-format sparse
-longitudinal data structure.
 
 ## References
 
@@ -187,3 +223,7 @@ Sun, D., Sun, Z., Zhao, X., & Cao, H. (2025). Kernel Meets Sieve:
 Transformed Hazards Models with Sparse Longitudinal Covariates. *Journal
 of the American Statistical Association, 120*(552), 2580-2591.
 <https://doi.org/10.1080/01621459.2025.2476781>
+
+Cao, H., Zeng, D., & Fine, J. P. (2015). Regression Analysis of Sparse
+Asynchronous Longitudinal Data. *Journal of the Royal Statistical
+Society: Series B, 77*(4), 755-776. <https://doi.org/10.1111/rssb.12086>

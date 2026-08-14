@@ -1,26 +1,25 @@
 Package: skmle
-Title: Sieve Kernel Maximum Likelihood Estimation for Survival Models
+Title: Survival and Longitudinal Models with Asynchronous Covariates
 Version: 0.1.0
 Authors@R:
     person(given = "Dayu",
            family = "Sun",
            role = c("aut", "cre", "cph"),
            email = "dayusun@iu.edu")
-Description: Estimation and inference for transformed hazards models
-    with sparsely and intermittently observed longitudinal covariates.
-    Combines kernel-weighted log-likelihood and B-spline sieve maximum
-    likelihood estimation in a unified framework, implementing the
-    Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of
-    Sun, Sun, Zhao and Cao (2025) <doi:10.1080/01621459.2025.2476781>.
-    Specialized kernel estimating-equation estimators are provided for
-    the proportional hazards and additive hazards cases, along with
-    simulation and cross-validation utilities.  Also implements the
-    kernel-weighted estimating equations of Cao, Zeng and Fine (2015)
-    <doi:10.1111/rssb.12086> for asynchronous longitudinal data, where a
-    response and a covariate are observed on different time grids, with
-    either time-invariant or time-dependent coefficients. The core numerical
-    routines use 'Rcpp', 'RcppArmadillo' and the 'nloptr' C API for
-    performance.
+Description: Estimation and inference when a longitudinal covariate is
+    observed sparsely and intermittently, at times that do not line up with
+    the times at which the outcome is measured.  For a survival outcome, fits
+    the transformed hazards family -- proportional hazards, additive hazards,
+    and the Box-Cox transformations between them -- by the Sieve Maximum
+    Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and
+    Cao (2025) <doi:10.1080/01621459.2025.2476781>, with specialised kernel
+    estimating-equation alternatives for the proportional and additive cases.
+    For a longitudinal outcome recorded on its own time grid, fits generalised
+    linear models by the kernel-weighted estimating equations of Cao, Zeng and
+    Fine (2015) <doi:10.1111/rssb.12086>, with either time-invariant or
+    time-dependent coefficients.  Half and full kernels, data simulation, and
+    bandwidth selection by cross-validation are available throughout, and the
+    numerical routines use 'Rcpp', 'RcppArmadillo' and the 'nloptr' C API.
 URL: https://www.sundayu.me/skmle/, https://github.com/dayusun/skmle
 BugReports: https://github.com/dayusun/skmle/issues
 License: MIT + file LICENSE

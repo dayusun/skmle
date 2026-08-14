@@ -13,7 +13,10 @@ template:
 home:
   title: skmle
   description: >
-    R package for transformed hazards models with sparse longitudinal covariates.
+    Kernel-weighted estimation when a longitudinal covariate is measured at
+    times that do not line up with the outcome: transformed hazards models for
+    survival outcomes, and generalised linear models for asynchronous
+    longitudinal outcomes.
 
 navbar:
   structure:
@@ -42,6 +45,10 @@ navbar:
       href: https://github.com/dayusun/skmle
 
 reference:
+- title: Package overview
+  contents:
+  - skmle-package
+
 - title: Survival models with sparse longitudinal covariates
   contents:
   - skmle

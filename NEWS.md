@@ -1,5 +1,14 @@
 # skmle 0.1.0
 
+## Scope
+
+The package covers two settings, not one. Alongside the transformed hazards
+models for survival outcomes it now fits generalised linear models for
+asynchronous longitudinal outcomes, where the response and the covariate are
+recorded on different time grids. The `Title`, `Description`, README, package
+help page and tutorial have been rewritten to present both as equal footing
+rather than treating the second as an extra.
+
 ## Asynchronous longitudinal data
 
 * `kee_async()` and `kee_async_td()` implement the kernel-weighted estimating

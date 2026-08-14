@@ -30,16 +30,24 @@ The benchmark vignette uses `SurvSparse`, `bench`, `dplyr` and `ggplot2`
 from Suggests; all of its chunks are gated on `requireNamespace()` so the
 vignette builds when those packages are unavailable.
 
-## Method reference
+## Method references
 
-The methodology is described in
+The package implements two published methods, both cited in the `Description`
+field.
+
+Survival outcomes:
 
 Sun, D., Sun, Z., Zhao, X., and Cao, H. (2025).
 "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal
 Covariates." *Journal of the American Statistical Association*.
 doi:10.1080/01621459.2025.2476781
 
-and is cited in the `Description` field.
+Asynchronous longitudinal outcomes:
+
+Cao, H., Zeng, D., and Fine, J. P. (2015).
+"Regression Analysis of Sparse Asynchronous Longitudinal Data."
+*Journal of the Royal Statistical Society: Series B* 77, 755-776.
+doi:10.1111/rssb.12086
 
 ## Compiled code
 

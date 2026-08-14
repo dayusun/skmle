@@ -2,10 +2,16 @@
 
 ## Overview
 
-`skmle` fits transformed hazards survival models when longitudinal
-covariates are observed sparsely and intermittently over time.
+A longitudinal covariate is rarely measured at the time you need it.
+`skmle` handles that mismatch by weighting each observation according to
+how far its measurement time sits from the time being modelled, rather
+than carrying a value forward or smoothing the covariate and
+substituting it.
 
-The package currently provides three main user-facing workflows:
+Two outcome types are covered.
+
+**Survival outcomes**, where the covariate is observed sparsely and
+intermittently over follow-up:
 
 1.  [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) for
     the general transformed hazards model.
@@ -14,9 +20,19 @@ The package currently provides three main user-facing workflows:
 3.  [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
     for the additive hazards estimating-equation approach.
 
-This vignette shows the usual modeling workflow: simulate data, fit a
-model, inspect the summary output, plot the estimated baseline
-component, and select a bandwidth by cross-validation.
+**Asynchronous longitudinal outcomes**, where the outcome is itself a
+sparsely observed process recorded on a time grid that does not line up
+with the covariate’s:
+
+4.  [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
+    for time-invariant coefficients.
+5.  [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+    for a coefficient curve $`\beta(t)`$.
+
+This vignette walks through both: simulate data, fit a model, inspect
+the summary output, plot the estimated baseline component, select a
+bandwidth by cross-validation, then move to the asynchronous
+longitudinal setting.
 
 ``` r
 

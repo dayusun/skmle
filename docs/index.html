@@ -11,9 +11,9 @@
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="skmle">
-<meta name="description" content="R package for transformed hazards models with sparse longitudinal covariates.
+<meta name="description" content="Kernel-weighted estimation when a longitudinal covariate is measured at times that do not line up with the outcome: transformed hazards models for survival outcomes, and generalised linear models for asynchronous longitudinal outcomes.
 ">
-<meta property="og:description" content="R package for transformed hazards models with sparse longitudinal covariates.
+<meta property="og:description" content="Kernel-weighted estimation when a longitudinal covariate is measured at times that do not line up with the outcome: transformed hazards models for survival outcomes, and generalised linear models for asynchronous longitudinal outcomes.
 ">
 </head>
 <body>
@@ -58,32 +58,37 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><code>skmle</code> fits transformed hazards survival models when longitudinal covariates are observed sparsely and intermittently over time. The package combines kernel weighting and sieve maximum likelihood estimation to make semiparametric regression feasible in settings where the full covariate trajectory is not observed.</p>
-<p>The core numerical work is implemented in C++ through <code>Rcpp</code> and <code>RcppArmadillo</code>, so the user-facing interface follows ordinary R modeling conventions while the expensive likelihood and estimating-equation calculations run in compiled code.</p>
-<p>The model class is indexed by the Box-Cox transformation parameter <code>s</code>. In practice:</p>
-<ul>
-<li>
-<code>s = 0</code> corresponds to the proportional hazards model.</li>
-<li>
-<code>s = 1</code> corresponds to the additive hazards model.</li>
-<li>other values of <code>s</code> interpolate within the transformed hazards family.</li>
-</ul>
-<p>This is one of the main motivations for <code>skmle</code>: it provides a single interface for a broader transformed hazards family rather than treating proportional and additive hazards as completely separate modeling frameworks.</p>
+<p>Longitudinal covariates are rarely measured when you need them. A biomarker is drawn at a handful of clinic visits; the event you are modelling happens somewhere between two of them, and the outcome you are modelling is recorded on a schedule of its own. Carrying the last value forward answers a different question, and smoothing the covariate first and substituting it is regression calibration, which is not consistent when the sampling is sparse.</p>
+<p><code>skmle</code> handles the mismatch directly, by weighting each observation according to how far its measurement time sits from the time being modelled. It covers two settings:</p>
+<p><strong>Survival outcomes.</strong> The transformed hazards family, with covariates observed sparsely and intermittently. The Box-Cox parameter <code>s</code> indexes the family: <code>s = 0</code> is proportional hazards, <code>s = 1</code> is additive hazards, and other values interpolate. This is the Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and Cao (2025), plus faster specialised estimating equations for the two named cases.</p>
+<p><strong>Longitudinal outcomes.</strong> Generalised linear models where the response and the covariate are measured on <em>different</em> time grids and never observed together — the asynchronous case. This is the kernel-weighted estimating equations of Cao, Zeng and Fine (2015), with either time-invariant coefficients or a coefficient curve <code>β(t)</code>.</p>
+<p>Both settings share one idea and one implementation: a kernel weight bridging mismatched time grids, with the heavy numerical work in C++ via <code>Rcpp</code> and <code>RcppArmadillo</code>, behind an ordinary R modelling interface.</p>
 <div class="section level2">
 <h2 id="main-functions">Main Functions<a class="anchor" aria-label="anchor" href="#main-functions"></a>
 </h2>
+<p><strong>Survival outcomes</strong></p>
 <ul>
 <li>
-<code><a href="reference/skmle.html">skmle()</a></code>: fit the general transformed hazards model by sieve maximum kernel-weighted likelihood.</li>
+<code><a href="reference/skmle.html">skmle()</a></code> — the general transformed hazards model, by sieve maximum kernel-weighted likelihood.</li>
 <li>
-<code><a href="reference/skmle_cv.html">skmle_cv()</a></code>: choose the kernel bandwidth by subject-level cross-validation and refit the final model.</li>
+<code><a href="reference/kee_cox.html">kee_cox()</a></code> — proportional hazards, by kernel estimating equation.</li>
 <li>
-<code><a href="reference/kee_cox.html">kee_cox()</a></code>: fit the proportional hazards estimating-equation model.</li>
+<code><a href="reference/kee_additive.html">kee_additive()</a></code> — additive hazards, closed form.</li>
 <li>
-<code><a href="reference/kee_additive.html">kee_additive()</a></code>: fit the additive hazards estimating-equation model.</li>
+<code><a href="reference/skmle_cv.html">skmle_cv()</a></code> — bandwidth selection by subject-level cross-validation, with a refit on the full data.</li>
 <li>
-<code><a href="reference/sim_skmle_data.html">sim_skmle_data()</a></code>: simulate sparse longitudinal survival data in long format.</li>
+<code><a href="reference/sim_skmle_data.html">sim_skmle_data()</a></code> — simulate sparse longitudinal survival data.</li>
 </ul>
+<p><strong>Asynchronous longitudinal outcomes</strong></p>
+<ul>
+<li>
+<code><a href="reference/kee_async.html">kee_async()</a></code> — time-invariant coefficients.</li>
+<li>
+<code><a href="reference/kee_async_td.html">kee_async_td()</a></code> — a coefficient curve <code>β(t)</code>, estimated pointwise.</li>
+<li>
+<code><a href="reference/sim_async_data.html">sim_async_data()</a></code> — simulate a response and a covariate on independent observation-time streams.</li>
+</ul>
+<p>Every estimator takes <code>one_sided</code>, choosing between a half kernel (only measurements <em>before</em> the modelled time contribute, the causal reading and the risk-set restriction of a hazard model) and a full, two-sided kernel.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -95,7 +100,7 @@
 <p>Because the package compiles C++ code, you need a working toolchain such as <code>Rtools</code> on Windows or the Xcode command line tools on macOS.</p>
 </div>
 <div class="section level2">
-<h2 id="typical-workflow">Typical Workflow<a class="anchor" aria-label="anchor" href="#typical-workflow"></a>
+<h2 id="survival-outcomes">Survival Outcomes<a class="anchor" aria-label="anchor" href="#survival-outcomes"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.sundayu.me/skmle/" class="external-link">skmle</a></span><span class="op">)</span></span>
@@ -118,50 +123,54 @@
 <span>  data <span class="op">=</span> <span class="va">dat</span>,</span>
 <span>  id <span class="op">=</span> <span class="va">id</span>,</span>
 <span>  obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span>
-<span>  s <span class="op">=</span> <span class="fl">0</span>,   <span class="co"># proportional hazards model</span></span>
+<span>  s <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  h <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  nknots <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fit</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p>The returned objects use a standard R model style:</p>
-<ul>
-<li>
-<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> shows the call and fitted coefficients.</li>
-<li>
-<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports estimates, standard errors, z statistics, and p-values.</li>
-<li>
-<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> is available for <code>skmle</code> fits to visualize the estimated baseline component.</li>
-</ul>
-<p>If you want a specialized estimator instead of the full SMKLE fit:</p>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>   <span class="co"># estimated baseline component</span></span></code></pre></div>
+<p>The returned objects follow standard R model conventions: <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> shows the call and coefficients, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports estimates with standard errors, z statistics and p-values, and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> draws the estimated baseline.</p>
+<p>If the scientific model is proportional or additive hazards specifically, the specialised estimating equations are considerably faster than the full sieve fit:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_cox</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kee_cox.html">kee_cox</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">delta</span><span class="op">)</span> <span class="op">~</span> <span class="va">covariates</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">dat</span>,</span>
-<span>  id <span class="op">=</span> <span class="va">id</span>,</span>
-<span>  obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span>
-<span>  h <span class="op">=</span> <span class="fl">0.5</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_cox</span><span class="op">)</span></span></code></pre></div>
-<p>Bandwidth selection is available through <code><a href="reference/skmle_cv.html">skmle_cv()</a></code>:</p>
+<span>  data <span class="op">=</span> <span class="va">dat</span>, id <span class="op">=</span> <span class="va">id</span>, obs_times <span class="op">=</span> <span class="va">obs_times</span>, h <span class="op">=</span> <span class="fl">0.5</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Bandwidth selection:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cv_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/skmle_cv.html">skmle_cv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">delta</span><span class="op">)</span> <span class="op">~</span> <span class="va">covariates</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">dat</span>,</span>
-<span>  id <span class="op">=</span> <span class="va">id</span>,</span>
-<span>  obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span>
-<span>  s <span class="op">=</span> <span class="fl">0</span>,   <span class="co"># proportional hazards model</span></span>
-<span>  K <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  data <span class="op">=</span> <span class="va">dat</span>, id <span class="op">=</span> <span class="va">id</span>, obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span>
+<span>  s <span class="op">=</span> <span class="fl">0</span>, K <span class="op">=</span> <span class="fl">3</span>, h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span><span class="op">)</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cv_fit</span><span class="op">$</span><span class="va">h_cv</span></span>
-<span><span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="asynchronous-longitudinal-outcomes">Asynchronous Longitudinal Outcomes<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-outcomes"></a>
+</h2>
+<p>Here the outcome is itself a sparsely observed process, and its measurement times do not line up with the covariate’s. The two are supplied as separate tables, because there is no single data frame holding both without inventing rows:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">202</span><span class="op">)</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">300</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">)</span>   <span class="co"># id, time, y   -- response occasions</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">)</span>   <span class="co"># id, time, x   -- covariate occasions, on a different grid</span></span>
+<span></span>
+<span><span class="va">fit_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kee_async.html">kee_async</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">x</span>, h <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_a</span><span class="op">)</span></span></code></pre></div>
+<p>Each (response, covariate) pair within a subject contributes in proportion to its time separation, so nothing is discarded and nothing is carried forward. The estimator converges at the smoothing rate <code>(nh)^(1/2)</code>, not at <code>sqrt(n)</code>.</p>
+<p>If the coefficients vary with time, <code><a href="reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve pointwise. Both time arguments are smoothed there, so it converges at the bivariate rate <code>(n h1 h2)^(1/2)</code> and the bands are correspondingly wide:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_td</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/kee_async_td.html">kee_async_td</a></span><span class="op">(</span></span>
+<span>  <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">x</span>,</span>
+<span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.8</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span>, h <span class="op">=</span> <span class="fl">0.25</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span>   <span class="co"># beta_j(t) with pointwise 95% bands</span></span></code></pre></div>
+<p>Identity, log and logistic links are supported in both.</p>
 </div>
 <div class="section level2">
 <h2 id="benchmarking-against-survsparse">Benchmarking Against SurvSparse<a class="anchor" aria-label="anchor" href="#benchmarking-against-survsparse"></a>
@@ -224,28 +233,17 @@
 </table>
 <p>The additive comparison also includes the general spline-based <code>skmle(s = 1)</code> fit, which remains competitive but is slower than <code><a href="reference/kee_additive.html">kee_additive()</a></code> because it solves the broader joint optimization problem rather than a specialized estimating equation.</p>
 <p>For the full code and benchmark setup, see the vignette:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"benchmark_survsparse"</span>, package <span class="op">=</span> <span class="st">"skmle"</span><span class="op">)</span></span></code></pre></div>
-<p>For a package tutorial, see:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>For a package tutorial covering both settings, see:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"tutorial"</span>, package <span class="op">=</span> <span class="st">"skmle"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="box-cox-transformation-in-this-package">Box-Cox Transformation in This Package<a class="anchor" aria-label="anchor" href="#box-cox-transformation-in-this-package"></a>
-</h2>
-<p>The transformed hazards model used by <code>skmle</code> is indexed by the Box-Cox parameter <code>s</code>. This parameter determines how the hazard-scale model is linked to the linear predictor and the nonparametric baseline component.</p>
-<p>From a user perspective, the key interpretation is:</p>
-<ul>
-<li>choose <code>s = 0</code> if you want the proportional hazards model;</li>
-<li>choose <code>s = 1</code> if you want the additive hazards model;</li>
-<li>choose another fixed value of <code>s</code> if your application calls for an intermediate transformed hazards specification.</li>
-</ul>
-<p>This gives a coherent way to compare and fit related hazard models within one estimation framework, using the same long-format sparse longitudinal data structure.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <p>Sun, D., Sun, Z., Zhao, X., &amp; Cao, H. (2025). Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates. <em>Journal of the American Statistical Association, 120</em>(552), 2580-2591. <a href="https://doi.org/10.1080/01621459.2025.2476781" class="external-link uri">https://doi.org/10.1080/01621459.2025.2476781</a></p>
+<p>Cao, H., Zeng, D., &amp; Fine, J. P. (2015). Regression Analysis of Sparse Asynchronous Longitudinal Data. <em>Journal of the Royal Statistical Society: Series B, 77</em>(4), 755-776. <a href="https://doi.org/10.1111/rssb.12086" class="external-link uri">https://doi.org/10.1111/rssb.12086</a></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
