@@ -14,7 +14,11 @@ Description: Estimation and inference for transformed hazards models
     Sun, Sun, Zhao and Cao (2025) <doi:10.1080/01621459.2025.2476781>.
     Specialized kernel estimating-equation estimators are provided for
     the proportional hazards and additive hazards cases, along with
-    simulation and cross-validation utilities. The core numerical
+    simulation and cross-validation utilities.  Also implements the
+    kernel-weighted estimating equations of Cao, Zeng and Fine (2015)
+    <doi:10.1111/rssb.12086> for asynchronous longitudinal data, where a
+    response and a covariate are observed on different time grids, with
+    either time-invariant or time-dependent coefficients. The core numerical
     routines use 'Rcpp', 'RcppArmadillo' and the 'nloptr' C API for
     performance.
 URL: https://www.sundayu.me/skmle/, https://github.com/dayusun/skmle
@@ -30,6 +34,7 @@ LinkingTo:
 Imports:
     dplyr,
     gaussquad,
+    graphics,
     ggplot2,
     MASS,
     nleqslv,

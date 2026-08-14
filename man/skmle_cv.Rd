@@ -19,7 +19,8 @@ skmle_cv(
   maxeval = 10000,
   xtol_rel = 1e-06,
   seed = NULL,
-  quiet = FALSE
+  quiet = FALSE,
+  one_sided = TRUE
 )
 }
 \arguments{
@@ -61,6 +62,14 @@ integration.}
 If \code{NULL}, the current RNG state is used and no explicit seed is set.}
 
 \item{quiet}{Logical; if \code{TRUE}, suppress progress output.}
+
+\item{one_sided}{Logical. \code{TRUE} (the default) uses a \strong{half} kernel: only
+covariate observations strictly before the event or quadrature time inform
+that time, which is the risk-set restriction and the estimator as
+published. \code{FALSE} uses a \strong{full}, two-sided kernel, smoothing the
+covariate path from both sides. The switch applies to the risk-set
+averages inside the C++ backend as well as to the row weights, so the two
+are always consistent.}
 }
 \value{
 An object of class \code{cv.skmle} with components:
@@ -86,6 +95,13 @@ function refits \code{skmle()} on the full data set using the selected value.
 Because the fold assignment is random, pass \code{seed} (or \code{set.seed()} before
 calling) to make the grid selection reproducible.
 }
+\section{Kernel choice}{
+
+\code{one_sided} is used inside the fold loop as well as being passed through to
+the refit, so the bandwidth is selected under the same kernel the final fit
+uses.
+}
+
 \examples{
 \donttest{
 library(survival)

@@ -15,7 +15,8 @@ skmle(
   norder = 3,
   lq_nodes = 64,
   maxeval = 10000,
-  xtol_rel = 1e-06
+  xtol_rel = 1e-06,
+  one_sided = TRUE
 )
 }
 \arguments{
@@ -47,6 +48,14 @@ integration.}
 \item{maxeval}{Maximum number of optimizer evaluations.}
 
 \item{xtol_rel}{Relative convergence tolerance passed to the optimizer.}
+
+\item{one_sided}{Logical. \code{TRUE} (the default) uses a \strong{half} kernel: only
+covariate observations strictly before the event or quadrature time inform
+that time, which is the risk-set restriction and the estimator as
+published. \code{FALSE} uses a \strong{full}, two-sided kernel, smoothing the
+covariate path from both sides. The switch applies to the risk-set
+averages inside the C++ backend as well as to the row weights, so the two
+are always consistent.}
 }
 \value{
 An object of class \code{skmle} containing:

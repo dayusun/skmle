@@ -199,3 +199,129 @@ sim_skmle_data <- function(n,
 
     return(sim_data)
 }
+
+
+#' Simulate asynchronous longitudinal data
+#'
+#' @description
+#' Draw a sparse longitudinal response and a sparse longitudinal covariate whose
+#' observation times are **independent**, so the two are never seen together.
+#' This is the design of Cao, Zeng and Fine (2015), Section 4: response times and
+#' covariate times are independent Poisson streams on \eqn{(0, 1)}, the covariate
+#' is a mean-zero Gaussian process, and the error is a second, independent
+#' Gaussian process.
+#'
+#' @details
+#' The default covariate covariance \eqn{\exp(-|s - t|)} is the Ornstein-
+#' Uhlenbeck covariance. Its diagonal has a kink, so it is only one-sided
+#' differentiable, which is exactly the case Cao, Zeng and Fine's Section 6
+#' leaves open. Supply a smooth
+#' `x_cov`, for instance `function(s, t) exp(-(s - t)^2)`, to generate data
+#' inside their stated assumptions instead.
+#'
+#' `beta` may be a numeric vector, giving time-invariant coefficients suitable
+#' for [kee_async()], or a function of time returning one row per supplied time,
+#' giving a coefficient curve suitable for [kee_async_td()]. In both cases the
+#' first element is the intercept and the remaining `p` elements multiply the `p`
+#' covariate coordinates.
+#'
+#' @param n Number of subjects.
+#' @param beta Either a numeric vector `c(intercept, slopes)` or a function of a
+#'   numeric time vector returning a matrix with `length(beta(t))` columns and
+#'   one row per time.
+#' @param lambda_y,lambda_x Poisson rates for the response and covariate
+#'   observation streams on `(0, 1)`. Each subject is forced to have at least one
+#'   observation of each.
+#' @param link One of `"identity"`, `"log"` or `"logistic"`, matching
+#'   [kee_async()]. Under `"logistic"` the response is Bernoulli and no error
+#'   process is added; under `"log"` the response is Poisson.
+#' @param x_cov,e_cov Covariance functions of two times, vectorised, for the
+#'   covariate and error processes.
+#'
+#' @return A list with two data frames on different time grids:
+#' \describe{
+#'   \item{y}{`id`, `time`, `y` -- one row per response occasion.}
+#'   \item{x}{`id`, `time`, `x` -- one row per covariate occasion, `x` being a
+#'     matrix column with `p` columns.}
+#' }
+#'
+#' @references
+#' Cao, H., Zeng, D. and Fine, J. P. (2015). Regression analysis of sparse
+#' asynchronous longitudinal data. \emph{Journal of the Royal Statistical
+#' Society, Series B} 77, 755-776.
+#'
+#' @examples
+#' set.seed(1)
+#' d <- sim_async_data(n = 50)
+#' str(d)
+#'
+#' # A coefficient curve, for kee_async_td().
+#' d2 <- sim_async_data(n = 50, beta = function(tt) cbind(0.5, 1 + tt))
+#' @importFrom stats rpois runif rnorm rbinom
+#' @export
+sim_async_data <- function(n, beta = c(0.5, 1.5), lambda_y = 5, lambda_x = 5,
+                           link = c("identity", "log", "logistic"),
+                           x_cov = function(s, t) exp(-abs(s - t)),
+                           e_cov = function(s, t) 2^(-abs(s - t))) {
+    link <- match.arg(link)
+    if (!is.numeric(n) || length(n) != 1L || is.na(n) || n < 1) {
+        stop("'n' must be a single positive number")
+    }
+    n <- as.integer(n)
+    if (!is.function(beta) && !is.numeric(beta)) {
+        stop("'beta' must be a numeric vector or a function of time")
+    }
+
+    # Coefficient dimension: probe the curve once if beta is a function.
+    bdim <- if (is.function(beta)) ncol(as.matrix(beta(0.5))) else length(beta)
+    if (is.null(bdim) || bdim < 2L) {
+        stop("'beta' must supply an intercept and at least one slope")
+    }
+    p <- bdim - 1L
+
+    # Draw a mean-zero Gaussian vector with the given covariance.  A tiny ridge
+    # keeps the Cholesky alive when two observation times coincide.
+    rgp <- function(tt, cov_fun) {
+        K <- outer(tt, tt, cov_fun)
+        as.numeric(t(chol(K + diag(1e-8, length(tt)))) %*% rnorm(length(tt)))
+    }
+
+    yl <- xl <- vector("list", n)
+    for (i in seq_len(n)) {
+        nT <- max(1L, rpois(1L, lambda_y))
+        nS <- max(1L, rpois(1L, lambda_x))
+        Tt <- sort(runif(nT))
+        Ss <- sort(runif(nS))
+        at <- c(Tt, Ss)
+
+        # One draw per coordinate, over the pooled grid, so that X at a response
+        # time and X at a covariate time come from the same realised path.
+        Xa <- vapply(seq_len(p), function(j) rgp(at, x_cov), numeric(length(at)))
+        Xt <- Xa[seq_len(nT), , drop = FALSE]
+        Xs <- Xa[nT + seq_len(nS), , drop = FALSE]
+        colnames(Xs) <- if (p == 1L) "x" else paste0("x", seq_len(p))
+
+        bt <- if (is.function(beta)) {
+            matrix(as.numeric(as.matrix(beta(Tt))), nT, bdim)
+        } else {
+            matrix(beta, nT, bdim, byrow = TRUE)
+        }
+        eta <- bt[, 1L] + rowSums(bt[, -1L, drop = FALSE] * Xt)
+
+        yv <- switch(link,
+            identity = eta + rgp(Tt, e_cov),
+            log = rpois(nT, exp(eta)),
+            logistic = rbinom(nT, 1L, 1 / (1 + exp(-eta)))
+        )
+
+        yl[[i]] <- data.frame(id = i, time = Tt, y = as.numeric(yv))
+        xi <- data.frame(id = rep(i, nS), time = Ss)
+        xi$x <- Xs
+        xl[[i]] <- xi
+    }
+
+    y <- do.call(rbind, yl)
+    x <- do.call(rbind, xl)
+    rownames(y) <- rownames(x) <- NULL
+    list(y = y, x = x)
+}

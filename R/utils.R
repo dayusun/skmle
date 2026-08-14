@@ -62,3 +62,37 @@ safe_sandwich <- function(A, B, scale = 1, what = "variance") {
   }
   A_inv %*% B %*% A_inv * scale
 }
+
+
+#' Epanechnikov kernel and the row weights built from it
+#'
+#' The kernel was written out inline in `skmle()`, `kee_cox()` and
+#' `kee_additive()`. Keeping one copy matters now that the half/full choice is
+#' a user-facing argument: three inline copies are three places for the switch
+#' to be forgotten.
+#'
+#' @param u Numeric vector or matrix of standardised lags.
+#' @return `epan_kernel()` returns \eqn{0.75(1 - u^2)_+}, shape preserved.
+#' @keywords internal
+epan_kernel <- function(u) {
+    d <- dim(u)
+    val <- pmax((1 - as.numeric(u)^2) * 0.75, 0)
+    dim(val) <- d
+    val
+}
+
+#' @param lag Raw time difference `t - r`, a vector or a matrix. Matrices keep
+#'   their shape, which the sieve quadrature relies on.
+#' @param h Positive bandwidth.
+#' @param one_sided Logical. When `TRUE` (the default) rows with a non-positive
+#'   lag receive zero weight, which is the risk-set restriction of a hazard
+#'   model: only covariate observations before the time inform it. `FALSE`
+#'   smooths from both sides.
+#' @return `kernel_weights()` returns the scaled weights `W(lag/h)/h`.
+#' @rdname epan_kernel
+#' @keywords internal
+kernel_weights <- function(lag, h, one_sided = TRUE) {
+    kv <- epan_kernel(lag / h) / h
+    if (one_sided) kv <- kv * (lag > 0)
+    kv
+}

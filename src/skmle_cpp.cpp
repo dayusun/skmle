@@ -258,7 +258,8 @@ List skmle_cpp_fit(int n, int p, int gammap, double s, double h,
 
 // [[Rcpp::export]]
 arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
-                 double h, const arma::mat &covariates, const arma::mat &bsmat,
+                 double h, bool one_sided, const arma::mat &covariates,
+                 const arma::mat &bsmat,
                  const arma::vec &X, const arma::vec &obs_times,
                  const arma::vec &delta, const arma::vec &kerval,
                  const arma::mat &bsmat_XX, int n_subj) {
@@ -280,7 +281,7 @@ arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
       for (int k = 0; k < n; ++k) {
         if (X[i] <= X[k]) {
           double dist_XX = X[i] - obs_times[k];
-          if (dist_XX > 0) {
+          if (!one_sided || dist_XX > 0) {
             double kerval_XX =
                 std::max((1 - std::pow(dist_XX / h, 2)) * 0.75, 0.0) / h;
             if (kerval_XX > 0) {
@@ -309,7 +310,8 @@ arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
 
 // [[Rcpp::export]]
 arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
-                 double h, const arma::mat &covariates, const arma::mat &bsmat,
+                 double h, bool one_sided, const arma::mat &covariates,
+                 const arma::mat &bsmat,
                  const arma::vec &X, const arma::vec &obs_times,
                  const arma::vec &delta, const arma::vec &kerval,
                  const arma::vec &id, const arma::mat &bsmat_XX,
@@ -339,7 +341,7 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
       for (int k = 0; k < n; ++k) {
         if (X[i] <= X[k]) {
           double dist_XX = X[i] - obs_times[k];
-          if (dist_XX > 0) {
+          if (!one_sided || dist_XX > 0) {
             double kerval_XX =
                 std::max((1 - std::pow(dist_XX / h, 2)) * 0.75, 0.0) / h;
             if (kerval_XX > 0) {
@@ -378,7 +380,7 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
     for (int k = 0; k < n; ++k) {
       if (tt <= X[k]) {
         double dist_k = tt - obs_times[k];
-        if (dist_k > 0) {
+        if (!one_sided || dist_k > 0) {
           double k_tt_k =
               std::max((1 - std::pow(dist_k / h, 2)) * 0.75, 0.0) / h;
           if (k_tt_k > 0) {
@@ -467,8 +469,8 @@ double skmle_eval_nll_cpp(int n, int p, int gammap, double s, double h,
 }
 
 // Utility to generate kerfun
-inline double calc_kerfun(double dist, double h) {
-  if (dist > 0) {
+inline double calc_kerfun(double dist, double h, bool one_sided) {
+  if (!one_sided || dist > 0) {
     double res = (1.0 - std::pow(dist / h, 2.0)) * 0.75;
     if (res > 0)
       return res / h;
@@ -484,7 +486,7 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
                        const arma::vec &obs_times, const arma::vec &delta,
                        const arma::vec &lq_x, const arma::vec &lq_w,
                        const arma::mat &bsmat_tt_all, int maxeval,
-                       double xtol_rel, bool quiet) {
+                       double xtol_rel, bool quiet, bool one_sided) {
 
   int n_h = h_grid.n_elem;
   arma::vec cv_losses = arma::zeros<arma::vec>(n_h);
@@ -562,11 +564,11 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
         delta_train[i] = delta[orig_idx];
 
         double dist = X_train[i] - obs_train[i];
-        kerval_train[i] = calc_kerfun(dist, h);
+        kerval_train[i] = calc_kerfun(dist, h, one_sided);
 
         for (int q = 0; q < n_quad; ++q) {
           double dist_tt = tts[q] - obs_train[i];
-          kerval_tt_train(q, i) = calc_kerfun(dist_tt, h);
+          kerval_tt_train(q, i) = calc_kerfun(dist_tt, h, one_sided);
         }
       }
 
@@ -575,7 +577,7 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
       if (s != 0.0) {
         for (int i = 0; i < n_train_obs; ++i) {
           double dist = X_train[i] - obs_train[i];
-          if (dist > 0 && dist <= h) {
+          if (std::fabs(dist) <= h && (!one_sided || dist > 0)) {
             ineq_rows.push_back(i);
           }
         }
@@ -666,11 +668,11 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
         delta_test[i] = delta[orig_idx];
 
         double dist = X_test[i] - obs_test[i];
-        kerval_test[i] = calc_kerfun(dist, h);
+        kerval_test[i] = calc_kerfun(dist, h, one_sided);
 
         for (int q = 0; q < n_quad; ++q) {
           double dist_tt = tts[q] - obs_test[i];
-          kerval_tt_test(q, i) = calc_kerfun(dist_tt, h);
+          kerval_tt_test(q, i) = calc_kerfun(dist_tt, h, one_sided);
         }
       }
 

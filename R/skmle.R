@@ -15,6 +15,13 @@
 #' @param s Box-Cox transformation parameter. `s = 0` gives the proportional hazards
 #'   model and `s = 1` gives the additive hazards model.
 #' @param h Positive kernel bandwidth.
+#' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
+#'   covariate observations strictly before the event or quadrature time inform
+#'   that time, which is the risk-set restriction and the estimator as
+#'   published. `FALSE` uses a **full**, two-sided kernel, smoothing the
+#'   covariate path from both sides. The switch applies to the risk-set
+#'   averages inside the C++ backend as well as to the row weights, so the two
+#'   are always consistent.
 #' @param nknots Number of interior knots used in the sieve approximation of the
 #'   baseline component.
 #' @param norder Order parameter supplied to the high-level interface for the spline
@@ -83,7 +90,7 @@
 #' @importFrom splines ns
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
-skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6) {
+skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE) {
   # validate inputs --------------------------------------------------------
   if (missing(formula) || missing(data) || missing(id) ||
     missing(obs_times) || missing(s) || missing(h)) {
@@ -130,14 +137,8 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
   check_time_scale(X_time, obs_times_vec)
   id_vec <- as.integer(factor(id_raw))
 
-  kerfun <- function(xx) {
-    res <- (1 - xx^2) * 0.75
-    res[res < 0] <- 0
-    res
-  }
-
   n <- length(unique(id_vec))
-  kerval <- kerfun((X_time - obs_times_vec) / h) / h * as.numeric(X_time > obs_times_vec)
+  kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
 
   knots <- (1:nknots) / (nknots + 1)
   bsmat <- splines::ns(X_time, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))
@@ -151,14 +152,16 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
   tts <- 0.5 * lq_x + 0.5
 
   dist_tt_mat <- outer(tts, obs_times_vec, "-")
-  kerval_tt_all <- kerfun(dist_tt_mat / h) / h * as.numeric(dist_tt_mat > 0)
+  kerval_tt_all <- kernel_weights(dist_tt_mat, h, one_sided)
   bsmat_tt_mat <- as.matrix(splines::ns(tts, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1)))
 
   # inequality constraints matrix, may be empty if no rows satisfy the filter
   ineqmat <- matrix(numeric(0), nrow = 0, ncol = ncol(Z) + ncol(bsmat))
   if (s != 0) {
     tmp <- cbind(Z, as.matrix(bsmat))
-    rows <- (X_time > obs_times_vec) & (abs(X_time - obs_times_vec) <= h)
+    # Same support the weight uses: one-sided keeps only past observations.
+    rows <- (abs(X_time - obs_times_vec) <= h) &
+      (!one_sided | (X_time > obs_times_vec))
     if (any(rows)) ineqmat <- tmp[rows, , drop = FALSE]
   }
 
@@ -191,6 +194,7 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
     gamma = gamma_est,
     s = s,
     h = h,
+    one_sided = one_sided,
     covariates = as.matrix(Z),
     bsmat = as.matrix(bsmat),
     X = as.numeric(X_time),
@@ -206,6 +210,7 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
     gamma = gamma_est,
     s = s,
     h = h,
+    one_sided = one_sided,
     covariates = as.matrix(Z),
     bsmat = as.matrix(bsmat),
     X = as.numeric(X_time),

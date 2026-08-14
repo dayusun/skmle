@@ -42,20 +42,30 @@ navbar:
       href: https://github.com/dayusun/skmle
 
 reference:
-- title: Main modeling functions
+- title: Survival models with sparse longitudinal covariates
   contents:
   - skmle
   - skmle_cv
   - kee_cox
   - kee_additive
 
+- title: Asynchronous longitudinal regression
+  desc: >
+    Kernel-weighted estimating equations of Cao, Zeng and Fine (2015) for a
+    response and a covariate observed on different time grids.
+  contents:
+  - kee_async
+  - kee_async_td
+
 - title: Simulation
   contents:
   - sim_skmle_data
+  - sim_async_data
 
 - title: Model summaries and plots
   contents:
   - plot.skmle
+  - plot.kee_td
   - summary.skmle
   - summary.kee
   - print.skmle

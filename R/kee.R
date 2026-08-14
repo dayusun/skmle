@@ -9,6 +9,13 @@
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
 #' @param h Positive kernel bandwidth.
+#' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
+#'   covariate observations strictly before the event or quadrature time inform
+#'   that time, which is the risk-set restriction and the estimator as
+#'   published. `FALSE` uses a **full**, two-sided kernel, smoothing the
+#'   covariate path from both sides. The switch applies to the risk-set
+#'   averages inside the C++ backend as well as to the row weights, so the two
+#'   are always consistent.
 #'
 #' @details
 #' `kee_cox()` targets the proportional hazards case without estimating a nonparametric
@@ -59,7 +66,7 @@
 #' @importFrom stats model.frame model.matrix model.response
 #' @importFrom nleqslv nleqslv
 #' @export
-kee_cox <- function(formula, data, id, obs_times, h) {
+kee_cox <- function(formula, data, id, obs_times, h, one_sided = TRUE) {
     # basic input validation
     if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(h)) {
         stop("formula, data, id, obs_times and h must all be supplied")
@@ -108,12 +115,8 @@ kee_cox <- function(formula, data, id, obs_times, h) {
     # convert identifier to integer codes for safe use in C++
     id_vec <- as.integer(factor(id_raw))
 
-    kerfun <- function(xx) {
-        pmax((1 - xx^2) * 0.75, 0)
-    }
-
     n <- length(unique(id_vec))
-    kerval <- kerfun((X_time - obs_times_vec) / h) / h * as.numeric(X_time > obs_times_vec)
+    kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
 
     estequ <- function(beta) {
         kee_cox_estequ(
@@ -124,7 +127,8 @@ kee_cox <- function(formula, data, id, obs_times, h) {
             delta = as.numeric(delta),
             kerval = as.numeric(kerval),
             h = h,
-            n_subj = n
+            n_subj = n,
+            one_sided = one_sided
         )
     }
 
@@ -140,6 +144,7 @@ kee_cox <- function(formula, data, id, obs_times, h) {
         delta = as.numeric(delta),
         kerval = as.numeric(kerval),
         h = h,
+        one_sided = one_sided,
         id = as.numeric(id_vec),
         n_subj = n
     )
@@ -176,6 +181,13 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
 #' @param h Positive kernel bandwidth.
+#' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
+#'   covariate observations strictly before the event or quadrature time inform
+#'   that time, which is the risk-set restriction and the estimator as
+#'   published. `FALSE` uses a **full**, two-sided kernel, smoothing the
+#'   covariate path from both sides. The switch applies to the risk-set
+#'   averages inside the C++ backend as well as to the row weights, so the two
+#'   are always consistent.
 #' @param lq_nodes Number of quadrature nodes used in the numerical integration step.
 #'
 #' @details
@@ -226,7 +238,8 @@ kee_cox <- function(formula, data, id, obs_times, h) {
 #' @importFrom stats model.frame model.matrix model.response
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
-kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
+kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64,
+                         one_sided = TRUE) {
     # basic validation
     if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(h)) {
         stop("formula, data, id, obs_times and h must all be supplied")
@@ -272,12 +285,8 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
     }
     id_vec <- as.integer(factor(id_raw))
 
-    kerfun <- function(xx) {
-        pmax((1 - xx^2) * 0.75, 0)
-    }
-
     n <- length(unique(id_vec))
-    kerval <- kerfun((X_time - obs_times_vec) / h) / h * as.numeric(X_time > obs_times_vec)
+    kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
 
     lqrule <- gaussquad::legendre.quadrature.rules(lq_nodes)[[lq_nodes]]
     lq_x <- lqrule$x
@@ -290,6 +299,7 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64) {
         delta = as.numeric(delta),
         kerval = as.numeric(kerval),
         h = h,
+        one_sided = one_sided,
         id = as.numeric(id_vec),
         lq_x = as.numeric(lq_x),
         lq_w = as.numeric(lq_w),

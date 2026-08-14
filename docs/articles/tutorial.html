@@ -5,68 +5,47 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="skmle">
 <title>Getting Started with skmle • skmle</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting Started with skmle">
-<meta property="og:description" content="skmle">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting Started with skmle">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
-    
+
+    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+
     <a class="navbar-brand me-2" href="../index.html">skmle</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item">
-  <a class="nav-link" href="../index.html">Get Started</a>
-</li>
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../index.html">Get Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a>
-    <a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a>
-  </div>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
+    <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
+  </ul>
 </li>
-<li class="nav-item">
-  <a class="nav-link" href="../news/index.html">Changelog</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
-<form class="form-inline my-2 my-lg-0" role="search">
-        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
-</form>
-
-      <ul class="navbar-nav">
-<li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/dayusun/skmle">
-    <span class="fab fa fab fa-github"></span>
-     
-  </a>
-</li>
+<ul class="navbar-nav">
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/dayusun/skmle" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-article">
 
@@ -75,7 +54,8 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="" class="logo" alt=""><h1>Getting Started with skmle</h1>
+
+      <h1>Getting Started with skmle</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/vignettes/tutorial.Rmd" class="external-link"><code>vignettes/tutorial.Rmd</code></a></small>
@@ -105,7 +85,8 @@ estimating-equation approach.</li>
 model, inspect the summary output, plot the estimated baseline
 component, and select a bandwidth by cross-validation.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">skmle</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/astamm/nloptr" class="external-link">nloptr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.sundayu.me/skmle/" class="external-link">skmle</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -115,7 +96,7 @@ component, and select a bandwidth by cross-validation.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_skmle_data.html">sim_skmle_data</a></span><span class="op">(</span></span>
-<span>  n <span class="op">=</span> <span class="fl">200</span>,</span>
+<span>  n <span class="op">=</span> <span class="fl">80</span>,</span>
 <span>  mu <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tt</span><span class="op">)</span> <span class="fl">8</span> <span class="op">*</span> <span class="op">(</span><span class="fl">0.75</span> <span class="op">+</span> <span class="op">(</span><span class="fl">0.5</span> <span class="op">-</span> <span class="va">tt</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>,</span>
 <span>  mu_bar <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tt</span><span class="op">)</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fl">0.75</span> <span class="op">+</span> <span class="fl">0.75</span> <span class="op">*</span> <span class="op">(</span><span class="va">tt</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="op">(</span><span class="va">tt</span> <span class="op">-</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -128,12 +109,12 @@ component, and select a bandwidth by cross-validation.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
 <span><span class="co">#&gt;   id        X delta covariates[,1]  [,2] obs_times censoring</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.712</span>      0     0.129     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.915</span>      0     0.217     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.915</span>      0     0.247     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.390</span>      0     0.433     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.082</span><span style="color: #BB0000; text-decoration: underline;">1</span>     0     0.798     0.930</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 2     0.504 TRUE          0.360      1     0.288     0.865</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.714</span>      0     0.129     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.916</span>      0     0.217     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.916</span>      0     0.247     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.387</span>      0     0.433     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1     0.805 TRUE         -<span style="color: #BB0000;">0.078</span><span style="color: #BB0000; text-decoration: underline;">2</span>     0     0.798     0.930</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 2     0.504 TRUE          0.402      1     0.288     0.865</span></span></code></pre></div>
 <p>The simulated data are stored in long format. Each row corresponds to
 one observed longitudinal measurement time for one subject.</p>
 <p>The key columns are:</p>
@@ -170,12 +151,32 @@ matrix directly is convenient for routine work.</p>
 <span>  norder <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fit_skmle</span></span></code></pre></div>
+<span><span class="va">fit_skmle</span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, </span></span>
+<span><span class="co">#&gt;     obs_times = obs_times, s = 0, h = 0.5, nknots = 3, norder = 3)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt; covariates1 covariates2 </span></span>
+<span><span class="co">#&gt;   0.9215573  -0.5463503</span></span></code></pre></div>
 <p>The printed object gives the fitted coefficients. As in many R model
 objects, the formatted inferential output is produced by
 <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_skmle</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_skmle</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, </span></span>
+<span><span class="co">#&gt;     obs_times = obs_times, s = 0, h = 0.5, nknots = 3, norder = 3)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   n= 80</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)   </span></span>
+<span><span class="co">#&gt; covariates1  0.92156    0.31342  2.9403 0.003279 **</span></span>
+<span><span class="co">#&gt; covariates2 -0.54635    0.34045 -1.6048 0.108543   </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Log-likelihood: -0.0753</span></span></code></pre></div>
 <p>The summary table reports:</p>
 <ul>
 <li>coefficient estimates</li>
@@ -189,6 +190,7 @@ objects, the formatted inferential output is produced by
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_skmle</span><span class="op">)</span></span></code></pre></div>
+<p><img src="tutorial_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="672"></p>
 <p>This plot visualizes the estimated nonparametric baseline component
 from the sieve fit.</p>
 </div>
@@ -209,7 +211,18 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span>  h <span class="op">=</span> <span class="fl">0.5</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_kee_cox</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_kee_cox</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, </span></span>
+<span><span class="co">#&gt;     obs_times = obs_times, h = 0.5)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   n= 80</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)   </span></span>
+<span><span class="co">#&gt; covariates1  0.85832    0.29253  2.9341 0.003345 **</span></span>
+<span><span class="co">#&gt; covariates2 -0.49833    0.34661 -1.4377 0.150516   </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="additive-hazards-estimator">Additive Hazards Estimator<a class="anchor" aria-label="anchor" href="#additive-hazards-estimator"></a>
@@ -220,7 +233,7 @@ the package also provides dedicated estimating-equation estimators.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">456</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">dat_add</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_skmle_data.html">sim_skmle_data</a></span><span class="op">(</span></span>
-<span>  n <span class="op">=</span> <span class="fl">200</span>,</span>
+<span>  n <span class="op">=</span> <span class="fl">80</span>,</span>
 <span>  mu <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tt</span><span class="op">)</span> <span class="fl">8</span> <span class="op">*</span> <span class="op">(</span><span class="fl">0.75</span> <span class="op">+</span> <span class="op">(</span><span class="fl">0.5</span> <span class="op">-</span> <span class="va">tt</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>,</span>
 <span>  mu_bar <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tt</span><span class="op">)</span> <span class="fl">0.75</span> <span class="op">+</span> <span class="fl">0.75</span> <span class="op">*</span> <span class="op">(</span><span class="va">tt</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="op">(</span><span class="va">tt</span> <span class="op">-</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -237,7 +250,18 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span>  h <span class="op">=</span> <span class="fl">0.5</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_kee_add</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_kee_add</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; kee_additive(formula = Surv(X, delta) ~ covariates, data = dat_add, </span></span>
+<span><span class="co">#&gt;     id = id, obs_times = obs_times, h = 0.5)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   n= 80</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)  </span></span>
+<span><span class="co">#&gt; covariates1  1.19769    0.52669  2.2740  0.02297 *</span></span>
+<span><span class="co">#&gt; covariates2  0.26643    0.68259  0.3903  0.69630  </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -247,25 +271,26 @@ the package also provides dedicated estimating-equation estimators.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">999</span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="st">"skmle_cv"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/ns-reflect.html" class="external-link">getNamespaceExports</a></span><span class="op">(</span><span class="st">"skmle"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">cv_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/skmle_cv.html">skmle_cv</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">delta</span><span class="op">)</span> <span class="op">~</span> <span class="va">covariates</span>,</span>
-<span>    data <span class="op">=</span> <span class="va">dat</span>,</span>
-<span>    id <span class="op">=</span> <span class="va">id</span>,</span>
-<span>    obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span>
-<span>    s <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>    K <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>    n_h <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>    nknots <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>    norder <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>    quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span></span>
+<span><span class="va">cv_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/skmle_cv.html">skmle_cv</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">delta</span><span class="op">)</span> <span class="op">~</span> <span class="va">covariates</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">dat</span>,</span>
+<span>  id <span class="op">=</span> <span class="va">id</span>,</span>
+<span>  obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span>
+<span>  s <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  K <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>  nknots <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  norder <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span>  <span class="va">cv_fit</span><span class="op">$</span><span class="va">h_cv</span></span>
-<span>  <span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"`skmle_cv()` is present in the source tree but is not available in the currently installed package namespace used for this render.\n"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+<span><span class="va">cv_fit</span><span class="op">$</span><span class="va">h_cv</span></span>
+<span><span class="co">#&gt; [1] 0.3</span></span>
+<span><span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span>
+<span><span class="co">#&gt;     h    cvloss</span></span>
+<span><span class="co">#&gt; 1 0.3 0.5513460</span></span>
+<span><span class="co">#&gt; 2 0.4 0.5858840</span></span>
+<span><span class="co">#&gt; 3 0.5 0.6024361</span></span></code></pre></div>
 <p>The returned object contains:</p>
 <ul>
 <li>the selected bandwidth</li>
@@ -274,9 +299,733 @@ the package also provides dedicated estimating-equation estimators.</p>
 </ul>
 <p>You can then inspect the final refit in the usual way.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/exists.html" class="external-link">exists</a></span><span class="op">(</span><span class="st">"cv_fit"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; skmle::skmle(formula = Surv(X, delta) ~ covariates, data = list(</span></span>
+<span><span class="co">#&gt;     id = c("1", "1", "1", "1", "1", "2", "2", "2", "2", "2", </span></span>
+<span><span class="co">#&gt;     "3", "3", "3", "3", "3", "3", "4", "4", "4", "4", "4", "4", </span></span>
+<span><span class="co">#&gt;     "5", "5", "5", "5", "5", "5", "5", "5", "5", "5", "6", "6", </span></span>
+<span><span class="co">#&gt;     "6", "6", "6", "6", "6", "7", "7", "7", "7", "7", "7", "8", </span></span>
+<span><span class="co">#&gt;     "8", "8", "8", "8", "8", "8", "8", "8", "9", "9", "9", "10", </span></span>
+<span><span class="co">#&gt;     "10", "10", "11", "11", "11", "11", "11", "11", "12", "12", </span></span>
+<span><span class="co">#&gt;     "12", "12", "12", "12", "12", "13", "13", "13", "14", "14", </span></span>
+<span><span class="co">#&gt;     "14", "14", "14", "14", "15", "15", "15", "15", "15", "15", </span></span>
+<span><span class="co">#&gt;     "16", "16", "16", "16", "16", "16", "16", "16", "16", "16", </span></span>
+<span><span class="co">#&gt;     "17", "17", "17", "17", "17", "17", "17", "18", "18", "18", </span></span>
+<span><span class="co">#&gt;     "18", "18", "18", "19", "19", "19", "19", "19", "19", "19", </span></span>
+<span><span class="co">#&gt;     "20", "20", "20", "20", "20", "20", "20", "20", "20", "20", </span></span>
+<span><span class="co">#&gt;     "20", "21", "21", "21", "21", "21", "21", "21", "22", "22", </span></span>
+<span><span class="co">#&gt;     "22", "22", "22", "22", "22", "23", "23", "23", "23", "24", </span></span>
+<span><span class="co">#&gt;     "24", "24", "24", "24", "24", "25", "25", "25", "25", "25", </span></span>
+<span><span class="co">#&gt;     "25", "25", "25", "26", "26", "26", "26", "26", "26", "26", </span></span>
+<span><span class="co">#&gt;     "26", "26", "26", "26", "27", "27", "27", "28", "28", "28", </span></span>
+<span><span class="co">#&gt;     "28", "28", "28", "28", "28", "28", "29", "29", "29", "29", </span></span>
+<span><span class="co">#&gt;     "29", "29", "29", "29", "29", "29", "30", "30", "30", "30", </span></span>
+<span><span class="co">#&gt;     "30", "31", "31", "32", "32", "32", "32", "32", "32", "32", </span></span>
+<span><span class="co">#&gt;     "33", "33", "33", "33", "33", "33", "33", "33", "34", "34", </span></span>
+<span><span class="co">#&gt;     "34", "34", "35", "35", "35", "35", "35", "35", "36", "36", </span></span>
+<span><span class="co">#&gt;     "36", "36", "36", "36", "36", "36", "37", "37", "38", "38", </span></span>
+<span><span class="co">#&gt;     "38", "38", "38", "38", "38", "39", "39", "39", "39", "39", </span></span>
+<span><span class="co">#&gt;     "39", "39", "39", "39", "39", "39", "39", "40", "40", "40", </span></span>
+<span><span class="co">#&gt;     "40", "40", "40", "40", "40", "41", "41", "42", "42", "42", </span></span>
+<span><span class="co">#&gt;     "42", "42", "43", "43", "43", "43", "43", "43", "44", "44", </span></span>
+<span><span class="co">#&gt;     "44", "44", "44", "45", "45", "45", "46", "46", "46", "46", </span></span>
+<span><span class="co">#&gt;     "46", "46", "46", "46", "47", "47", "47", "47", "47", "47", </span></span>
+<span><span class="co">#&gt;     "47", "47", "47", "48", "48", "48", "48", "48", "49", "49", </span></span>
+<span><span class="co">#&gt;     "49", "49", "49", "49", "49", "50", "50", "50", "50", "51", </span></span>
+<span><span class="co">#&gt;     "51", "51", "51", "51", "51", "52", "52", "52", "52", "53", </span></span>
+<span><span class="co">#&gt;     "53", "53", "53", "53", "53", "53", "54", "54", "54", "54", </span></span>
+<span><span class="co">#&gt;     "54", "54", "55", "55", "55", "55", "55", "56", "56", "56", </span></span>
+<span><span class="co">#&gt;     "56", "56", "56", "56", "57", "57", "57", "57", "57", "58", </span></span>
+<span><span class="co">#&gt;     "58", "58", "58", "59", "59", "60", "60", "60", "60", "60", </span></span>
+<span><span class="co">#&gt;     "60", "60", "60", "60", "60", "61", "61", "61", "61", "61", </span></span>
+<span><span class="co">#&gt;     "62", "62", "62", "63", "63", "63", "63", "63", "63", "64", </span></span>
+<span><span class="co">#&gt;     "64", "64", "64", "64", "65", "65", "65", "65", "66", "67", </span></span>
+<span><span class="co">#&gt;     "67", "67", "67", "68", "68", "68", "68", "68", "68", "69", </span></span>
+<span><span class="co">#&gt;     "69", "69", "69", "69", "69", "69", "70", "70", "70", "70", </span></span>
+<span><span class="co">#&gt;     "71", "71", "71", "71", "72", "72", "72", "73", "73", "73", </span></span>
+<span><span class="co">#&gt;     "73", "73", "73", "74", "74", "74", "75", "75", "75", "75", </span></span>
+<span><span class="co">#&gt;     "75", "75", "75", "75", "76", "76", "76", "76", "77", "77", </span></span>
+<span><span class="co">#&gt;     "77", "77", "77", "77", "78", "78", "78", "78", "79", "79", </span></span>
+<span><span class="co">#&gt;     "79", "79", "79", "79", "79", "80", "80", "80", "80", "80", </span></span>
+<span><span class="co">#&gt;     "80", "80"), X = c(0.80491925326083, 0.80491925326083, 0.80491925326083, </span></span>
+<span><span class="co">#&gt;     0.80491925326083, 0.80491925326083, 0.504244074883785, 0.504244074883785, </span></span>
+<span><span class="co">#&gt;     0.504244074883785, 0.504244074883785, 0.504244074883785, </span></span>
+<span><span class="co">#&gt;     0.806438454146507, 0.806438454146507, 0.806438454146507, </span></span>
+<span><span class="co">#&gt;     0.806438454146507, 0.806438454146507, 0.806438454146507, </span></span>
+<span><span class="co">#&gt;     0.760918738781685, 0.760918738781685, 0.760918738781685, </span></span>
+<span><span class="co">#&gt;     0.760918738781685, 0.760918738781685, 0.760918738781685, </span></span>
+<span><span class="co">#&gt;     0.0793171205526692, 0.0793171205526692, 0.0793171205526692, </span></span>
+<span><span class="co">#&gt;     0.0793171205526692, 0.0793171205526692, 0.0793171205526692, </span></span>
+<span><span class="co">#&gt;     0.0793171205526692, 0.0793171205526692, 0.0793171205526692, </span></span>
+<span><span class="co">#&gt;     0.0793171205526692, 0.75818100031472, 0.75818100031472, 0.75818100031472, </span></span>
+<span><span class="co">#&gt;     0.75818100031472, 0.75818100031472, 0.75818100031472, 0.75818100031472, </span></span>
+<span><span class="co">#&gt;     0.150481255137256, 0.150481255137256, 0.150481255137256, </span></span>
+<span><span class="co">#&gt;     0.150481255137256, 0.150481255137256, 0.150481255137256, </span></span>
+<span><span class="co">#&gt;     0.377688287953813, 0.377688287953813, 0.377688287953813, </span></span>
+<span><span class="co">#&gt;     0.377688287953813, 0.377688287953813, 0.377688287953813, </span></span>
+<span><span class="co">#&gt;     0.377688287953813, 0.377688287953813, 0.377688287953813, </span></span>
+<span><span class="co">#&gt;     0.0940115810524507, 0.0940115810524507, 0.0940115810524507, </span></span>
+<span><span class="co">#&gt;     0.291620958741678, 0.291620958741678, 0.291620958741678, </span></span>
+<span><span class="co">#&gt;     0.331669315052289, 0.331669315052289, 0.331669315052289, </span></span>
+<span><span class="co">#&gt;     0.331669315052289, 0.331669315052289, 0.331669315052289, </span></span>
+<span><span class="co">#&gt;     0.882528537332401, 0.882528537332401, 0.882528537332401, </span></span>
+<span><span class="co">#&gt;     0.882528537332401, 0.882528537332401, 0.882528537332401, </span></span>
+<span><span class="co">#&gt;     0.882528537332401, 0.0569818095836084, 0.0569818095836084, </span></span>
+<span><span class="co">#&gt;     0.0569818095836084, 0.149252204012306, 0.149252204012306, </span></span>
+<span><span class="co">#&gt;     0.149252204012306, 0.149252204012306, 0.149252204012306, </span></span>
+<span><span class="co">#&gt;     0.149252204012306, 0.891192504638288, 0.891192504638288, </span></span>
+<span><span class="co">#&gt;     0.891192504638288, 0.891192504638288, 0.891192504638288, </span></span>
+<span><span class="co">#&gt;     0.891192504638288, 0.862838951293677, 0.862838951293677, </span></span>
+<span><span class="co">#&gt;     0.862838951293677, 0.862838951293677, 0.862838951293677, </span></span>
+<span><span class="co">#&gt;     0.862838951293677, 0.862838951293677, 0.862838951293677, </span></span>
+<span><span class="co">#&gt;     0.862838951293677, 0.862838951293677, 0.216646053963181, </span></span>
+<span><span class="co">#&gt;     0.216646053963181, 0.216646053963181, 0.216646053963181, </span></span>
+<span><span class="co">#&gt;     0.216646053963181, 0.216646053963181, 0.216646053963181, </span></span>
+<span><span class="co">#&gt;     0.233990622390468, 0.233990622390468, 0.233990622390468, </span></span>
+<span><span class="co">#&gt;     0.233990622390468, 0.233990622390468, 0.233990622390468, </span></span>
+<span><span class="co">#&gt;     0.247851698601017, 0.247851698601017, 0.247851698601017, </span></span>
+<span><span class="co">#&gt;     0.247851698601017, 0.247851698601017, 0.247851698601017, </span></span>
+<span><span class="co">#&gt;     0.247851698601017, 0.289790278634518, 0.289790278634518, </span></span>
+<span><span class="co">#&gt;     0.289790278634518, 0.289790278634518, 0.289790278634518, </span></span>
+<span><span class="co">#&gt;     0.289790278634518, 0.289790278634518, 0.289790278634518, </span></span>
+<span><span class="co">#&gt;     0.289790278634518, 0.289790278634518, 0.289790278634518, </span></span>
+<span><span class="co">#&gt;     0.671307244937725, 0.671307244937725, 0.671307244937725, </span></span>
+<span><span class="co">#&gt;     0.671307244937725, 0.671307244937725, 0.671307244937725, </span></span>
+<span><span class="co">#&gt;     0.671307244937725, 0.165913696815414, 0.165913696815414, </span></span>
+<span><span class="co">#&gt;     0.165913696815414, 0.165913696815414, 0.165913696815414, </span></span>
+<span><span class="co">#&gt;     0.165913696815414, 0.165913696815414, 0.827637991312641, </span></span>
+<span><span class="co">#&gt;     0.827637991312641, 0.827637991312641, 0.827637991312641, </span></span>
+<span><span class="co">#&gt;     0.0630597160220595, 0.0630597160220595, 0.0630597160220595, </span></span>
+<span><span class="co">#&gt;     0.0630597160220595, 0.0630597160220595, 0.0630597160220595, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 0.317375622371371, 0.317375622371371, </span></span>
+<span><span class="co">#&gt;     0.317375622371371, 0.317375622371371, 0.317375622371371, </span></span>
+<span><span class="co">#&gt;     0.317375622371371, 0.317375622371371, 0.317375622371371, </span></span>
+<span><span class="co">#&gt;     0.317375622371371, 0.317375622371371, 0.317375622371371, </span></span>
+<span><span class="co">#&gt;     0.905301466397941, 0.905301466397941, 0.905301466397941, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 0.275643682117335, 0.275643682117335, </span></span>
+<span><span class="co">#&gt;     0.275643682117335, 0.275643682117335, 0.275643682117335, </span></span>
+<span><span class="co">#&gt;     0.275643682117335, 0.275643682117335, 0.275643682117335, </span></span>
+<span><span class="co">#&gt;     0.275643682117335, 0.275643682117335, 0.30876679471246, 0.30876679471246, </span></span>
+<span><span class="co">#&gt;     0.30876679471246, 0.30876679471246, 0.30876679471246, 0.730031871236861, </span></span>
+<span><span class="co">#&gt;     0.730031871236861, 0.0280737631705793, 0.0280737631705793, </span></span>
+<span><span class="co">#&gt;     0.0280737631705793, 0.0280737631705793, 0.0280737631705793, </span></span>
+<span><span class="co">#&gt;     0.0280737631705793, 0.0280737631705793, 0.886134350414706, </span></span>
+<span><span class="co">#&gt;     0.886134350414706, 0.886134350414706, 0.886134350414706, </span></span>
+<span><span class="co">#&gt;     0.886134350414706, 0.886134350414706, 0.886134350414706, </span></span>
+<span><span class="co">#&gt;     0.886134350414706, 0.255301405064101, 0.255301405064101, </span></span>
+<span><span class="co">#&gt;     0.255301405064101, 0.255301405064101, 0.0622211577649527, </span></span>
+<span><span class="co">#&gt;     0.0622211577649527, 0.0622211577649527, 0.0622211577649527, </span></span>
+<span><span class="co">#&gt;     0.0622211577649527, 0.0622211577649527, 0.837349562767112, </span></span>
+<span><span class="co">#&gt;     0.837349562767112, 0.837349562767112, 0.837349562767112, </span></span>
+<span><span class="co">#&gt;     0.837349562767112, 0.837349562767112, 0.837349562767112, </span></span>
+<span><span class="co">#&gt;     0.837349562767112, 0.706973935291171, 0.706973935291171, </span></span>
+<span><span class="co">#&gt;     0.135002070069461, 0.135002070069461, 0.135002070069461, </span></span>
+<span><span class="co">#&gt;     0.135002070069461, 0.135002070069461, 0.135002070069461, </span></span>
+<span><span class="co">#&gt;     0.135002070069461, 0.0236159284430029, 0.0236159284430029, </span></span>
+<span><span class="co">#&gt;     0.0236159284430029, 0.0236159284430029, 0.0236159284430029, </span></span>
+<span><span class="co">#&gt;     0.0236159284430029, 0.0236159284430029, 0.0236159284430029, </span></span>
+<span><span class="co">#&gt;     0.0236159284430029, 0.0236159284430029, 0.0236159284430029, </span></span>
+<span><span class="co">#&gt;     0.0236159284430029, 1, 1, 1, 1, 1, 1, 1, 1, 0.787414306961, </span></span>
+<span><span class="co">#&gt;     0.787414306961, 0.641178890741151, 0.641178890741151, 0.641178890741151, </span></span>
+<span><span class="co">#&gt;     0.641178890741151, 0.641178890741151, 0.767338469269893, </span></span>
+<span><span class="co">#&gt;     0.767338469269893, 0.767338469269893, 0.767338469269893, </span></span>
+<span><span class="co">#&gt;     0.767338469269893, 0.767338469269893, 0.0356398941761607, </span></span>
+<span><span class="co">#&gt;     0.0356398941761607, 0.0356398941761607, 0.0356398941761607, </span></span>
+<span><span class="co">#&gt;     0.0356398941761607, 0.00169205580727334, 0.00169205580727334, </span></span>
+<span><span class="co">#&gt;     0.00169205580727334, 1, 1, 1, 1, 1, 1, 1, 1, 0.0907388997625325, </span></span>
+<span><span class="co">#&gt;     0.0907388997625325, 0.0907388997625325, 0.0907388997625325, </span></span>
+<span><span class="co">#&gt;     0.0907388997625325, 0.0907388997625325, 0.0907388997625325, </span></span>
+<span><span class="co">#&gt;     0.0907388997625325, 0.0907388997625325, 0.876359477731467, </span></span>
+<span><span class="co">#&gt;     0.876359477731467, 0.876359477731467, 0.876359477731467, </span></span>
+<span><span class="co">#&gt;     0.876359477731467, 0.795276687480509, 0.795276687480509, </span></span>
+<span><span class="co">#&gt;     0.795276687480509, 0.795276687480509, 0.795276687480509, </span></span>
+<span><span class="co">#&gt;     0.795276687480509, 0.795276687480509, 0.316211007827707, </span></span>
+<span><span class="co">#&gt;     0.316211007827707, 0.316211007827707, 0.316211007827707, </span></span>
+<span><span class="co">#&gt;     0.266043186648843, 0.266043186648843, 0.266043186648843, </span></span>
+<span><span class="co">#&gt;     0.266043186648843, 0.266043186648843, 0.266043186648843, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 0.369115958352438, 0.369115958352438, 0.369115958352438, </span></span>
+<span><span class="co">#&gt;     0.369115958352438, 0.369115958352438, 0.369115958352438, </span></span>
+<span><span class="co">#&gt;     0.369115958352438, 0.65893189028121, 0.65893189028121, 0.65893189028121, </span></span>
+<span><span class="co">#&gt;     0.65893189028121, 0.65893189028121, 0.65893189028121, 0.787774489854219, </span></span>
+<span><span class="co">#&gt;     0.787774489854219, 0.787774489854219, 0.787774489854219, </span></span>
+<span><span class="co">#&gt;     0.787774489854219, 1, 1, 1, 1, 1, 1, 1, 0.455744797604039, </span></span>
+<span><span class="co">#&gt;     0.455744797604039, 0.455744797604039, 0.455744797604039, </span></span>
+<span><span class="co">#&gt;     0.455744797604039, 0.841695524007082, 0.841695524007082, </span></span>
+<span><span class="co">#&gt;     0.841695524007082, 0.841695524007082, 0.771352161514321, </span></span>
+<span><span class="co">#&gt;     0.771352161514321, 0.2030820828108, 0.2030820828108, 0.2030820828108, </span></span>
+<span><span class="co">#&gt;     0.2030820828108, 0.2030820828108, 0.2030820828108, 0.2030820828108, </span></span>
+<span><span class="co">#&gt;     0.2030820828108, 0.2030820828108, 0.2030820828108, 0.544482532963302, </span></span>
+<span><span class="co">#&gt;     0.544482532963302, 0.544482532963302, 0.544482532963302, </span></span>
+<span><span class="co">#&gt;     0.544482532963302, 0.820858762226999, 0.820858762226999, </span></span>
+<span><span class="co">#&gt;     0.820858762226999, 0.159374287085848, 0.159374287085848, </span></span>
+<span><span class="co">#&gt;     0.159374287085848, 0.159374287085848, 0.159374287085848, </span></span>
+<span><span class="co">#&gt;     0.159374287085848, 0.737421376258135, 0.737421376258135, </span></span>
+<span><span class="co">#&gt;     0.737421376258135, 0.737421376258135, 0.737421376258135, </span></span>
+<span><span class="co">#&gt;     0.850146153569221, 0.850146153569221, 0.850146153569221, </span></span>
+<span><span class="co">#&gt;     0.850146153569221, 0.285364606366961, 0.218931623590473, </span></span>
+<span><span class="co">#&gt;     0.218931623590473, 0.218931623590473, 0.218931623590473, </span></span>
+<span><span class="co">#&gt;     0.848587122242716, 0.848587122242716, 0.848587122242716, </span></span>
+<span><span class="co">#&gt;     0.848587122242716, 0.848587122242716, 0.848587122242716, </span></span>
+<span><span class="co">#&gt;     0.370391391135955, 0.370391391135955, 0.370391391135955, </span></span>
+<span><span class="co">#&gt;     0.370391391135955, 0.370391391135955, 0.370391391135955, </span></span>
+<span><span class="co">#&gt;     0.370391391135955, 0.7387859871611, 0.7387859871611, 0.7387859871611, </span></span>
+<span><span class="co">#&gt;     0.7387859871611, 0.12725063790207, 0.12725063790207, 0.12725063790207, </span></span>
+<span><span class="co">#&gt;     0.12725063790207, 0.22519839693758, 0.22519839693758, 0.22519839693758, </span></span>
+<span><span class="co">#&gt;     0.826282155654143, 0.826282155654143, 0.826282155654143, </span></span>
+<span><span class="co">#&gt;     0.826282155654143, 0.826282155654143, 0.826282155654143, </span></span>
+<span><span class="co">#&gt;     0.069988404879557, 0.069988404879557, 0.069988404879557, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 0.234870145295065, 0.234870145295065, </span></span>
+<span><span class="co">#&gt;     0.234870145295065, 0.234870145295065, 0.155620288341497, </span></span>
+<span><span class="co">#&gt;     0.155620288341497, 0.155620288341497, 0.155620288341497, </span></span>
+<span><span class="co">#&gt;     0.155620288341497, 0.155620288341497, 0.652830019976729, </span></span>
+<span><span class="co">#&gt;     0.652830019976729, 0.652830019976729, 0.652830019976729, </span></span>
+<span><span class="co">#&gt;     0.477821287552721, 0.477821287552721, 0.477821287552721, </span></span>
+<span><span class="co">#&gt;     0.477821287552721, 0.477821287552721, 0.477821287552721, </span></span>
+<span><span class="co">#&gt;     0.477821287552721, 0.824400610476732, 0.824400610476732, </span></span>
+<span><span class="co">#&gt;     0.824400610476732, 0.824400610476732, 0.824400610476732, </span></span>
+<span><span class="co">#&gt;     0.824400610476732, 0.824400610476732), delta = c(TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, </span></span>
+<span><span class="co">#&gt;     TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, </span></span>
+<span><span class="co">#&gt;     FALSE, FALSE, FALSE, FALSE), covariates = c(-0.713999635530188, </span></span>
+<span><span class="co">#&gt;     -0.916182957978765, -0.916182957978765, -0.386753432931904, </span></span>
+<span><span class="co">#&gt;     -0.0782057376259278, 0.40238370374027, 0.598857535295654, </span></span>
+<span><span class="co">#&gt;     0.598857535295654, 0.793069127251577, 0.793069127251577, </span></span>
+<span><span class="co">#&gt;     0.499259436503266, 0.199061704893585, 0.199061704893585, </span></span>
+<span><span class="co">#&gt;     0.199061704893585, 0.766885431666165, 0.766885431666165, </span></span>
+<span><span class="co">#&gt;     0.389262060395992, -0.555564017602709, -0.473329530890031, </span></span>
+<span><span class="co">#&gt;     -0.376750606630456, -0.32094713748977, -0.0374913231371811, </span></span>
+<span><span class="co">#&gt;     0.951588575875865, 0.951588575875865, 0.951588575875865, </span></span>
+<span><span class="co">#&gt;     0.951588575875865, 0.895943570457715, 0.826989935384503, </span></span>
+<span><span class="co">#&gt;     0.784184810390454, 0.897612666147257, 0.889460799376806, </span></span>
+<span><span class="co">#&gt;     0.853530127538146, 0.610784181015084, 0.842321337091328, </span></span>
+<span><span class="co">#&gt;     0.428253732881978, 0.510360860844542, 0.843857321421267, </span></span>
+<span><span class="co">#&gt;     0.473794650455626, 0.473794650455626, 0.439164875834027, </span></span>
+<span><span class="co">#&gt;     0.0813325559409743, -0.072679285329488, 0.022633610525342, </span></span>
+<span><span class="co">#&gt;     0.022633610525342, -0.165822428412117, 0.788960204167735, </span></span>
+<span><span class="co">#&gt;     0.784738649064157, 0.751108597358961, 0.164355037699547, </span></span>
+<span><span class="co">#&gt;     -0.450841956423972, -0.316511236749211, 0.160784484840859, </span></span>
+<span><span class="co">#&gt;     0.293397929128979, 0.581527001889897, 0.773699575573401, </span></span>
+<span><span class="co">#&gt;     0.577434129751542, 0.939446708956683, -0.681597579088886, </span></span>
+<span><span class="co">#&gt;     -0.437075512643057, -0.443711549185011, -0.733432157019415, </span></span>
+<span><span class="co">#&gt;     -0.493847804653522, -0.488244561766872, -0.249744066789296, </span></span>
+<span><span class="co">#&gt;     -0.179784475963973, -0.738874487438156, -0.723549457607448, </span></span>
+<span><span class="co">#&gt;     -0.561344627654766, -0.616726879889207, -0.894918719527936, </span></span>
+<span><span class="co">#&gt;     -0.717959386157975, -0.686913571027282, -0.430329009542703, </span></span>
+<span><span class="co">#&gt;     0.811670747747975, 0.811670747747975, 0.47541426493337, 0.60006475851658, </span></span>
+<span><span class="co">#&gt;     0.757756647528074, 0.489289967633253, 0.474690663755299, </span></span>
+<span><span class="co">#&gt;     0.478178545553418, 0.596374778854594, 0.989847716289198, </span></span>
+<span><span class="co">#&gt;     0.935943554174414, 0.775023778637781, 0.64118192153959, 0.42073945175795, </span></span>
+<span><span class="co">#&gt;     0.428640442650708, 0.518956810516343, 0.181035205138184, </span></span>
+<span><span class="co">#&gt;     0.187076878677491, 0.0463681007459478, 0.0461724595408177, </span></span>
+<span><span class="co">#&gt;     0.325908998382948, -0.222405169070633, -0.222405169070633, </span></span>
+<span><span class="co">#&gt;     -0.222405169070633, -0.249168900356776, 0.970802159577044, </span></span>
+<span><span class="co">#&gt;     0.941320398495358, 0.871935056597358, 0.0131933600381828, </span></span>
+<span><span class="co">#&gt;     -0.311989607779281, 0.0214075772733282, 0.36194708133658, </span></span>
+<span><span class="co">#&gt;     0.907643216994019, 0.908180503849757, 0.893315981685325, </span></span>
+<span><span class="co">#&gt;     0.418493174236844, 0.224414511844655, 0.0553785322440976, </span></span>
+<span><span class="co">#&gt;     -0.0454009951863938, -0.0454009951863938, -0.34896736029921, </span></span>
+<span><span class="co">#&gt;     -0.34896736029921, -0.44193845192243, -0.361432740310239, </span></span>
+<span><span class="co">#&gt;     0.506869860644476, -0.297183819176708, -0.179392077335229, </span></span>
+<span><span class="co">#&gt;     -0.294663057014076, 0.0344536609433177, 0.0344536609433177, </span></span>
+<span><span class="co">#&gt;     -0.318804989230461, -0.0102870831058506, -0.10199995396097, </span></span>
+<span><span class="co">#&gt;     -0.118526304507421, -0.241029611168673, 0.35464064386554, </span></span>
+<span><span class="co">#&gt;     0.389755325965803, -0.371826237794647, -0.355457745714268, </span></span>
+<span><span class="co">#&gt;     -0.0439633601806804, 0.45035977284773, 0.593070348873405, </span></span>
+<span><span class="co">#&gt;     0.593070348873405, 0.627329957159338, 0.627329957159338, </span></span>
+<span><span class="co">#&gt;     0.710499769107257, 0.91474434657319, 0.91474434657319, 0.965896782166662, </span></span>
+<span><span class="co">#&gt;     0.953527220937197, 0.629342882148921, 0.398196630528804, </span></span>
+<span><span class="co">#&gt;     0.398196630528804, 0.28233158517849, 0.980127678329676, 0.861084895775402, </span></span>
+<span><span class="co">#&gt;     0.725612256692334, 0.927727095833829, 0.927727095833829, </span></span>
+<span><span class="co">#&gt;     0.8361337839703, 0.102556808325515, 0.102556808325515, 0.00880069251789739, </span></span>
+<span><span class="co">#&gt;     0.024697684818946, 0.331005824929939, 0.201579197649943, </span></span>
+<span><span class="co">#&gt;     -0.14563226917188, -0.14563226917188, 0.0642250473187311, </span></span>
+<span><span class="co">#&gt;     -0.491973544272955, -0.191317887914725, -0.0759629398370933, </span></span>
+<span><span class="co">#&gt;     -0.221924665731239, -0.221924665731239, -0.0812473367105977, </span></span>
+<span><span class="co">#&gt;     0.211100249714536, -0.197686674817881, -0.51335655908582, </span></span>
+<span><span class="co">#&gt;     -0.51335655908582, 0.312543002695376, 0.158129928056033, </span></span>
+<span><span class="co">#&gt;     -0.705197850492087, -0.301391634215161, -0.301391634215161, </span></span>
+<span><span class="co">#&gt;     -0.144216548975556, -0.418430220719254, -0.874469281838995, </span></span>
+<span><span class="co">#&gt;     -0.867338454271461, -0.867338454271461, -0.741864670544647, </span></span>
+<span><span class="co">#&gt;     -0.341980616047973, -0.859515489117967, -0.859515489117967, </span></span>
+<span><span class="co">#&gt;     -0.760083541141253, -0.356543322727101, -0.750139746141915, </span></span>
+<span><span class="co">#&gt;     -0.688632932061977, -0.511637828929035, -0.419016694457026, </span></span>
+<span><span class="co">#&gt;     -0.114315925793169, -0.114315925793169, -0.658901092267953, </span></span>
+<span><span class="co">#&gt;     -0.659588026744794, -0.843846423236826, -0.825806984790364, </span></span>
+<span><span class="co">#&gt;     -0.797548281207722, -0.851200597332217, -0.665877032024416, </span></span>
+<span><span class="co">#&gt;     -0.878817283370557, -0.286817694600366, -0.0843046684795169, </span></span>
+<span><span class="co">#&gt;     -0.415294470801227, -0.415294470801227, -0.415294470801227, </span></span>
+<span><span class="co">#&gt;     -0.765519524500236, 0.289399120802915, 0.418619513661519, </span></span>
+<span><span class="co">#&gt;     0.250579945956019, -0.0689405932354582, 0.185203002275878, </span></span>
+<span><span class="co">#&gt;     0.185203002275878, 0.22497855802132, 0.70189193337415, -0.466324876273801, </span></span>
+<span><span class="co">#&gt;     -0.413643457337133, -0.404001138408807, -0.303445616075211, </span></span>
+<span><span class="co">#&gt;     -0.943632453033334, -0.791905162177512, -0.879076339645026, </span></span>
+<span><span class="co">#&gt;     0.0518438819550615, -0.295711691107558, -0.295711691107558, </span></span>
+<span><span class="co">#&gt;     -0.344437796246998, -0.576701675037799, -0.576701675037799, </span></span>
+<span><span class="co">#&gt;     -0.899054235135484, -0.879581355773357, -0.819273495111321, </span></span>
+<span><span class="co">#&gt;     -0.843167193431701, -0.843167193431701, 0.861940254028499, </span></span>
+<span><span class="co">#&gt;     -0.188284601142003, -0.771694033384701, -0.381158751846278, </span></span>
+<span><span class="co">#&gt;     -0.00954097425197631, -0.00954097425197631, 0.400815926541751, </span></span>
+<span><span class="co">#&gt;     0.704414592148669, 0.395222595934509, 0.478092561071424, </span></span>
+<span><span class="co">#&gt;     0.0832289311613896, 0.0832289311613896, 0.170065895515209, </span></span>
+<span><span class="co">#&gt;     -0.0202898749223123, -0.0202898749223123, 0.565416480917797, </span></span>
+<span><span class="co">#&gt;     0.720634189905099, 0.790421840345314, 0.80643437695226, 0.80643437695226, </span></span>
+<span><span class="co">#&gt;     0.80643437695226, 0.585667608303852, 0.123974931163553, 0.149148387810647, </span></span>
+<span><span class="co">#&gt;     0.235631315274212, -0.160760729279507, 0.0534581590814989, </span></span>
+<span><span class="co">#&gt;     -0.219709353935168, -0.219709353935168, -0.674120431104708, </span></span>
+<span><span class="co">#&gt;     -0.787766486104307, -0.769369644996444, -0.567963281441215, </span></span>
+<span><span class="co">#&gt;     0.0246046822896495, 0.0246046822896495, -0.0768533422592281, </span></span>
+<span><span class="co">#&gt;     0.578843314137125, 0.517665397786037, 0.808083858371713, </span></span>
+<span><span class="co">#&gt;     0.743466266284145, 0.692659033826618, 0.969534726156529, </span></span>
+<span><span class="co">#&gt;     0.712471679221855, 0.562819574931099, 0.580547709591751, </span></span>
+<span><span class="co">#&gt;     0.180682797002227, 0.615371123629068, 0.926496205147303, </span></span>
+<span><span class="co">#&gt;     0.902027600743262, 0.880561465316388, -0.946949790565576, </span></span>
+<span><span class="co">#&gt;     -0.895018005196316, -0.895018005196316, -0.841890235257453, </span></span>
+<span><span class="co">#&gt;     -0.708835889494122, -0.818902379373805, -0.966600111570862, </span></span>
+<span><span class="co">#&gt;     -0.905104027078708, 0.0992937924992017, 0.480710405379726, </span></span>
+<span><span class="co">#&gt;     0.423229121173153, 0.423229121173153, 0.518284712618793, </span></span>
+<span><span class="co">#&gt;     -0.285831457412972, -0.285831457412972, 0.192495357522022, </span></span>
+<span><span class="co">#&gt;     0.00752030284021932, -0.398532833995745, 0.104905945508722, </span></span>
+<span><span class="co">#&gt;     0.0914117495178755, 0.480431133174213, 0.76324639301922, </span></span>
+<span><span class="co">#&gt;     -0.632156058763184, -0.424607755724241, -0.734894205061476, </span></span>
+<span><span class="co">#&gt;     -0.734894205061476, -0.874383903201098, -0.903552846272384, </span></span>
+<span><span class="co">#&gt;     -0.904454944531363, -0.728794543313095, -0.391967017235661, </span></span>
+<span><span class="co">#&gt;     -0.53388261284765, -0.945865389343485, -0.150499941897832, </span></span>
+<span><span class="co">#&gt;     0.106160295060473, 0.0221158635499477, 0.0221158635499477, </span></span>
+<span><span class="co">#&gt;     0.599488492209206, 0.276102167884103, -0.471650597237761, </span></span>
+<span><span class="co">#&gt;     0.00863669772526832, 0.00863669772526832, 0.398895125341541, </span></span>
+<span><span class="co">#&gt;     -0.741464614972379, -0.741464614972379, -0.893424527382721, </span></span>
+<span><span class="co">#&gt;     -0.963896690397119, -0.516674322870823, -0.63499181972633, </span></span>
+<span><span class="co">#&gt;     -0.370569588453294, 0.660248254230034, 0.759780002567741, </span></span>
+<span><span class="co">#&gt;     0.895062945543874, 0.709470506051316, 0.60599719325997, 0.60599719325997, </span></span>
+<span><span class="co">#&gt;     -0.919790089052123, -0.801404097552675, -0.564741433868527, </span></span>
+<span><span class="co">#&gt;     -0.564741433868527, -0.316751367445734, -0.959633727462961, </span></span>
+<span><span class="co">#&gt;     -0.528377543745589, -0.528377543745589, -0.823491951990102, </span></span>
+<span><span class="co">#&gt;     -0.845918896593337, -0.683031672712761, -0.526795449457437, </span></span>
+<span><span class="co">#&gt;     -0.690074068824328, -0.53915129345637, -0.409928223850137, </span></span>
+<span><span class="co">#&gt;     -0.078071068738344, -0.078071068738344, -0.528446871513051, </span></span>
+<span><span class="co">#&gt;     -0.489238000074998, -0.518374248510318, -0.280622498193369, </span></span>
+<span><span class="co">#&gt;     -0.780036674077918, -0.716698453805598, -0.145833349440726, </span></span>
+<span><span class="co">#&gt;     -0.124429166661605, -0.124429166661605, -0.314257463909407, </span></span>
+<span><span class="co">#&gt;     -0.371367311956592, -0.743301380794187, -0.517790797759232, </span></span>
+<span><span class="co">#&gt;     0.162467321141289, 0.247324996723643, 0.378367994720726, </span></span>
+<span><span class="co">#&gt;     -0.831306747112131, -0.87552621819488, -0.91928169638579, </span></span>
+<span><span class="co">#&gt;     -0.664259451566155, -0.709407365964285, 0.139727697974716, </span></span>
+<span><span class="co">#&gt;     0.932913132089582, 0.891323243273691, 0.0556976756314387, </span></span>
+<span><span class="co">#&gt;     0.245481233881833, 0.641470794891574, 0.699539050691426, </span></span>
+<span><span class="co">#&gt;     0.659121388731672, 0.663862352938481, 0.706002741743592, </span></span>
+<span><span class="co">#&gt;     0.550594187477392, 0.0613841975727698, -0.283860438924893, </span></span>
+<span><span class="co">#&gt;     -0.309042682829106, 0.206230559480608, -0.111759997304862, </span></span>
+<span><span class="co">#&gt;     -0.0418837147424016, -0.333062263807072, 0.915013564320616, </span></span>
+<span><span class="co">#&gt;     -0.0832093591776238, -0.0832093591776238, -0.0832093591776238, </span></span>
+<span><span class="co">#&gt;     0.733061147864598, -0.441047123672081, 0.465288062866957, </span></span>
+<span><span class="co">#&gt;     0.546986087169438, 0.762245986043954, 0.762245986043954, </span></span>
+<span><span class="co">#&gt;     0.762245986043954, -0.753396213249355, -0.753396213249355, </span></span>
+<span><span class="co">#&gt;     -0.863853840414221, -0.895093673356596, -0.554188423572493, </span></span>
+<span><span class="co">#&gt;     -0.442710197105429, -0.456311714420471, 0.273520159087353, </span></span>
+<span><span class="co">#&gt;     -0.0557563625689177, -0.0557563625689177, 0.229011733778912, </span></span>
+<span><span class="co">#&gt;     0.578277346926184, 0.758455021963513, 0.767863336962052, </span></span>
+<span><span class="co">#&gt;     0.118515095930076, -0.526012271788615, -0.26951029709773, </span></span>
+<span><span class="co">#&gt;     -0.147229419997943, -0.761446714592183, -0.761446714592183, </span></span>
+<span><span class="co">#&gt;     -0.714333001798706, -0.568189374279978, -0.568189374279978, </span></span>
+<span><span class="co">#&gt;     -0.572823771765608, 0.841328041079469, 0.589327979736344, </span></span>
+<span><span class="co">#&gt;     0.590292503010485, -0.0500832452834585, -0.15380652730958, </span></span>
+<span><span class="co">#&gt;     -0.748990804119583, -0.748990804119583, -0.530960109160578, </span></span>
+<span><span class="co">#&gt;     -0.529144957794876, -0.529144957794876, -0.551245568480675, </span></span>
+<span><span class="co">#&gt;     0.784873676128511, 0.784873676128511, 0.739068960985083, </span></span>
+<span><span class="co">#&gt;     0.51280119817248, 0.376135731954242, 0.444988139149426, 0.393938271561385, </span></span>
+<span><span class="co">#&gt;     0.452250756360526, -0.694627260324727, -0.896646820805396, </span></span>
+<span><span class="co">#&gt;     -0.401938864533658, -0.462392388901656, -0.861185642674411, </span></span>
+<span><span class="co">#&gt;     -0.654940632850159, -0.644526722489885, -0.574232521865528, </span></span>
+<span><span class="co">#&gt;     -0.583679927213194, -0.747570867602333, -0.747570867602333, </span></span>
+<span><span class="co">#&gt;     -0.939855934470963, -0.949980978690995, 0.21810299004916, </span></span>
+<span><span class="co">#&gt;     0.21810299004916, 0.307251531194393, -0.114065716941264, </span></span>
+<span><span class="co">#&gt;     -0.114065716941264, -0.340317945298218, -0.401571624027873, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, </span></span>
+<span><span class="co">#&gt;     0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1), obs_times = c(0.129098247218248, </span></span>
+<span><span class="co">#&gt;     0.216736164356487, 0.247371050125567, 0.433373975908914, </span></span>
+<span><span class="co">#&gt;     0.797832974397977, 0.287967284844793, 0.417819280527262, </span></span>
+<span><span class="co">#&gt;     0.422760266629435, 0.770353370381457, 0.791194882407295, </span></span>
+<span><span class="co">#&gt;     0.21799066872336, 0.353904571849853, 0.355445380788296, 0.374713956611231, </span></span>
+<span><span class="co">#&gt;     0.502299563260749, 0.533687945455313, 0.0528439427725971, </span></span>
+<span><span class="co">#&gt;     0.282528330106288, 0.686375082004815, 0.728394428268075, </span></span>
+<span><span class="co">#&gt;     0.918857348151505, 0.961104793706909, 0.05462910910137, 0.0579585605300963, </span></span>
+<span><span class="co">#&gt;     0.0649282999802381, 0.0743845133110881, 0.137106081005186, </span></span>
+<span><span class="co">#&gt;     0.225886432919651, 0.297741782618687, 0.466472376836464, </span></span>
+<span><span class="co">#&gt;     0.670282039558515, 0.758593169506639, 0.136540197068825, </span></span>
+<span><span class="co">#&gt;     0.163070329232141, 0.323344993172213, 0.515071807894856, </span></span>
+<span><span class="co">#&gt;     0.621902295155451, 0.967469494324178, 0.985954165225849, </span></span>
+<span><span class="co">#&gt;     0.192023318726569, 0.276049672625959, 0.321725537767634, </span></span>
+<span><span class="co">#&gt;     0.478456383803859, 0.497948936186731, 0.950621264055371, </span></span>
+<span><span class="co">#&gt;     0.000465349061414599, 0.0939166070893407, 0.217243514023721, </span></span>
+<span><span class="co">#&gt;     0.427428280701861, 0.627146184444427, 0.662385506555438, </span></span>
+<span><span class="co">#&gt;     0.704872245667502, 0.755887259729207, 0.822030071169138, </span></span>
+<span><span class="co">#&gt;     0.348719493718818, 0.739031685516238, 0.829250823473558, </span></span>
+<span><span class="co">#&gt;     0.217929404358971, 0.450641819905102, 0.755826119434805, </span></span>
+<span><span class="co">#&gt;     0.0696103849967926, 0.296863555888685, 0.321976902256177, </span></span>
+<span><span class="co">#&gt;     0.57465485411697, 0.615645839648179, 0.684688232084096, 0.023144492181018, </span></span>
+<span><span class="co">#&gt;     0.260132473660633, 0.334587961202487, 0.546426258748397, </span></span>
+<span><span class="co">#&gt;     0.631788871716708, 0.844933539861813, 0.862399539677426, </span></span>
+<span><span class="co">#&gt;     0.203743813559413, 0.236339889001101, 0.513781139161438, </span></span>
+<span><span class="co">#&gt;     0.0402896158726875, 0.1134957706662, 0.240527505409728, 0.296175093376153, </span></span>
+<span><span class="co">#&gt;     0.566734495259633, 0.632116773186173, 0.0130410296842456, </span></span>
+<span><span class="co">#&gt;     0.16976905008778, 0.527394940610975, 0.67355498787947, 0.761985323159024, </span></span>
+<span><span class="co">#&gt;     0.860989357577637, 0.0236886432394385, 0.158688397612423, </span></span>
+<span><span class="co">#&gt;     0.20409588329494, 0.525974274147302, 0.596362960757688, 0.770622961455956, </span></span>
+<span><span class="co">#&gt;     0.869706070283428, 0.873151367530227, 0.886862571584061, </span></span>
+<span><span class="co">#&gt;     0.957669742405415, 0.108824073104188, 0.160184813430533, </span></span>
+<span><span class="co">#&gt;     0.273622734239325, 0.593866932671517, 0.64211381948553, 0.709579854737967, </span></span>
+<span><span class="co">#&gt;     0.829623878700659, 0.168327182616557, 0.236801022562442, </span></span>
+<span><span class="co">#&gt;     0.280410228906047, 0.641233131806786, 0.69627413520008, 0.707706519979448, </span></span>
+<span><span class="co">#&gt;     0.202184567693621, 0.244308249559253, 0.264485116582364, </span></span>
+<span><span class="co">#&gt;     0.299122775672004, 0.391228783410043, 0.568568754009902, </span></span>
+<span><span class="co">#&gt;     0.937770176911727, 0.00247881026007235, 0.0940013926010579, </span></span>
+<span><span class="co">#&gt;     0.134996398352087, 0.210523239802569, 0.216662138933316, </span></span>
+<span><span class="co">#&gt;     0.397246005246416, 0.547998871887103, 0.634896405041218, </span></span>
+<span><span class="co">#&gt;     0.679022809490561, 0.720050457865, 0.866189130349085, 0.0421280120499432, </span></span>
+<span><span class="co">#&gt;     0.190717455465347, 0.279283805051818, 0.510721075348556, </span></span>
+<span><span class="co">#&gt;     0.570713193388656, 0.801345300627872, 0.826690050307661, </span></span>
+<span><span class="co">#&gt;     0.0734143974259496, 0.0996219362132251, 0.136502299224958, </span></span>
+<span><span class="co">#&gt;     0.203785905148834, 0.236872595502064, 0.365980138303712, </span></span>
+<span><span class="co">#&gt;     0.846195757621899, 0.14877797709778, 0.179059559712186, 0.18390193884261, </span></span>
+<span><span class="co">#&gt;     0.585567104164511, 0.0993463299237192, 0.415722651407123, </span></span>
+<span><span class="co">#&gt;     0.465449363226071, 0.925272865919396, 0.932572785299271, </span></span>
+<span><span class="co">#&gt;     0.984083857620135, 0.0115217631682754, 0.0135306273587048, </span></span>
+<span><span class="co">#&gt;     0.419313521590084, 0.58214389719069, 0.746787912445143, 0.83073406224139, </span></span>
+<span><span class="co">#&gt;     0.991412194212899, 0.996445707278326, 0.0884845573455095, </span></span>
+<span><span class="co">#&gt;     0.22090977220796, 0.284614907577634, 0.318499490851536, 0.390331929083914, </span></span>
+<span><span class="co">#&gt;     0.395689367782325, 0.682575054233894, 0.792005731491372, </span></span>
+<span><span class="co">#&gt;     0.817117730388418, 0.969800120219588, 0.990168560296297, </span></span>
+<span><span class="co">#&gt;     0.424626225982766, 0.692171452676418, 0.770259348834122, </span></span>
+<span><span class="co">#&gt;     0.206487420713529, 0.223807222442701, 0.284895547432825, </span></span>
+<span><span class="co">#&gt;     0.328916536876932, 0.522414671257138, 0.617563133826479, </span></span>
+<span><span class="co">#&gt;     0.633436584845185, 0.656495965085924, 0.996371977264062, </span></span>
+<span><span class="co">#&gt;     0.00536444736644626, 0.00584710156545043, 0.135763919679448, </span></span>
+<span><span class="co">#&gt;     0.557101008715108, 0.782163587864488, 0.823743681889027, </span></span>
+<span><span class="co">#&gt;     0.852053971262649, 0.931066285818815, 0.968882349785417, </span></span>
+<span><span class="co">#&gt;     0.974454874172807, 0.266127483453602, 0.449270514305681, </span></span>
+<span><span class="co">#&gt;     0.480631644604728, 0.597377663478255, 0.689286037581041, </span></span>
+<span><span class="co">#&gt;     0.179660445340036, 0.269853502646864, 0.0726579503049268, </span></span>
+<span><span class="co">#&gt;     0.369978147351888, 0.42759138705903, 0.507285837298972, 0.516258012293578, </span></span>
+<span><span class="co">#&gt;     0.549954395460533, 0.94002635563539, 0.138030210509896, 0.165509229060262, </span></span>
+<span><span class="co">#&gt;     0.251174297416583, 0.415543700801209, 0.451247031800449, </span></span>
+<span><span class="co">#&gt;     0.464153463719413, 0.622946569696069, 0.857806453481317, </span></span>
+<span><span class="co">#&gt;     0.049625585321337, 0.0966202358249575, 0.162743138615042, </span></span>
+<span><span class="co">#&gt;     0.950890234904364, 0.13522967238918, 0.161366865616561, 0.22275191853027, </span></span>
+<span><span class="co">#&gt;     0.56940613792207, 0.66376400685083, 0.694694329071969, 0.0453361014369875, </span></span>
+<span><span class="co">#&gt;     0.153006548760459, 0.18632471258752, 0.436749597778544, 0.591200284194201, </span></span>
+<span><span class="co">#&gt;     0.745306309312582, 0.990072537912056, 0.996516271261498, </span></span>
+<span><span class="co">#&gt;     0.130337936155205, 0.604388989145552, 0.0501661477610469, </span></span>
+<span><span class="co">#&gt;     0.170270065078512, 0.359821268357337, 0.371063167229295, </span></span>
+<span><span class="co">#&gt;     0.437665002420545, 0.527599306078628, 0.896644064690918, </span></span>
+<span><span class="co">#&gt;     0.0733673155773431, 0.156350366072729, 0.169240613933653, </span></span>
+<span><span class="co">#&gt;     0.365405296906829, 0.460166618926451, 0.46473691239953, 0.566228931071237, </span></span>
+<span><span class="co">#&gt;     0.649938648333773, 0.77890710812062, 0.91014366876334, 0.921451541595161, </span></span>
+<span><span class="co">#&gt;     0.922061887802556, 0.0120903067290783, 0.100712787825614, </span></span>
+<span><span class="co">#&gt;     0.161467888858169, 0.312232244526967, 0.675000583287328, </span></span>
+<span><span class="co">#&gt;     0.735731156310067, 0.863605329301208, 0.866068027447909, </span></span>
+<span><span class="co">#&gt;     0.136625867811268, 0.297710746399766, 0.178849163930863, </span></span>
+<span><span class="co">#&gt;     0.377313619246706, 0.77073736069724, 0.77436368400231, 0.962715865811333, </span></span>
+<span><span class="co">#&gt;     0.143204428488389, 0.484661741182208, 0.564910990186036, </span></span>
+<span><span class="co">#&gt;     0.743281641742215, 0.761408725054935, 0.961905417498201, </span></span>
+<span><span class="co">#&gt;     0.0180689809385388, 0.219076051319756, 0.361041002920619, </span></span>
+<span><span class="co">#&gt;     0.501782032053517, 0.740052526888386, 0.0758486231788993, </span></span>
+<span><span class="co">#&gt;     0.441791965160519, 0.98560710856691, 0.118444304447621, 0.288494411157444, </span></span>
+<span><span class="co">#&gt;     0.290518567897379, 0.440440524602309, 0.46153046307154, 0.672314426861703, </span></span>
+<span><span class="co">#&gt;     0.732589497929439, 0.921618608292192, 0.0319623857784603, </span></span>
+<span><span class="co">#&gt;     0.0939928681158581, 0.278412915129618, 0.280268092164783, </span></span>
+<span><span class="co">#&gt;     0.378464790276555, 0.511671752504239, 0.517078383700905, </span></span>
+<span><span class="co">#&gt;     0.633375217550314, 0.711129917529455, 0.243547442136332, </span></span>
+<span><span class="co">#&gt;     0.608921787003055, 0.694451575400308, 0.915131913963705, </span></span>
+<span><span class="co">#&gt;     0.956250291550532, 0.0744089059749172, 0.161631000144293, </span></span>
+<span><span class="co">#&gt;     0.304607921961792, 0.30685532211252, 0.425684082999064, 0.451825619662711, </span></span>
+<span><span class="co">#&gt;     0.685755444204617, 0.205826920224354, 0.435208435403183, </span></span>
+<span><span class="co">#&gt;     0.680134959518909, 0.861947756260633, 0.172012803377584, </span></span>
+<span><span class="co">#&gt;     0.420889260945842, 0.717486052773893, 0.736150731099769, </span></span>
+<span><span class="co">#&gt;     0.841558005660772, 0.937291039619595, 0.146612475626171, </span></span>
+<span><span class="co">#&gt;     0.664355203974992, 0.677428116789088, 0.979523984715343, </span></span>
+<span><span class="co">#&gt;     0.0160918093752116, 0.0387414896395057, 0.187693298794329, </span></span>
+<span><span class="co">#&gt;     0.229440553346649, 0.511109673650935, 0.611147175775841, </span></span>
+<span><span class="co">#&gt;     0.823937889654189, 0.0547061813995242, 0.347608416806906, </span></span>
+<span><span class="co">#&gt;     0.497679084306583, 0.510326466523111, 0.815768377389759, </span></span>
+<span><span class="co">#&gt;     0.84894580161199, 0.0299566281028092, 0.0981186414137483, </span></span>
+<span><span class="co">#&gt;     0.165858007734641, 0.194150109542534, 0.829592596972361, </span></span>
+<span><span class="co">#&gt;     0.0708756730891764, 0.305234725121409, 0.319253370864317, </span></span>
+<span><span class="co">#&gt;     0.41733704158105, 0.652336813742295, 0.810096084838733, 0.916375945322216, </span></span>
+<span><span class="co">#&gt;     0.250050476510046, 0.536359749059303, 0.729475702884113, </span></span>
+<span><span class="co">#&gt;     0.779960195838242, 0.794141826741533, 0.333195846993136, </span></span>
+<span><span class="co">#&gt;     0.403126594980647, 0.647968436042821, 0.669080319444379, </span></span>
+<span><span class="co">#&gt;     0.435007651569322, 0.486201937077567, 0.0951889341231436, </span></span>
+<span><span class="co">#&gt;     0.137665323214605, 0.142759153386578, 0.19246097211726, 0.277967476984486, </span></span>
+<span><span class="co">#&gt;     0.494586978806183, 0.521848226897418, 0.731465178076178, </span></span>
+<span><span class="co">#&gt;     0.841216969070956, 0.94130395934917, 0.112209268612787, 0.421875875210389, </span></span>
+<span><span class="co">#&gt;     0.563311485340819, 0.932780175935477, 0.95624218787998, 0.0488323116420574, </span></span>
+<span><span class="co">#&gt;     0.519521422766883, 0.64420038813814, 0.0266316782217473, </span></span>
+<span><span class="co">#&gt;     0.312746818875894, 0.471819306723773, 0.71062245243229, 0.855137056205422, </span></span>
+<span><span class="co">#&gt;     0.992102828575298, 0.273629038734834, 0.346860754361587, </span></span>
+<span><span class="co">#&gt;     0.359104651999538, 0.620615777561682, 0.699930439502422, </span></span>
+<span><span class="co">#&gt;     0.359054692664775, 0.464990822965795, 0.618591379456209, </span></span>
+<span><span class="co">#&gt;     0.748569702732163, 0.332971109310165, 0.00833215420868406, </span></span>
+<span><span class="co">#&gt;     0.0329015170916066, 0.0349521704887068, 0.127814525469256, </span></span>
+<span><span class="co">#&gt;     0.201577648054808, 0.49846138083376, 0.670499595580623, 0.752462793607265, </span></span>
+<span><span class="co">#&gt;     0.766586359124631, 0.773862918838859, 0.0369292099494487, </span></span>
+<span><span class="co">#&gt;     0.0491153171751648, 0.518342392519116, 0.617076499853283, </span></span>
+<span><span class="co">#&gt;     0.743032434489578, 0.842428504256532, 0.893289207713678, </span></span>
+<span><span class="co">#&gt;     0.202239854980952, 0.502785153868041, 0.532708597578553, </span></span>
+<span><span class="co">#&gt;     0.612801802181382, 0.0549363414294938, 0.436196901094622, </span></span>
+<span><span class="co">#&gt;     0.589582994743902, 0.702869783294974, 0.0272933413304832, </span></span>
+<span><span class="co">#&gt;     0.592016844843357, 0.607036685485578, 0.654717127731918, </span></span>
+<span><span class="co">#&gt;     0.660978218422865, 0.704434575553713, 0.907993142802635, </span></span>
+<span><span class="co">#&gt;     0.911418842263936, 0.956864888591791, 0.0741794588976491, </span></span>
+<span><span class="co">#&gt;     0.24782083438857, 0.7447094368059, 0.143596600042656, 0.167980035534129, </span></span>
+<span><span class="co">#&gt;     0.542406288674101, 0.542835634667426, 0.651484300382435, </span></span>
+<span><span class="co">#&gt;     0.703151777619496, 0.733476307941601, 0.8988708013203, 0.167671811116766, </span></span>
+<span><span class="co">#&gt;     0.18603271886715, 0.227633608614071, 0.429536101130899, 0.0306510810988886, </span></span>
+<span><span class="co">#&gt;     0.130279129568472, 0.165227175957986, 0.360002009929165, </span></span>
+<span><span class="co">#&gt;     0.612492321541043, 0.758063732202045, 0.194727044552565, </span></span>
+<span><span class="co">#&gt;     0.392799434950575, 0.711240462260321, 0.835221615387127, </span></span>
+<span><span class="co">#&gt;     0.0610533128492534, 0.144771556835622, 0.631508268183097, </span></span>
+<span><span class="co">#&gt;     0.790799195878208, 0.796196335926652, 0.94152637058869, 0.955332809826359, </span></span>
+<span><span class="co">#&gt;     0.001412432039853, 0.00258296160088385, 0.283759710839097, </span></span>
+<span><span class="co">#&gt;     0.605011505407502, 0.635672326400184, 0.723613304578388, </span></span>
+<span><span class="co">#&gt;     0.783506779005328), censoring = c(0.930062016099691, 0.930062016099691, </span></span>
+<span><span class="co">#&gt;     0.930062016099691, 0.930062016099691, 0.930062016099691, </span></span>
+<span><span class="co">#&gt;     0.865225111693144, 0.865225111693144, 0.865225111693144, </span></span>
+<span><span class="co">#&gt;     0.865225111693144, 0.865225111693144, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 0.773315755836666, 0.773315755836666, 0.773315755836666, </span></span>
+<span><span class="co">#&gt;     0.770690640807152, 0.770690640807152, 0.770690640807152, </span></span>
+<span><span class="co">#&gt;     0.770690640807152, 0.770690640807152, 0.770690640807152, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.815321852080524, 0.815321852080524, </span></span>
+<span><span class="co">#&gt;     0.815321852080524, 0.815321852080524, 0.815321852080524, </span></span>
+<span><span class="co">#&gt;     0.815321852080524, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.972747496142983, 0.972747496142983, </span></span>
+<span><span class="co">#&gt;     0.972747496142983, 0.972747496142983, 0.972747496142983, </span></span>
+<span><span class="co">#&gt;     0.972747496142983, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.905301466397941, 0.905301466397941, </span></span>
+<span><span class="co">#&gt;     0.905301466397941, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.730031871236861, 0.730031871236861, </span></span>
+<span><span class="co">#&gt;     0.978113100863993, 0.978113100863993, 0.978113100863993, </span></span>
+<span><span class="co">#&gt;     0.978113100863993, 0.978113100863993, 0.978113100863993, </span></span>
+<span><span class="co">#&gt;     0.978113100863993, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7925327219069, </span></span>
+<span><span class="co">#&gt;     0.7925327219069, 0.7925327219069, 0.7925327219069, 0.7925327219069, </span></span>
+<span><span class="co">#&gt;     0.7925327219069, 1, 1, 1, 1, 1, 1, 1, 1, 0.706973935291171, </span></span>
+<span><span class="co">#&gt;     0.706973935291171, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.787414306961, </span></span>
+<span><span class="co">#&gt;     0.787414306961, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.783165600523353, </span></span>
+<span><span class="co">#&gt;     0.783165600523353, 0.783165600523353, 0.783165600523353, </span></span>
+<span><span class="co">#&gt;     0.783165600523353, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.719596788473427, </span></span>
+<span><span class="co">#&gt;     0.719596788473427, 0.719596788473427, 0.719596788473427, </span></span>
+<span><span class="co">#&gt;     0.719596788473427, 0.719596788473427, 0.719596788473427, </span></span>
+<span><span class="co">#&gt;     0.719596788473427, 0.719596788473427, 1, 1, 1, 1, 1, 0.795276687480509, </span></span>
+<span><span class="co">#&gt;     0.795276687480509, 0.795276687480509, 0.795276687480509, </span></span>
+<span><span class="co">#&gt;     0.795276687480509, 0.795276687480509, 0.795276687480509, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 0.867462399229407, 0.867462399229407, 0.867462399229407, </span></span>
+<span><span class="co">#&gt;     0.867462399229407, 0.867462399229407, 0.841695524007082, </span></span>
+<span><span class="co">#&gt;     0.841695524007082, 0.841695524007082, 0.841695524007082, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.820858762226999, </span></span>
+<span><span class="co">#&gt;     0.820858762226999, 0.820858762226999, 1, 1, 1, 1, 1, 1, 0.737421376258135, </span></span>
+<span><span class="co">#&gt;     0.737421376258135, 0.737421376258135, 0.737421376258135, </span></span>
+<span><span class="co">#&gt;     0.737421376258135, 0.850146153569221, 0.850146153569221, </span></span>
+<span><span class="co">#&gt;     0.850146153569221, 0.850146153569221, 1, 0.761263846978545, </span></span>
+<span><span class="co">#&gt;     0.761263846978545, 0.761263846978545, 0.761263846978545, </span></span>
+<span><span class="co">#&gt;     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.7387859871611, 0.7387859871611, </span></span>
+<span><span class="co">#&gt;     0.7387859871611, 0.7387859871611, 0.909990219771862, 0.909990219771862, </span></span>
+<span><span class="co">#&gt;     0.909990219771862, 0.909990219771862, 0.738811728544533, </span></span>
+<span><span class="co">#&gt;     0.738811728544533, 0.738811728544533, 0.956921005807817, </span></span>
+<span><span class="co">#&gt;     0.956921005807817, 0.956921005807817, 0.956921005807817, </span></span>
+<span><span class="co">#&gt;     0.956921005807817, 0.956921005807817, 0.827900995314121, </span></span>
+<span><span class="co">#&gt;     0.827900995314121, 0.827900995314121, 1, 1, 1, 1, 1, 1, 1, </span></span>
+<span><span class="co">#&gt;     1, 0.826094675250351, 0.826094675250351, 0.826094675250351, </span></span>
+<span><span class="co">#&gt;     0.826094675250351, 0.827604608982801, 0.827604608982801, </span></span>
+<span><span class="co">#&gt;     0.827604608982801, 0.827604608982801, 0.827604608982801, </span></span>
+<span><span class="co">#&gt;     0.827604608982801, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.824400610476732, </span></span>
+<span><span class="co">#&gt;     0.824400610476732, 0.824400610476732, 0.824400610476732, </span></span>
+<span><span class="co">#&gt;     0.824400610476732, 0.824400610476732, 0.824400610476732)), </span></span>
+<span><span class="co">#&gt;     id = id, obs_times = obs_times, s = 0, h = 0.3, nknots = 3, </span></span>
+<span><span class="co">#&gt;     norder = 3)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   n= 80</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)   </span></span>
+<span><span class="co">#&gt; covariates1  1.06391    0.34671  3.0686 0.002151 **</span></span>
+<span><span class="co">#&gt; covariates2 -0.53609    0.38391 -1.3964 0.162594   </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Log-likelihood: 0.06305</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="half-kernel-or-full-kernel">Half Kernel or Full Kernel<a class="anchor" aria-label="anchor" href="#half-kernel-or-full-kernel"></a>
+</h2>
+<p>Every estimator weights a covariate observation by how far it sits
+from the time being modelled. By default that window is
+<em>one-sided</em>: only observations strictly before the time
+contribute, which is the risk-set restriction of a hazard model. Set
+<code>one_sided = FALSE</code> to smooth the covariate path from both
+sides instead.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_cox.html">kee_cox</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">delta</span><span class="op">)</span> <span class="op">~</span> <span class="va">covariates</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">dat</span>, id <span class="op">=</span> <span class="va">id</span>, obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span>
+<span>  h <span class="op">=</span> <span class="fl">0.5</span>, one_sided <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>half <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_kee_cox</span><span class="op">)</span>, full <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                   half       full</span></span>
+<span><span class="co">#&gt; covariates1  0.8583207  0.7803046</span></span>
+<span><span class="co">#&gt; covariates2 -0.4983319 -0.5343272</span></span></code></pre></div>
+<p>The switch reaches the risk-set averages inside the C++ backend as
+well as the row weights, so the two halves of the estimator always use
+the same support. <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code> takes it too, so the bandwidth
+is selected under the same kernel the final fit uses.</p>
+</div>
+<div class="section level2">
+<h2 id="asynchronous-longitudinal-data">Asynchronous Longitudinal Data<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-data"></a>
+</h2>
+<p>The estimators above model a survival outcome. When the outcome is
+itself a sparsely observed longitudinal process, measured at times that
+do <strong>not</strong> line up with the covariate’s measurement times,
+use the kernel-weighted estimating equations of Cao, Zeng and Fine
+(2015). Nothing is carried forward and no pair is discarded: each
+(response, covariate) pair contributes in proportion to its time
+separation.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">202</span><span class="op">)</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">300</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   id      time         y</span></span>
+<span><span class="co">#&gt; 1  1 0.2037272 0.3064489</span></span>
+<span><span class="co">#&gt; 2  1 0.3297899 0.4304008</span></span>
+<span><span class="co">#&gt; 3  1 0.3682846 0.2979238</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   id       time          x</span></span>
+<span><span class="co">#&gt; 1  1 0.07627971 -0.4664268</span></span>
+<span><span class="co">#&gt; 2  1 0.19848389 -0.8345285</span></span>
+<span><span class="co">#&gt; 3  1 0.21907798 -0.6879458</span></span></code></pre></div>
+<p>The two tables are deliberately separate — they are on different
+grids, so there is no single data frame that holds both without
+inventing rows.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async.html">kee_async</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">x</span>, h <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_a</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; kee_async(y_id = d$y$id, y_time = d$y$time, y = d$y$y, x_id = d$x$id, </span></span>
+<span><span class="co">#&gt;     x_time = d$x$time, X = d$x$x, h = 0.25)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   n= 300</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value  Pr(&gt;|z|)    </span></span>
+<span><span class="co">#&gt; (Intercept) 0.610058   0.065411  9.3266 &lt; 2.2e-16 ***</span></span>
+<span><span class="co">#&gt; x           1.336571   0.057907 23.0815 &lt; 2.2e-16 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Optimization status: 0</span></span></code></pre></div>
+<p>The default covariate process in <code><a href="../reference/sim_async_data.html">sim_async_data()</a></code> is
+Ornstein-Uhlenbeck, whose covariance has a kink on the diagonal. That is
+the case Cao, Zeng and Fine’s Section 6 leaves open, and it leaves an
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false" form="prefix">(</mo><mi>h</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">O(h)</annotation></semantics></math>
+bias that a symmetric kernel cannot remove, so the estimate drifts as
+the bandwidth grows.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.15</span>, <span class="fl">0.30</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">h</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="fu"><a href="../reference/kee_async.html">kee_async</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">x</span>, h <span class="op">=</span> <span class="va">h</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        x        x </span></span>
+<span><span class="co">#&gt; 1.355546 1.321226</span></span></code></pre></div>
+<p>If the coefficients themselves vary with time,
+<code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta(t)</annotation></semantics></math>
+pointwise. Both time arguments are smoothed, so it converges at the
+bivariate rate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>n</mi><msub><mi>h</mi><mn>1</mn></msub><msub><mi>h</mi><mn>2</mn></msub><msup><mo stretchy="false" form="postfix">)</mo><mrow><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">(n h_1 h_2)^{1/2}</annotation></semantics></math>
+and the bands are wide.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">203</span><span class="op">)</span></span>
+<span><span class="va">dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span></span>
+<span>  n <span class="op">=</span> <span class="fl">500</span>, beta <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tt</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span> <span class="op">+</span> <span class="va">tt</span><span class="op">)</span>,</span>
+<span>  lambda_y <span class="op">=</span> <span class="fl">8</span>, lambda_x <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>  x_cov <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">s</span>, <span class="va">t</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">4</span> <span class="op">*</span> <span class="op">(</span><span class="va">s</span> <span class="op">-</span> <span class="va">t</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">fit_td</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async_td.html">kee_async_td</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">id</span>, <span class="va">dt</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span>, <span class="va">dt</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">y</span>, <span class="va">dt</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">id</span>, <span class="va">dt</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">time</span>, <span class="va">dt</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">x</span>,</span>
+<span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.8</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span>, h <span class="op">=</span> <span class="fl">0.2</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span></span></code></pre></div>
+<p><img src="tutorial_files/figure-html/async-td-1.png" class="r-plt" alt="" width="672"></p>
 </div>
 <div class="section level2">
 <h2 id="typical-workflow">Typical Workflow<a class="anchor" aria-label="anchor" href="#typical-workflow"></a>
@@ -292,32 +1041,32 @@ fitted model.</li>
 selection.</li>
 <li>Use <code><a href="../reference/kee_cox.html">kee_cox()</a></code> or <code><a href="../reference/kee_additive.html">kee_additive()</a></code> when the
 scientific model matches those specialized estimators.</li>
+<li>Use <code><a href="../reference/kee_async.html">kee_async()</a></code> or <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> when the
+outcome is longitudinal rather than a survival time.</li>
 </ol>
 <p>This gives a standard R model-fitting interface while keeping the
 core numerical work in the Rcpp backend.</p>
 </div>
-  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
 
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p>
-<p>Developed by Dayu Sun.</p>
+  <p>Developed by Dayu Sun.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>

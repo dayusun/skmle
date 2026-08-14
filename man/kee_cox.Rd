@@ -4,7 +4,7 @@
 \alias{kee_cox}
 \title{Fit a Cox-Type KEE Model}
 \usage{
-kee_cox(formula, data, id, obs_times, h)
+kee_cox(formula, data, id, obs_times, h, one_sided = TRUE)
 }
 \arguments{
 \item{formula}{A model formula with a \code{survival::Surv()} response.}
@@ -16,6 +16,14 @@ kee_cox(formula, data, id, obs_times, h)
 \item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
 \item{h}{Positive kernel bandwidth.}
+
+\item{one_sided}{Logical. \code{TRUE} (the default) uses a \strong{half} kernel: only
+covariate observations strictly before the event or quadrature time inform
+that time, which is the risk-set restriction and the estimator as
+published. \code{FALSE} uses a \strong{full}, two-sided kernel, smoothing the
+covariate path from both sides. The switch applies to the risk-set
+averages inside the C++ backend as well as to the row weights, so the two
+are always consistent.}
 }
 \value{
 An object of class \code{kee} containing coefficient estimates, the estimated

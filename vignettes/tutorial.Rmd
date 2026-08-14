@@ -184,6 +184,80 @@ You can then inspect the final refit in the usual way.
 summary(cv_fit$fit)
 ```
 
+## Half Kernel or Full Kernel
+
+Every estimator weights a covariate observation by how far it sits from the time
+being modelled. By default that window is *one-sided*: only observations
+strictly before the time contribute, which is the risk-set restriction of a
+hazard model. Set `one_sided = FALSE` to smooth the covariate path from both
+sides instead.
+
+```{r one-sided}
+fit_full <- kee_cox(
+  Surv(X, delta) ~ covariates,
+  data = dat, id = id, obs_times = obs_times,
+  h = 0.5, one_sided = FALSE
+)
+cbind(half = coef(fit_kee_cox), full = coef(fit_full))
+```
+
+The switch reaches the risk-set averages inside the C++ backend as well as the
+row weights, so the two halves of the estimator always use the same support.
+`skmle_cv()` takes it too, so the bandwidth is selected under the same kernel
+the final fit uses.
+
+## Asynchronous Longitudinal Data
+
+The estimators above model a survival outcome. When the outcome is itself a
+sparsely observed longitudinal process, measured at times that do **not** line
+up with the covariate's measurement times, use the kernel-weighted estimating
+equations of Cao, Zeng and Fine (2015). Nothing is carried forward and no pair
+is discarded: each (response, covariate) pair contributes in proportion to its
+time separation.
+
+```{r async-data}
+set.seed(202)
+d <- sim_async_data(n = 300, beta = c(0.5, 1.5))
+head(d$y, 3)
+head(d$x, 3)
+```
+
+The two tables are deliberately separate — they are on different grids, so there
+is no single data frame that holds both without inventing rows.
+
+```{r async-ti}
+fit_a <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = 0.25)
+summary(fit_a)
+```
+
+The default covariate process in `sim_async_data()` is Ornstein-Uhlenbeck, whose
+covariance has a kink on the diagonal. That is the case Cao, Zeng and Fine's
+Section 6 leaves open, and it leaves an $O(h)$ bias that a symmetric kernel
+cannot remove, so the estimate drifts as the bandwidth grows.
+
+```{r async-bias}
+sapply(c(0.15, 0.30), function(h) {
+  coef(kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = h))[2]
+})
+```
+
+If the coefficients themselves vary with time, `kee_async_td()` estimates the
+curve $\beta(t)$ pointwise. Both time arguments are smoothed, so it converges at
+the bivariate rate $(n h_1 h_2)^{1/2}$ and the bands are wide.
+
+```{r async-td, fig.width = 7, fig.height = 4}
+set.seed(203)
+dt <- sim_async_data(
+  n = 500, beta = function(tt) cbind(0.5, 1 + tt),
+  lambda_y = 8, lambda_x = 8,
+  x_cov = function(s, t) exp(-4 * (s - t)^2)
+)
+fit_td <- kee_async_td(dt$y$id, dt$y$time, dt$y$y, dt$x$id, dt$x$time, dt$x$x,
+  times = seq(0.2, 0.8, by = 0.05), h = 0.2
+)
+plot(fit_td)
+```
+
 ## Typical Workflow
 
 For routine use, the usual sequence is:
@@ -193,5 +267,6 @@ For routine use, the usual sequence is:
 3. Use `summary()` and `plot()` to inspect the fitted model.
 4. Use `skmle_cv()` if you want data-driven bandwidth selection.
 5. Use `kee_cox()` or `kee_additive()` when the scientific model matches those specialized estimators.
+6. Use `kee_async()` or `kee_async_td()` when the outcome is longitudinal rather than a survival time.
 
 This gives a standard R model-fitting interface while keeping the core numerical work in the Rcpp backend.

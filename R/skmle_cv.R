@@ -12,6 +12,11 @@
 #'   If `NULL`, the current RNG state is used and no explicit seed is set.
 #' @param quiet Logical; if `TRUE`, suppress progress output.
 #'
+#' @section Kernel choice:
+#' `one_sided` is used inside the fold loop as well as being passed through to
+#' the refit, so the bandwidth is selected under the same kernel the final fit
+#' uses.
+#'
 #' @details
 #' `skmle_cv()` splits subjects, not rows, across folds. This is the appropriate
 #' unit for cross-validation because multiple rows belong to the same subject in the
@@ -68,7 +73,7 @@
 skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL,
                      n_h = 10, nknots = 3, norder = 3, lq_nodes = 64,
                      maxeval = 10000, xtol_rel = 1e-6, seed = NULL,
-                     quiet = FALSE) {
+                     quiet = FALSE, one_sided = TRUE) {
   if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(s)) {
     stop("formula, data, id, obs_times, and s must all be supplied")
   }
@@ -171,7 +176,8 @@ skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL,
     bsmat_tt_all = as.matrix(bsmat_tt_mat),
     maxeval = as.integer(maxeval),
     xtol_rel = as.numeric(xtol_rel),
-    quiet = as.logical(quiet)
+    quiet = as.logical(quiet),
+    one_sided = as.logical(one_sided)
   )
 
   cv_results <- data.frame(h = h_grid, cvloss = as.numeric(cv_losses))

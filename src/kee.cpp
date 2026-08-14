@@ -9,7 +9,7 @@ using namespace arma;
 arma::vec kee_cox_estequ(const arma::vec &beta, const arma::mat &covariates,
                          const arma::vec &X, const arma::vec &obs_times,
                          const arma::vec &delta, const arma::vec &kerval,
-                         double h, int n_subj) {
+                         double h, int n_subj, bool one_sided = true) {
 
   int n = X.n_elem;
   int p = covariates.n_cols;
@@ -32,7 +32,10 @@ arma::vec kee_cox_estequ(const arma::vec &beta, const arma::mat &covariates,
       for (int k = 0; k < n; ++k) {
         if (X[i] <= X[k]) {
           double dist_XX = X[i] - obs_times[k];
-          if (dist_XX > 0) {
+          // Half kernel: only covariate observations strictly before the event
+          // time enter the risk-set average.  Full kernel: both sides, and the
+          // Epanechnikov factor below already vanishes outside |dist| < h.
+          if (!one_sided || dist_XX > 0) {
             double kerval_XX =
                 std::max((1.0 - std::pow(dist_XX / h, 2.0)) * 0.75, 0.0) / h;
             if (kerval_XX > 0) {
@@ -58,7 +61,7 @@ arma::vec kee_cox_estequ(const arma::vec &beta, const arma::mat &covariates,
 List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
                  const arma::vec &X, const arma::vec &obs_times,
                  const arma::vec &delta, const arma::vec &kerval, double h,
-                 const arma::vec &id, int n_subj) {
+                 bool one_sided, const arma::vec &id, int n_subj) {
 
   int n = X.n_elem;
   int p = covariates.n_cols;
@@ -80,7 +83,10 @@ List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
       for (int k = 0; k < n; ++k) {
         if (X[i] <= X[k]) {
           double dist_XX = X[i] - obs_times[k];
-          if (dist_XX > 0) {
+          // Half kernel: only covariate observations strictly before the event
+          // time enter the risk-set average.  Full kernel: both sides, and the
+          // Epanechnikov factor below already vanishes outside |dist| < h.
+          if (!one_sided || dist_XX > 0) {
             double kerval_XX =
                 std::max((1.0 - std::pow(dist_XX / h, 2.0)) * 0.75, 0.0) / h;
             if (kerval_XX > 0) {
@@ -121,7 +127,8 @@ List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
 // [[Rcpp::export]]
 List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
                       const arma::vec &obs_times, const arma::vec &delta,
-                      const arma::vec &kerval, double h, const arma::vec &id,
+                      const arma::vec &kerval, double h, bool one_sided,
+                      const arma::vec &id,
                       const arma::vec &lq_x, const arma::vec &lq_w,
                       int n_subj) {
 
@@ -148,7 +155,7 @@ List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
     for (int k = 0; k < n; ++k) {
       if (tt <= X[k]) {
         double dist_tt = tt - obs_times[k];
-        if (dist_tt > 0) {
+        if (!one_sided || dist_tt > 0) {
           double kerval_tt =
               std::max((1.0 - std::pow(dist_tt / h, 2.0)) * 0.75, 0.0) / h;
           if (kerval_tt > 0) {
@@ -165,7 +172,7 @@ List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
       for (int i = 0; i < n; ++i) {
         if (tt <= X[i]) {
           double dist_tt = tt - obs_times[i];
-          if (dist_tt > 0) {
+          if (!one_sided || dist_tt > 0) {
             double kerval_tt =
                 std::max((1.0 - std::pow(dist_tt / h, 2.0)) * 0.75, 0.0) / h;
             if (kerval_tt > 0) {
