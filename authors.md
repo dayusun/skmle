@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/dayusun/skmle/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/dayusun/skmle/blob/HEAD/DESCRIPTION)
 
 Sun D (2026). *skmle: Sieve Kernel Maximum Likelihood Estimation for
 Survival Models*. R package version 0.1.0,

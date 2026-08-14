@@ -36,7 +36,7 @@
     </div>
 
     <div class="section level2">
-      <h2 id="main-modeling-functions">Main modeling functions<a class="anchor" aria-label="anchor" href="#main-modeling-functions"></a></h2>
+      <h2 id="survival-models-with-sparse-longitudinal-covariates">Survival models with sparse longitudinal covariates<a class="anchor" aria-label="anchor" href="#survival-models-with-sparse-longitudinal-covariates"></a></h2>
 
 
 
@@ -73,6 +73,29 @@
         </dt>
         <dd>Fit an Additive Hazards KEE Model</dd>
       </dl></div><div class="section level2">
+      <h2 id="asynchronous-longitudinal-regression">Asynchronous longitudinal regression<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-regression"></a></h2>
+
+      <div class="section-desc"><p>Kernel-weighted estimating equations of Cao, Zeng and Fine (2015) for a response and a covariate observed on different time grids.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="kee_async.html">kee_async()</a></code>
+
+        </dt>
+        <dd>Asynchronous longitudinal regression, time-invariant coefficients</dd>
+
+        <dt>
+
+          <code><a href="kee_async_td.html">kee_async_td()</a></code> <code><a href="kee_async_td.html">print(<i>&lt;kee_td&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Asynchronous longitudinal regression, time-dependent coefficients</dd>
+      </dl></div><div class="section level2">
       <h2 id="simulation">Simulation<a class="anchor" aria-label="anchor" href="#simulation"></a></h2>
 
 
@@ -88,6 +111,13 @@
 
         </dt>
         <dd>Simulate Sparse Longitudinal Survival Data</dd>
+
+        <dt>
+
+          <code><a href="sim_async_data.html">sim_async_data()</a></code>
+
+        </dt>
+        <dd>Simulate asynchronous longitudinal data</dd>
       </dl></div><div class="section level2">
       <h2 id="model-summaries-and-plots">Model summaries and plots<a class="anchor" aria-label="anchor" href="#model-summaries-and-plots"></a></h2>
 
@@ -104,6 +134,13 @@
 
         </dt>
         <dd>Plot the estimated baseline function for skmle model</dd>
+
+        <dt>
+
+          <code><a href="plot.kee_td.html">plot(<i>&lt;kee_td&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot estimated coefficient curves</dd>
 
         <dt>
 

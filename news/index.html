@@ -33,11 +33,30 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/dayusun/skmle/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="skmle-010">skmle 0.1.0<a class="anchor" aria-label="anchor" href="#skmle-010"></a></h2>
+<div class="section level3">
+<h3 id="asynchronous-longitudinal-data-0-1-0">Asynchronous longitudinal data<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-data-0-1-0"></a></h3>
+<ul><li>
+<code><a href="../reference/kee_async.html">kee_async()</a></code> and <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> implement the kernel-weighted estimating equations of Cao, Zeng and Fine (2015) for a longitudinal response and a longitudinal covariate observed on <strong>different</strong> time grids, with time-invariant and time-dependent coefficients respectively. Identity, log and logistic links are supported.</li>
+<li>
+<code><a href="../reference/sim_async_data.html">sim_async_data()</a></code> simulates from their Section 4 design.</li>
+<li>
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> and <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> methods for the <code>kee_td</code> coefficient curves.</li>
+<li>Both estimators are backed by C++: pairs are enumerated once and collapsed onto covariate rows, so the pair design never enters the Newton loop. The time-dependent weight factorises over the two occasion indices, so no pair is enumerated there at all.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="half-and-full-kernels-0-1-0">Half and full kernels<a class="anchor" aria-label="anchor" href="#half-and-full-kernels-0-1-0"></a></h3>
+<ul><li>
+<code><a href="../reference/skmle.html">skmle()</a></code>, <code><a href="../reference/kee_cox.html">kee_cox()</a></code>, <code><a href="../reference/kee_additive.html">kee_additive()</a></code>, <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code>, <code><a href="../reference/kee_async.html">kee_async()</a></code> and <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> take a <code>one_sided</code> argument. <code>TRUE</code> is the half kernel: only covariate observations preceding a time inform it. <code>FALSE</code> is the full, two-sided kernel. The survival estimators default to <code>TRUE</code>, the estimator as published; the asynchronous ones default to <code>FALSE</code>, the kernel of Cao, Zeng and Fine.</li>
+<li>For the survival estimators the switch reaches the risk-set averages in the C++ backend as well as the row weights, so the two halves of an estimator cannot disagree. <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code> also uses it inside the fold loop, which previously had the half kernel hardcoded, so the bandwidth is now selected under the kernel the refit uses.</li>
+<li>The Epanechnikov kernel had been written out inline in three fitting functions; it now lives in one internal helper, so the half/full switch cannot be applied to two of the three.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="initial-release-0-1-0">Initial release<a class="anchor" aria-label="anchor" href="#initial-release-0-1-0"></a></h3>
 <ul><li>Initial CRAN release.</li>
 <li>
 <code><a href="../reference/skmle.html">skmle()</a></code> fits transformed hazards models by sieve maximum kernel-weighted log-likelihood estimation (SMKLE).</li>
@@ -50,7 +69,9 @@
 <li>
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>, <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> methods for fitted objects.</li>
 </ul></div>
-  </main></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

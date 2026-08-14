@@ -18,7 +18,8 @@ skmle(
   norder = 3,
   lq_nodes = 64,
   maxeval = 10000,
-  xtol_rel = 1e-06
+  xtol_rel = 1e-06,
+  one_sided = TRUE
 )
 ```
 
@@ -75,6 +76,16 @@ skmle(
 - xtol_rel:
 
   Relative convergence tolerance passed to the optimizer.
+
+- one_sided:
+
+  Logical. `TRUE` (the default) uses a **half** kernel: only covariate
+  observations strictly before the event or quadrature time inform that
+  time, which is the risk-set restriction and the estimator as
+  published. `FALSE` uses a **full**, two-sided kernel, smoothing the
+  covariate path from both sides. The switch applies to the risk-set
+  averages inside the C++ backend as well as to the row weights, so the
+  two are always consistent.
 
 ## Value
 

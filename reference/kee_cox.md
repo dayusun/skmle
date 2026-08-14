@@ -6,7 +6,7 @@ data using a kernel estimating-equation approach.
 ## Usage
 
 ``` r
-kee_cox(formula, data, id, obs_times, h)
+kee_cox(formula, data, id, obs_times, h, one_sided = TRUE)
 ```
 
 ## Arguments
@@ -32,6 +32,16 @@ kee_cox(formula, data, id, obs_times, h)
 - h:
 
   Positive kernel bandwidth.
+
+- one_sided:
+
+  Logical. `TRUE` (the default) uses a **half** kernel: only covariate
+  observations strictly before the event or quadrature time inform that
+  time, which is the risk-set restriction and the estimator as
+  published. `FALSE` uses a **full**, two-sided kernel, smoothing the
+  covariate path from both sides. The switch applies to the risk-set
+  averages inside the C++ backend as well as to the row weights, so the
+  two are always consistent.
 
 ## Value
 
