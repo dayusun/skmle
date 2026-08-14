@@ -67,10 +67,14 @@
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p><code>skmle</code> fits transformed hazards survival models when
-longitudinal covariates are observed sparsely and intermittently over
-time.</p>
-<p>The package currently provides three main user-facing workflows:</p>
+<p>A longitudinal covariate is rarely measured at the time you need it.
+<code>skmle</code> handles that mismatch by weighting each observation
+according to how far its measurement time sits from the time being
+modelled, rather than carrying a value forward or smoothing the
+covariate and substituting it.</p>
+<p>Two outcome types are covered.</p>
+<p><strong>Survival outcomes</strong>, where the covariate is observed
+sparsely and intermittently over follow-up:</p>
 <ol style="list-style-type: decimal">
 <li>
 <code><a href="../reference/skmle.html">skmle()</a></code> for the general transformed hazards model.</li>
@@ -81,9 +85,20 @@ estimating-equation approach.</li>
 <code><a href="../reference/kee_additive.html">kee_additive()</a></code> for the additive hazards
 estimating-equation approach.</li>
 </ol>
-<p>This vignette shows the usual modeling workflow: simulate data, fit a
-model, inspect the summary output, plot the estimated baseline
-component, and select a bandwidth by cross-validation.</p>
+<p><strong>Asynchronous longitudinal outcomes</strong>, where the
+outcome is itself a sparsely observed process recorded on a time grid
+that does not line up with the covariate’s:</p>
+<ol start="4" style="list-style-type: decimal">
+<li>
+<code><a href="../reference/kee_async.html">kee_async()</a></code> for time-invariant coefficients.</li>
+<li>
+<code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> for a coefficient curve
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta(t)</annotation></semantics></math>.</li>
+</ol>
+<p>This vignette walks through both: simulate data, fit a model, inspect
+the summary output, plot the estimated baseline component, select a
+bandwidth by cross-validation, then move to the asynchronous
+longitudinal setting.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/astamm/nloptr" class="external-link">nloptr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.sundayu.me/skmle/" class="external-link">skmle</a></span><span class="op">)</span></span>

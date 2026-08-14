@@ -1,5 +1,10 @@
 # Package index
 
+## Package overview
+
+- [`skmle-package`](https://dayusun.github.io/skmle/reference/skmle-package.md)
+  : skmle: Survival and Longitudinal Models with Asynchronous Covariates
+
 ## Survival models with sparse longitudinal covariates
 
 - [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) : Fit
