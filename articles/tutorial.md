@@ -457,10 +457,9 @@ plot(fit_td)
 
 ![](tutorial_files/figure-html/async-td-1.png)
 
-[`vignette("asynchronous", package = "skmle")`](https://dayusun.github.io/skmle/articles/asynchronous.md)
-covers this properly: why last-value-carried-forward and regression
-calibration fail here, how to read the bandwidth diagnostics, and what
-the half kernel changes.
+The `asynchronous` article covers this properly: why
+last-value-carried-forward and regression calibration fail here, how to
+read the bandwidth diagnostics, and what the half kernel changes.
 
 ## A typical workflow
 
