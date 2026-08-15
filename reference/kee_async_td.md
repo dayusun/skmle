@@ -93,8 +93,9 @@ print(x, ...)
   restricts the **covariate** side to observations strictly before the
   target time, so \\\beta(t)\\ uses only covariate values already
   available at `t`. The response side stays two-sided: it is a local
-  average around `t`, not a filtering step. Both lags are measured as
-  "how far in the past", matching
+  average around `t`; restricting it as well would give a filtering
+  estimate, which answers a different question. Both lags are measured
+  as "how far in the past", matching
   [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
   and the survival estimators.
 
@@ -169,14 +170,15 @@ as structure without checking it against them.
 A practical consequence: a sample that gives a comfortable
 time-invariant fit can be far too small for a credible curve. If the
 bands cover a horizontal line across the whole range, the honest reading
-is that the data do not resolve time variation, not that \\\beta(t)\\ is
-flat.
+is that the data cannot resolve time variation. That is a different
+statement from evidence that \\\beta(t)\\ is flat.
 
 ## Reading the output
 
-`se` holds pointwise sandwich standard errors at each target time. They
-are pointwise, not simultaneous, so a curve leaving the band at one or
-two target times is not evidence of anything on its own.
+`se` holds sandwich standard errors at each target time separately. Each
+band covers its own target time; read across the whole curve and the
+coverage is much worse than the nominal level, so a curve straying
+outside at one or two times means little on its own.
 
 No undersmoothing correction is applied, so the intervals are centred on
 the smoothed curve \\E\hat\beta(t)\\ rather than on \\\beta(t)\\. With a

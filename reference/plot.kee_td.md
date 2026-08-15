@@ -37,10 +37,10 @@ plot(x, which = seq_len(ncol(x$coefficients)), level = 0.95, ...)
 
 ## Details
 
-The bands are pointwise, not simultaneous: reading them as a confidence
-region for the whole curve overstates the evidence. They are also not
-corrected for smoothing bias, so they cover \\E\hat\beta(t)\\ rather
-than \\\beta(t)\\; a large bandwidth flattens the curve without widening
+Each band covers its own target time. Reading them together as a region
+for the whole curve overstates the evidence. They also carry no
+correction for smoothing bias, so they cover \\E\hat\beta(t)\\ instead
+of \\\beta(t)\\: a large bandwidth flattens the curve without widening
 the band to say so.
 
 ## Examples

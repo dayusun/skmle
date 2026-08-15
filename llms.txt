@@ -12,7 +12,7 @@ when the sampling is sparse.
 according to how far its measurement time sits from the time being
 modelled. It covers two settings:
 
-**Survival outcomes.** The transformed hazards family, with covariates
+For survival outcomes, the transformed hazards family, with covariates
 observed sparsely and intermittently. The Box-Cox parameter `s` indexes
 the family: `s = 0` is proportional hazards, `s = 1` is additive
 hazards, and other values interpolate. This is the Sieve Maximum
@@ -20,11 +20,11 @@ Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and
 Cao (2025), plus faster specialised estimating equations for the two
 named cases.
 
-**Longitudinal outcomes.** Generalised linear models where the response
+For longitudinal outcomes, generalised linear models where the response
 and the covariate are measured on *different* time grids and never
-observed together — the asynchronous case. This is the kernel-weighted
-estimating equations of Cao, Zeng and Fine (2015), with either
-time-invariant coefficients or a coefficient curve `β(t)`.
+observed together. This is the asynchronous case. This is the
+kernel-weighted estimating equations of Cao, Zeng and Fine (2015), with
+either time-invariant coefficients or a coefficient curve `β(t)`.
 
 Both settings share one idea and one implementation: a kernel weight
 bridging mismatched time grids, with the heavy numerical work in C++ via
@@ -34,13 +34,13 @@ bridging mismatched time grids, with the heavy numerical work in C++ via
 
 Two questions.
 
-**1. What is the outcome?** A *time to an event* (death, relapse,
-failure), possibly censored — the survival estimators, and your data is
+First, what is the outcome? A *time to an event* (death, relapse,
+failure), possibly censored? Use the survival estimators; your data is
 one long table. Or a *repeatedly measured quantity* (a score, a lab
-value) recorded on its own schedule — the asynchronous estimators, and
+value) recorded on its own schedule? Use the asynchronous estimators;
 your data is two tables.
 
-**2. Then:**
+Then:
 
 | Outcome | Situation | Function |
 |:---|:---|:---|
@@ -57,33 +57,33 @@ one, and says in a message what it chose. That is enough for a first
 answer; the `_cv()` functions choose it from the data, which is what to
 report.
 
-## Main Functions
+## The functions
 
 **Survival outcomes**
 
-- [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) — the
-  general transformed hazards model, by sieve maximum kernel-weighted
-  likelihood.
-- [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) —
-  proportional hazards, by kernel estimating equation.
+- [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) fits
+  the general transformed hazards model, by sieve maximum
+  kernel-weighted likelihood.
+- [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md)
+  fits proportional hazards, by kernel estimating equation.
 - [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
-  — additive hazards, closed form.
+  fits additive hazards, in closed form.
 - [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
-  — bandwidth selection by subject-level cross-validation, with a refit
+  selects the bandwidth by subject-level cross-validation, with a refit
   on the full data.
 - [`sim_skmle_data()`](https://dayusun.github.io/skmle/reference/sim_skmle_data.md)
-  — simulate sparse longitudinal survival data.
+  simulates sparse longitudinal survival data.
 
 **Asynchronous longitudinal outcomes**
 
 - [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
-  — time-invariant coefficients.
+  fits one constant coefficient per covariate.
 - [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
-  — bandwidth selection by subject-level cross-validation.
+  selects the bandwidth by subject-level cross-validation.
 - [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
-  — a coefficient curve `β(t)`, estimated pointwise.
+  estimates a coefficient curve `β(t)`, pointwise.
 - [`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
-  — simulate a response and a covariate on independent observation-time
+  simulates a response and a covariate on independent observation-time
   streams.
 
 Fitted objects support [`coef()`](https://rdrr.io/r/stats/coef.html),
@@ -115,7 +115,7 @@ devtools::install_github("dayusun/skmle")
 Because the package compiles C++ code, you need a working toolchain such
 as `Rtools` on Windows or the Xcode command line tools on macOS.
 
-## Survival Outcomes
+## Survival outcomes
 
 ``` r
 
@@ -181,7 +181,7 @@ cv_fit$h_cv
 summary(cv_fit$fit)
 ```
 
-## Asynchronous Longitudinal Outcomes
+## Asynchronous longitudinal outcomes
 
 Here the outcome is itself a sparsely observed process, and its
 measurement times do not line up with the covariate’s. The two are
@@ -220,7 +220,8 @@ cv$h_cv
 Each (response, covariate) pair within a subject contributes in
 proportion to its time separation, so nothing is discarded and nothing
 is carried forward. The estimator converges at the smoothing rate
-`(nh)^(1/2)`, not at `sqrt(n)`.
+`(nh)^(1/2)`, so standard errors shrink more slowly than in a parametric
+fit.
 
 If the coefficients vary with time,
 [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
@@ -239,9 +240,9 @@ plot(fit_td)          # beta_j(t) with pointwise 95% bands
 tidy(fit_td)          # one row per (time, term)
 ```
 
-There is a full article on this setting — why last-value-carried-forward
+There is a full article on this setting: why last-value-carried-forward
 and regression calibration fail, how to read the bandwidth diagnostics,
-what the half kernel changes:
+and what the half kernel changes.
 
 ``` r
 
@@ -250,7 +251,7 @@ vignette("asynchronous", package = "skmle")
 
 Identity, log and logistic links are supported in both.
 
-## Benchmarking Against SurvSparse
+## Benchmarks against SurvSparse
 
 The package includes a benchmark vignette comparing `skmle` with
 `SurvSparse` on matched sparse longitudinal survival-data settings.

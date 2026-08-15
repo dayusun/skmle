@@ -42,7 +42,7 @@ a kernel estimating-equation approach."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Fit an Additive Hazards KEE Model</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/R/kee.R" class="external-link"><code>R/kee.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/R/kee.R" class="external-link"><code>R/kee.R</code></a></small>
       <div class="d-none name"><code>kee_additive.Rd</code></div>
     </div>
 
@@ -85,9 +85,9 @@ a kernel estimating-equation approach.</p>
 
 
 <dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
-<dd><p>Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
-off the observation times and reported in a message. That is a starting
-point, not a tuned choice: use <code><a href="skmle_cv.html">skmle_cv()</a></code> to select it from the data.</p></dd>
+<dd><p>Positive kernel bandwidth. If omitted, one is read off the
+observation times as a rule of thumb and reported in a message. Use
+<code><a href="skmle_cv.html">skmle_cv()</a></code> to choose it from the data.</p></dd>
 
 
 <dt id="arg-lq-nodes">lq_nodes<a class="anchor" aria-label="anchor" href="#arg-lq-nodes"></a></dt>
@@ -95,11 +95,11 @@ point, not a tuned choice: use <code><a href="skmle_cv.html">skmle_cv()</a></cod
 
 
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>
-<dd><p>Logical. <code>TRUE</code> (the default) uses a <strong>half</strong> kernel: only
+<dd><p>Logical. <code>TRUE</code> (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform
 that time, which is the risk-set restriction and the estimator as
-published. <code>FALSE</code> uses a <strong>full</strong>, two-sided kernel, smoothing the
-covariate path from both sides. The switch applies to the risk-set
+published. <code>FALSE</code> uses a full, two-sided kernel, smoothing the covariate
+path from both sides. The switch applies to the risk-set
 averages inside the C++ backend as well as to the row weights, so the two
 are always consistent.</p></dd>
 

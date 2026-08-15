@@ -44,7 +44,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>skmle: Sieve Kernel Maximum Likelihood Estimation</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/R/skmle-package.R" class="external-link"><code>R/skmle-package.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/R/skmle-package.R" class="external-link"><code>R/skmle-package.R</code></a></small>
       <div class="d-none name"><code>skmle-package.Rd</code></div>
     </div>
 
@@ -68,7 +68,7 @@ Two outcome types are covered.</p>
 
 
 <p>Answer two questions.</p>
-<p><strong>1. What is the outcome?</strong></p>
+<p>First, what is the outcome?</p>
 <dl><dt>A time to an event</dt>
 <dd><p>(death, relapse, failure), possibly censored –
 use the survival estimators. Your data is one long table with a row per
@@ -80,7 +80,7 @@ its own schedule – use the asynchronous estimators. Your data is two
 tables, one per process.</p></dd>
 
 
-</dl><p><strong>2. Then pick within that group.</strong></p>
+</dl><p>Then pick within that group.</p>
 <table class="table table"><tr><td><strong>Outcome</strong></td><td><strong>Situation</strong></td><td><strong>Function</strong></td></tr><tr><td>Survival</td><td>Start here; Cox model</td><td><code><a href="kee_cox.html">kee_cox()</a></code></td></tr><tr><td>Survival</td><td>Additive hazards instead</td><td><code><a href="kee_additive.html">kee_additive()</a></code></td></tr><tr><td>Survival</td><td>Want the baseline hazard, or a model between the two</td><td><code><a href="skmle.html">skmle()</a></code></td></tr><tr><td>Survival</td><td>Choose the bandwidth properly</td><td><code><a href="skmle_cv.html">skmle_cv()</a></code></td></tr><tr><td>Longitudinal</td><td>Start here; one constant effect</td><td><code><a href="kee_async.html">kee_async()</a></code></td></tr><tr><td>Longitudinal</td><td>Choose the bandwidth properly</td><td><code><a href="kee_async_cv.html">kee_async_cv()</a></code></td></tr><tr><td>Longitudinal</td><td>The effect may change over time</td><td><code><a href="kee_async_td.html">kee_async_td()</a></code></td></tr></table><p>Every fitting function will pick a bandwidth for you if you do not supply
 one, and will say in a message what it chose. That is enough to get a first
 answer; the <code>_cv()</code> functions choose it from the data, which is what to

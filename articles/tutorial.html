@@ -65,7 +65,7 @@
       <h1>Getting Started with skmle</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/vignettes/tutorial.Rmd" class="external-link"><code>vignettes/tutorial.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/vignettes/tutorial.Rmd" class="external-link"><code>vignettes/tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>tutorial.Rmd</code></div>
     </div>
 
@@ -110,12 +110,12 @@ longitudinal setting.</p>
 <h2 id="which-function-do-i-need">Which function do I need?<a class="anchor" aria-label="anchor" href="#which-function-do-i-need"></a>
 </h2>
 <p>Two questions.</p>
-<p><strong>1. What is the outcome?</strong> A <em>time to an event</em>
-(death, relapse, failure), possibly censored — the survival estimators,
-and your data is one long table. Or a <em>repeatedly measured
-quantity</em> (a score, a lab value) recorded on its own schedule — the
-asynchronous estimators, and your data is two tables.</p>
-<p><strong>2. Then:</strong></p>
+<p>First, what is the outcome? A <em>time to an event</em> (death,
+relapse, failure), possibly censored? Use the survival estimators; your
+data is one long table. Or a <em>repeatedly measured quantity</em> (a
+score, a lab value) recorded on its own schedule? Use the asynchronous
+estimators; your data is two tables.</p>
+<p>Then:</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -176,7 +176,7 @@ is what to report.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="simulate-example-data">Simulate Example Data<a class="anchor" aria-label="anchor" href="#simulate-example-data"></a>
+<h2 id="simulating-some-data">Simulating some data<a class="anchor" aria-label="anchor" href="#simulating-some-data"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
@@ -219,7 +219,7 @@ time</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="fit-the-general-transformed-hazards-model">Fit the General Transformed Hazards Model<a class="anchor" aria-label="anchor" href="#fit-the-general-transformed-hazards-model"></a>
+<h2 id="fitting-the-general-transformed-hazards-model">Fitting the general transformed hazards model<a class="anchor" aria-label="anchor" href="#fitting-the-general-transformed-hazards-model"></a>
 </h2>
 <p>The <code>covariates</code> column returned by
 <code><a href="../reference/sim_skmle_data.html">sim_skmle_data()</a></code> is a matrix. You can either use it
@@ -271,7 +271,7 @@ objects, the formatted inferential output is produced by
 </ul>
 </div>
 <div class="section level2">
-<h2 id="plot-the-estimated-baseline-component">Plot the Estimated Baseline Component<a class="anchor" aria-label="anchor" href="#plot-the-estimated-baseline-component"></a>
+<h2 id="plotting-the-baseline">Plotting the baseline<a class="anchor" aria-label="anchor" href="#plotting-the-baseline"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_skmle</span><span class="op">)</span></span></code></pre></div>
@@ -280,12 +280,12 @@ objects, the formatted inferential output is produced by
 from the sieve fit.</p>
 </div>
 <div class="section level2">
-<h2 id="fit-the-specialized-estimating-equation-methods">Fit the Specialized Estimating-Equation Methods<a class="anchor" aria-label="anchor" href="#fit-the-specialized-estimating-equation-methods"></a>
+<h2 id="the-specialised-estimating-equations">The specialised estimating equations<a class="anchor" aria-label="anchor" href="#the-specialised-estimating-equations"></a>
 </h2>
 <p>When the model of interest matches one of the specialized settings,
 the package also provides dedicated estimating-equation estimators.</p>
 <div class="section level3">
-<h3 id="cox-type-estimator">Cox-Type Estimator<a class="anchor" aria-label="anchor" href="#cox-type-estimator"></a>
+<h3 id="cox-type">Cox-type<a class="anchor" aria-label="anchor" href="#cox-type"></a>
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_kee_cox</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_cox.html">kee_cox</a></span><span class="op">(</span></span>
@@ -311,7 +311,7 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="additive-hazards-estimator">Additive Hazards Estimator<a class="anchor" aria-label="anchor" href="#additive-hazards-estimator"></a>
+<h3 id="additive-hazards">Additive hazards<a class="anchor" aria-label="anchor" href="#additive-hazards"></a>
 </h3>
 <p>For the additive hazards estimator, simulate data under
 <code>s = 1</code>.</p>
@@ -352,7 +352,7 @@ the package also provides dedicated estimating-equation estimators.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="select-a-bandwidth-by-cross-validation">Select a Bandwidth by Cross-Validation<a class="anchor" aria-label="anchor" href="#select-a-bandwidth-by-cross-validation"></a>
+<h2 id="selecting-a-bandwidth">Selecting a bandwidth<a class="anchor" aria-label="anchor" href="#selecting-a-bandwidth"></a>
 </h2>
 <p>Bandwidth selection can be handled by <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -403,7 +403,7 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span><span class="co">#&gt; Log-likelihood: 0.06305</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="half-kernel-or-full-kernel">Half Kernel or Full Kernel<a class="anchor" aria-label="anchor" href="#half-kernel-or-full-kernel"></a>
+<h2 id="half-kernel-or-full-kernel">Half kernel or full kernel<a class="anchor" aria-label="anchor" href="#half-kernel-or-full-kernel"></a>
 </h2>
 <p>Every estimator weights a covariate observation by how far it sits
 from the time being modelled. By default that window is
@@ -427,7 +427,7 @@ the same support. <code><a href="../reference/skmle_cv.html">skmle_cv()</a></cod
 is selected under the same kernel the final fit uses.</p>
 </div>
 <div class="section level2">
-<h2 id="asynchronous-longitudinal-data">Asynchronous Longitudinal Data<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-data"></a>
+<h2 id="asynchronous-longitudinal-data">Asynchronous longitudinal data<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-data"></a>
 </h2>
 <p>The estimators above model a survival outcome. When the outcome is
 itself a sparsely observed longitudinal process, measured at times that
@@ -453,10 +453,10 @@ separation.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 0.076<span style="text-decoration: underline;">3</span> -<span style="color: #BB0000;">0.466</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1 0.198  -<span style="color: #BB0000;">0.835</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     1 0.219  -<span style="color: #BB0000;">0.688</span></span></span></code></pre></div>
-<p>The two tables are deliberately separate — they are on different
-grids, so there is no single data frame that holds both without
-inventing rows. The formula spans both: its left-hand side is looked up
-in <code>data_y</code>, its right-hand side in <code>data_x</code>, and
+<p>The two tables are deliberately separate. They sit on different
+grids, so no single data frame holds both without inventing rows. The
+formula spans both: its left-hand side is looked up in
+<code>data_y</code>, its right-hand side in <code>data_x</code>, and
 <code>id</code> and <code>time</code> name columns present in each.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async.html">kee_async</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span>,</span>
@@ -531,13 +531,13 @@ wide.</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tutorial_files/figure-html/async-td-1.png" class="r-plt" alt="" width="672"></p>
-<p>For a fuller treatment — why last-value-carried-forward and
-regression calibration fail here, how to read the bandwidth diagnostics,
-and what the half kernel changes — see
-<code><a href="../articles/asynchronous.html">vignette("asynchronous", package = "skmle")</a></code>.</p>
+<p><code><a href="../articles/asynchronous.html">vignette("asynchronous", package = "skmle")</a></code> covers this
+properly: why last-value-carried-forward and regression calibration fail
+here, how to read the bandwidth diagnostics, and what the half kernel
+changes.</p>
 </div>
 <div class="section level2">
-<h2 id="typical-workflow">Typical Workflow<a class="anchor" aria-label="anchor" href="#typical-workflow"></a>
+<h2 id="a-typical-workflow">A typical workflow<a class="anchor" aria-label="anchor" href="#a-typical-workflow"></a>
 </h2>
 <p>For routine use, the usual sequence is:</p>
 <ol style="list-style-type: decimal">

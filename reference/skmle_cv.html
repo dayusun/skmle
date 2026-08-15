@@ -40,7 +40,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Select the Bandwidth by Cross-Validation</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/R/skmle_cv.R" class="external-link"><code>R/skmle_cv.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/R/skmle_cv.R" class="external-link"><code>R/skmle_cv.R</code></a></small>
       <div class="d-none name"><code>skmle_cv.Rd</code></div>
     </div>
 
@@ -145,11 +145,11 @@ If <code>NULL</code>, the current RNG state is used and no explicit seed is set.
 
 
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>
-<dd><p>Logical. <code>TRUE</code> (the default) uses a <strong>half</strong> kernel: only
+<dd><p>Logical. <code>TRUE</code> (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform
 that time, which is the risk-set restriction and the estimator as
-published. <code>FALSE</code> uses a <strong>full</strong>, two-sided kernel, smoothing the
-covariate path from both sides. The switch applies to the risk-set
+published. <code>FALSE</code> uses a full, two-sided kernel, smoothing the covariate
+path from both sides. The switch applies to the risk-set
 averages inside the C++ backend as well as to the row weights, so the two
 are always consistent.</p></dd>
 
@@ -174,9 +174,9 @@ are always consistent.</p></dd>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>skmle_cv()</code> splits subjects, not rows, across folds. This is the appropriate
-unit for cross-validation because multiple rows belong to the same subject in the
-long-format data structure.</p>
+    <p><code>skmle_cv()</code> splits subjects across folds. Several rows belong to the same
+subject in long format, so splitting by row would put one subject on both
+sides of the split.</p>
 <p>After choosing the bandwidth with the smallest average validation loss, the
 function refits <code><a href="skmle.html">skmle()</a></code> on the full data set using the selected value.
 Because the fold assignment is random, pass <code>seed</code> (or <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> before

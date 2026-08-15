@@ -1,10 +1,10 @@
 # Number of subjects contributing to a fit
 
 The asymptotics of every estimator in this package are in the number of
-**subjects**, not the number of rows: rows within a subject are repeated
-measurements of one trajectory and carry far less than one observation's
-worth of information. [`nobs()`](https://rdrr.io/r/stats/nobs.html)
-therefore returns the subject count, which is also what
+subjects. Rows within a subject are repeated measurements of one
+trajectory and carry far less than one observation's worth of
+information, so [`nobs()`](https://rdrr.io/r/stats/nobs.html) returns
+the subject count, which is what
 [`summary()`](https://rdrr.io/r/base/summary.html) prints as `n`.
 
 ## Usage

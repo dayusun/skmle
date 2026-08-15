@@ -30,7 +30,7 @@ covariate and substituting it. Two outcome types are covered.
 
 Answer two questions.
 
-**1. What is the outcome?**
+First, what is the outcome?
 
 - A time to an event:
 
@@ -43,7 +43,7 @@ Answer two questions.
   (a score, a lab value) recorded on its own schedule – use the
   asynchronous estimators. Your data is two tables, one per process.
 
-**2. Then pick within that group.**
+Then pick within that group.
 
 |  |  |  |
 |----|----|----|

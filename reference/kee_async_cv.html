@@ -52,7 +52,7 @@ $$ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Choose the bandwidth for an asynchronous longitudinal fit</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/R/kee_async.R" class="external-link"><code>R/kee_async.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/R/kee_async.R" class="external-link"><code>R/kee_async.R</code></a></small>
       <div class="d-none name"><code>kee_async_cv.Rd</code></div>
     </div>
 
@@ -204,8 +204,8 @@ the smallest candidate every time.</p>
     </div>
     <div class="section level2">
     <h2 id="why-squared-error-and-not-a-likelihood">Why squared error and not a likelihood<a class="anchor" aria-label="anchor" href="#why-squared-error-and-not-a-likelihood"></a></h2>
-    <p>The estimator solves an estimating equation, not a likelihood, so there is no
-held-out log-likelihood to evaluate. The same weighted squared error on the
+    <p>These estimators solve an estimating equation. There is no likelihood, so
+nothing to evaluate as a held-out log-likelihood. The same weighted squared error on the
 response scale is used for all three links, applied after <code>link</code>.</p>
     </div>
     <div class="section level2">
