@@ -304,7 +304,7 @@ fit_td <- kee_async_td(dt$y, dt$x,
 plot(fit_td)
 ```
 
-`vignette("asynchronous", package = "skmle")` covers this properly: why
+The `asynchronous` article covers this properly: why
 last-value-carried-forward and regression calibration fail here, how to read
 the bandwidth diagnostics, and what the half kernel changes.
 

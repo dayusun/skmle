@@ -109,8 +109,13 @@ Install the development version from GitHub:
 ``` r
 
 # install.packages("devtools")
-devtools::install_github("dayusun/skmle")
+devtools::install_github("dayusun/skmle", build_vignettes = TRUE)
 ```
+
+`build_vignettes = TRUE` matters if you want to read the articles from R
+with [`vignette()`](https://rdrr.io/r/utils/vignette.html). Without it
+the code installs fine but the vignettes are skipped. You can also read
+them on the website, linked above, without installing anything.
 
 Because the package compiles C++ code, you need a working toolchain such
 as `Rtools` on Windows or the Xcode command line tools on macOS.
@@ -249,6 +254,8 @@ and what the half kernel changes.
 vignette("asynchronous", package = "skmle")
 ```
 
+or read it at <https://www.sundayu.me/skmle/articles/asynchronous.html>.
+
 Identity, log and logistic links are supported in both.
 
 ## Benchmarks against SurvSparse
@@ -284,6 +291,9 @@ For a package tutorial covering both settings, see:
 
 vignette("tutorial", package = "skmle")
 ```
+
+All three are also on the website:
+<https://www.sundayu.me/skmle/articles/>.
 
 ## References
 
