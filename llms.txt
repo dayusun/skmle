@@ -44,13 +44,13 @@ Then:
 
 | Outcome | Situation | Function |
 |:---|:---|:---|
-| Survival | Start here; Cox model | [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) |
-| Survival | Additive hazards instead | [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md) |
-| Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) |
-| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md) |
-| Longitudinal | Start here; one constant effect | [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md) |
-| Longitudinal | Choose the bandwidth properly | [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md) |
-| Longitudinal | The effect may change over time | [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md) |
+| Survival | Start here; Cox model | [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) |
+| Survival | Additive hazards instead | [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md) |
+| Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) |
+| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
+| Longitudinal | Start here; one constant effect | [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) |
+| Longitudinal | Choose the bandwidth properly | [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md) |
+| Longitudinal | The effect may change over time | [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md) |
 
 Every fitting function picks a bandwidth for you if you do not supply
 one, and says in a message what it chose. That is enough for a first
@@ -61,28 +61,28 @@ report.
 
 **Survival outcomes**
 
-- [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) fits
-  the general transformed hazards model, by sieve maximum
-  kernel-weighted likelihood.
-- [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md)
-  fits proportional hazards, by kernel estimating equation.
-- [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+- [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) fits the
+  general transformed hazards model, by sieve maximum kernel-weighted
+  likelihood.
+- [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) fits
+  proportional hazards, by kernel estimating equation.
+- [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
   fits additive hazards, in closed form.
-- [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+- [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
   selects the bandwidth by subject-level cross-validation, with a refit
   on the full data.
-- [`sim_skmle_data()`](https://dayusun.github.io/skmle/reference/sim_skmle_data.md)
+- [`sim_skmle_data()`](https://www.sundayu.me/skmle/reference/sim_skmle_data.md)
   simulates sparse longitudinal survival data.
 
 **Asynchronous longitudinal outcomes**
 
-- [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
+- [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md)
   fits one constant coefficient per covariate.
-- [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+- [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
   selects the bandwidth by subject-level cross-validation.
-- [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+- [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
   estimates a coefficient curve `β(t)`, pointwise.
-- [`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
+- [`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md)
   simulates a response and a covariate on independent observation-time
   streams.
 
@@ -211,7 +211,7 @@ tidy(fit_a, conf.int = TRUE)   # a tibble, ready for ggplot2 or dplyr
 ```
 
 `h` is the one consequential choice;
-[`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
 makes it by cross-validation over subjects:
 
 ``` r
@@ -229,7 +229,7 @@ is carried forward. The estimator converges at the smoothing rate
 fit.
 
 If the coefficients vary with time,
-[`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+[`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
 estimates the curve pointwise. Both time arguments are smoothed there,
 so it converges at the bivariate rate `(n h1 h2)^(1/2)` and the bands
 are correspondingly wide:
@@ -274,7 +274,7 @@ In the current benchmark sweep:
 
 The additive comparison also includes the general spline-based
 `skmle(s = 1)` fit, which remains competitive but is slower than
-[`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+[`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
 because it solves the broader joint optimization problem rather than a
 specialized estimating equation.
 
@@ -310,19 +310,19 @@ Society: Series B, 77*(4), 755-776. <https://doi.org/10.1111/rssb.12086>
 
 ## Package overview
 
-- [`skmle-package`](https://dayusun.github.io/skmle/reference/skmle-package.md)
+- [`skmle-package`](https://www.sundayu.me/skmle/reference/skmle-package.md)
   : skmle: Sieve Kernel Maximum Likelihood Estimation
 
 ## Survival models with sparse longitudinal covariates
 
-- [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) : Fit
-  a Transformed Hazards Model by SMKLE
-- [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
-  [`print(`*`<cv.skmle>`*`)`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+- [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) : Fit a
+  Transformed Hazards Model by SMKLE
+- [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
+  [`print(`*`<cv.skmle>`*`)`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
   : Select the Bandwidth by Cross-Validation
-- [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) :
-  Fit a Cox-Type KEE Model
-- [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+- [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) : Fit
+  a Cox-Type KEE Model
+- [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
   : Fit an Additive Hazards KEE Model
 
 ## Asynchronous longitudinal regression
@@ -330,42 +330,41 @@ Society: Series B, 77*(4), 755-776. <https://doi.org/10.1111/rssb.12086>
 Kernel-weighted estimating equations of Cao, Zeng and Fine (2015) for a
 response and a covariate observed on different time grids.
 
-- [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
-  : Asynchronous longitudinal regression with time-invariant
-  coefficients
-- [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
-  [`print(`*`<cv.kee_async>`*`)`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+- [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) :
+  Asynchronous longitudinal regression with time-invariant coefficients
+- [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
+  [`print(`*`<cv.kee_async>`*`)`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
   : Choose the bandwidth for an asynchronous longitudinal fit
-- [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
-  [`print(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+- [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
+  [`print(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
   : Asynchronous longitudinal regression with time-dependent
   coefficients
 
 ## Simulation
 
-- [`sim_skmle_data()`](https://dayusun.github.io/skmle/reference/sim_skmle_data.md)
+- [`sim_skmle_data()`](https://www.sundayu.me/skmle/reference/sim_skmle_data.md)
   : Simulate Sparse Longitudinal Survival Data
-- [`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
+- [`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md)
   : Simulate asynchronous longitudinal data
 
 ## Model summaries and plots
 
-- [`plot(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/plot.skmle.md)
+- [`plot(`*`<skmle>`*`)`](https://www.sundayu.me/skmle/reference/plot.skmle.md)
   : Plot the estimated baseline function for skmle model
-- [`plot(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/plot.kee_td.md)
+- [`plot(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/plot.kee_td.md)
   : Plot estimated coefficient curves
-- [`vcov(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/vcov.skmle.md)
-  [`vcov(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/vcov.skmle.md)
-  [`vcov(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/vcov.skmle.md)
+- [`vcov(`*`<skmle>`*`)`](https://www.sundayu.me/skmle/reference/vcov.skmle.md)
+  [`vcov(`*`<kee>`*`)`](https://www.sundayu.me/skmle/reference/vcov.skmle.md)
+  [`vcov(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/vcov.skmle.md)
   : Extract the covariance matrix of a fitted model
-- [`nobs(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/nobs.skmle.md)
-  [`nobs(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/nobs.skmle.md)
-  [`nobs(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/nobs.skmle.md)
+- [`nobs(`*`<skmle>`*`)`](https://www.sundayu.me/skmle/reference/nobs.skmle.md)
+  [`nobs(`*`<kee>`*`)`](https://www.sundayu.me/skmle/reference/nobs.skmle.md)
+  [`nobs(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/nobs.skmle.md)
   : Number of subjects contributing to a fit
-- [`confint(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/confint.kee_td.md)
+- [`confint(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/confint.kee_td.md)
   : Wald confidence intervals for a coefficient curve
-- [`plot(`*`<cv.kee_async>`*`)`](https://dayusun.github.io/skmle/reference/plot.cv.skmle.md)
-  [`plot(`*`<cv.skmle>`*`)`](https://dayusun.github.io/skmle/reference/plot.cv.skmle.md)
+- [`plot(`*`<cv.kee_async>`*`)`](https://www.sundayu.me/skmle/reference/plot.cv.skmle.md)
+  [`plot(`*`<cv.skmle>`*`)`](https://www.sundayu.me/skmle/reference/plot.cv.skmle.md)
   : Plot a cross-validation curve
 
 ## Tidy output
@@ -373,27 +372,27 @@ response and a covariate observed on different time grids.
 broom generics returning tibbles, so fits compose with the rest of a
 tidy workflow.
 
-- [`tidy(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/tidy.skmle.md)
-  [`tidy(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/tidy.skmle.md)
-  [`tidy(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/tidy.skmle.md)
+- [`tidy(`*`<skmle>`*`)`](https://www.sundayu.me/skmle/reference/tidy.skmle.md)
+  [`tidy(`*`<kee>`*`)`](https://www.sundayu.me/skmle/reference/tidy.skmle.md)
+  [`tidy(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/tidy.skmle.md)
   : Summarise a fit as a tibble
-- [`glance(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/glance.skmle.md)
-  [`glance(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/glance.skmle.md)
-  [`glance(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/glance.skmle.md)
+- [`glance(`*`<skmle>`*`)`](https://www.sundayu.me/skmle/reference/glance.skmle.md)
+  [`glance(`*`<kee>`*`)`](https://www.sundayu.me/skmle/reference/glance.skmle.md)
+  [`glance(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/glance.skmle.md)
   : One-row summary of a fit
-- [`augment(`*`<kee_async>`*`)`](https://dayusun.github.io/skmle/reference/augment.kee_async.md)
+- [`augment(`*`<kee_async>`*`)`](https://www.sundayu.me/skmle/reference/augment.kee_async.md)
   : Add fitted means to the covariate table
-- [`summary(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/summary.skmle.md)
+- [`summary(`*`<skmle>`*`)`](https://www.sundayu.me/skmle/reference/summary.skmle.md)
   : Summary for skmle object
-- [`summary(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/summary.kee.md)
+- [`summary(`*`<kee>`*`)`](https://www.sundayu.me/skmle/reference/summary.kee.md)
   : Summary for kee object
-- [`print(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/print.skmle.md)
+- [`print(`*`<skmle>`*`)`](https://www.sundayu.me/skmle/reference/print.skmle.md)
   : Print skmle object
-- [`print(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/print.kee.md)
+- [`print(`*`<kee>`*`)`](https://www.sundayu.me/skmle/reference/print.kee.md)
   : Print kee object
-- [`print(`*`<summary.skmle>`*`)`](https://dayusun.github.io/skmle/reference/print.summary.skmle.md)
+- [`print(`*`<summary.skmle>`*`)`](https://www.sundayu.me/skmle/reference/print.summary.skmle.md)
   : Print summary of skmle object
-- [`print(`*`<summary.kee>`*`)`](https://dayusun.github.io/skmle/reference/print.summary.kee.md)
+- [`print(`*`<summary.kee>`*`)`](https://www.sundayu.me/skmle/reference/print.summary.kee.md)
   : Print summary of kee object
 
 # Articles
@@ -401,8 +400,8 @@ tidy workflow.
 ### Articles
 
 - [Getting Started with
-  skmle](https://dayusun.github.io/skmle/articles/tutorial.md):
+  skmle](https://www.sundayu.me/skmle/articles/tutorial.md):
 - [Asynchronous Longitudinal
-  Regression](https://dayusun.github.io/skmle/articles/asynchronous.md):
+  Regression](https://www.sundayu.me/skmle/articles/asynchronous.md):
 - [Benchmarking skmle Against
-  SurvSparse](https://dayusun.github.io/skmle/articles/benchmark_survsparse.md):
+  SurvSparse](https://www.sundayu.me/skmle/articles/benchmark_survsparse.md):

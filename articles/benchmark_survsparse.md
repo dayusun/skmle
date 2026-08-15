@@ -9,7 +9,7 @@ We compare:
 
 1.  [`SurvSparse::add.haz()`](https://rdrr.io/pkg/SurvSparse/man/add.haz.html)
     against
-    [`skmle::kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+    [`skmle::kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
     and `skmle::skmle(s = 1)`.
 2.  [`SurvSparse::trans.haz()`](https://rdrr.io/pkg/SurvSparse/man/trans.haz.html)
     against `skmle::skmle(s = 0)`.
@@ -32,7 +32,7 @@ library(ggplot2)
 ## Generating the data
 
 We simulate sparse longitudinal survival data using
-[`sim_skmle_data()`](https://dayusun.github.io/skmle/reference/sim_skmle_data.md).
+[`sim_skmle_data()`](https://www.sundayu.me/skmle/reference/sim_skmle_data.md).
 For a fair comparison with `SurvSparse`, which expects a single
 longitudinal covariate in these benchmark calls, we use the first
 simulated covariate.
@@ -150,17 +150,17 @@ benchmark_results <- benchmark_results %>%
   )
 
 benchmark_results
-#>                 scenario           expression    median_ms   itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 1.910415e-07  3.398889
-#> 2     Additive (n = 200)   skmle_kee_additive 7.957830e-08  8.440299
-#> 3     Additive (n = 200)         skmle_spline 1.063045e-07  9.060420
-#> 4     Additive (n = 500)   SurvSparse_add_haz 7.955694e-07  1.225210
-#> 5     Additive (n = 500)   skmle_kee_additive 8.441898e-08 12.011131
-#> 6     Additive (n = 500)         skmle_spline 1.396215e-07  7.218012
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.071671e-07  1.734923
-#> 8  Transformed (n = 100)         skmle_spline 8.691281e-08 11.285746
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 9.481044e-07  1.045285
-#> 10 Transformed (n = 200)         skmle_spline 9.548853e-08 10.117653
+#>                 scenario           expression    median_ms    itr/sec
+#> 1     Additive (n = 200)   SurvSparse_add_haz 2.735393e-07  3.6446081
+#> 2     Additive (n = 200)   skmle_kee_additive 6.128121e-08 11.1098206
+#> 3     Additive (n = 200)         skmle_spline 1.139139e-07  8.5835487
+#> 4     Additive (n = 500)   SurvSparse_add_haz 1.044848e-06  0.9110019
+#> 5     Additive (n = 500)   skmle_kee_additive 6.970700e-08 13.7947656
+#> 6     Additive (n = 500)         skmle_spline 1.652322e-07  6.0234740
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 3.064775e-07  3.1889464
+#> 8  Transformed (n = 100)         skmle_spline 7.724737e-08 12.6950511
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 6.152961e-07  1.6119965
+#> 10 Transformed (n = 200)         skmle_spline 9.445139e-08 10.3180263
 #>                  method
 #> 1    SurvSparse add.haz
 #> 2    skmle kee_additive
@@ -191,28 +191,28 @@ speed_summary <- benchmark_results %>%
   dplyr::mutate(speedup_vs_baseline = median_ms / baseline_ms)
 
 speed_summary
-#>                 scenario           expression    median_ms   itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 1.910415e-07  3.398889
-#> 2     Additive (n = 200)   skmle_kee_additive 7.957830e-08  8.440299
-#> 3     Additive (n = 200)         skmle_spline 1.063045e-07  9.060420
-#> 4     Additive (n = 500)   SurvSparse_add_haz 7.955694e-07  1.225210
-#> 5     Additive (n = 500)   skmle_kee_additive 8.441898e-08 12.011131
-#> 6     Additive (n = 500)         skmle_spline 1.396215e-07  7.218012
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 5.071671e-07  1.734923
-#> 8  Transformed (n = 100)         skmle_spline 8.691281e-08 11.285746
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 9.481044e-07  1.045285
-#> 10 Transformed (n = 200)         skmle_spline 9.548853e-08 10.117653
+#>                 scenario           expression    median_ms    itr/sec
+#> 1     Additive (n = 200)   SurvSparse_add_haz 2.735393e-07  3.6446081
+#> 2     Additive (n = 200)   skmle_kee_additive 6.128121e-08 11.1098206
+#> 3     Additive (n = 200)         skmle_spline 1.139139e-07  8.5835487
+#> 4     Additive (n = 500)   SurvSparse_add_haz 1.044848e-06  0.9110019
+#> 5     Additive (n = 500)   skmle_kee_additive 6.970700e-08 13.7947656
+#> 6     Additive (n = 500)         skmle_spline 1.652322e-07  6.0234740
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 3.064775e-07  3.1889464
+#> 8  Transformed (n = 100)         skmle_spline 7.724737e-08 12.6950511
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 6.152961e-07  1.6119965
+#> 10 Transformed (n = 200)         skmle_spline 9.445139e-08 10.3180263
 #>                  method  baseline_ms speedup_vs_baseline
-#> 1    SurvSparse add.haz 7.957830e-08            2.400674
-#> 2    skmle kee_additive 7.957830e-08            1.000000
-#> 3          skmle spline 7.957830e-08            1.335848
-#> 4    SurvSparse add.haz 8.441898e-08            9.424059
-#> 5    skmle kee_additive 8.441898e-08            1.000000
-#> 6          skmle spline 8.441898e-08            1.653912
-#> 7  SurvSparse trans.haz 8.691281e-08            5.835355
-#> 8          skmle spline 8.691281e-08            1.000000
-#> 9  SurvSparse trans.haz 9.548853e-08            9.928987
-#> 10         skmle spline 9.548853e-08            1.000000
+#> 1    SurvSparse add.haz 6.128121e-08            4.463674
+#> 2    skmle kee_additive 6.128121e-08            1.000000
+#> 3          skmle spline 6.128121e-08            1.858872
+#> 4    SurvSparse add.haz 6.970700e-08           14.989144
+#> 5    skmle kee_additive 6.970700e-08            1.000000
+#> 6          skmle spline 6.970700e-08            2.370382
+#> 7  SurvSparse trans.haz 7.724737e-08            3.967482
+#> 8          skmle spline 7.724737e-08            1.000000
+#> 9  SurvSparse trans.haz 9.445139e-08            6.514421
+#> 10         skmle spline 9.445139e-08            1.000000
 ```
 
 ## Runtimes
@@ -246,7 +246,7 @@ The second plot normalizes each scenario by the `skmle` method of
 interest:
 
 - additive scenarios use
-  [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+  [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
   as the baseline
 - transformed scenarios use `skmle(s = 0)` as the baseline
 
@@ -282,7 +282,7 @@ ggplot(
 The benchmark shows a stable pattern:
 
 - For the additive comparison,
-  [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+  [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
   is substantially faster than
   [`SurvSparse::add.haz()`](https://rdrr.io/pkg/SurvSparse/man/add.haz.html).
 - For the transformed hazards comparison, `skmle(s = 0)` is much faster
@@ -290,7 +290,7 @@ The benchmark shows a stable pattern:
   [`SurvSparse::trans.haz()`](https://rdrr.io/pkg/SurvSparse/man/trans.haz.html)
   in these runs.
 - The general spline-based `skmle(s = 1)` fit is slower than
-  [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md),
+  [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md),
   which is expected because it solves the broader joint optimization
   problem rather than a specialized estimating equation.
 

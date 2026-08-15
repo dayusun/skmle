@@ -31,9 +31,9 @@ trying to fit.
 
 This is the setting of Cao, Zeng and Fine (2015). The package implements
 their two estimators:
-[`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
-for a constant \\\beta\\, and
-[`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) for
+a constant \\\beta\\, and
+[`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
 for a coefficient curve \\\beta(t)\\.
 
 ## Two shortcuts that do not work
@@ -86,7 +86,7 @@ when it looks wrong.
 
 ## A worked example
 
-[`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
+[`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md)
 generates the design from Section 4 of the paper: response and covariate
 observation times are independent Poisson streams, and the covariate is
 a Gaussian process.
@@ -239,7 +239,7 @@ data, so
 Because the rate is \\(nh)^{1/2}\\, `h` trades variance against bias
 directly: small `h` admits few pairs, large `h` admits pairs whose times
 are far apart and so pulls in a bias.
-[`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
 chooses it by cross-validation over **subjects**, scoring each candidate
 by the kernel-weighted squared error on the held-out subjects.
 
@@ -323,7 +323,7 @@ process is twice differentiable, which gives a bias of order \\h^2\\.
 Their Section 6 notes that relaxing this to one-sided differentiability
 leaves a bias of order \\h\\ instead. That weaker class admits processes
 with independent increments, including the Ornstein-Uhlenbeck process
-[`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
+[`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md)
 uses by default.
 
 The practical symptom is an estimate that drifts steadily as `h` grows.
@@ -392,13 +392,13 @@ rbind(
 
 The half kernel discards roughly half the pairs, so at a fixed `h` it is
 noisier. Select `h` under the same setting you intend to fit with.
-[`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
 takes `one_sided` for exactly this reason.
 
 ## Time-varying coefficients
 
 If the association itself changes over follow-up,
-[`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+[`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
 estimates \\\beta(t)\\ pointwise. At a target time \\t\\ the response
 and covariate occasions are weighted by their **separate** distances to
 \\t\\; the lag between them never enters.

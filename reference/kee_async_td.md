@@ -4,7 +4,7 @@ Fit \\E\\Y(t) \mid X(t)\\ = g\\X(t)^\top \beta(t)\\\\ from asynchronous
 sparse longitudinal data, estimating the coefficient curve \\\beta(t)\\
 pointwise. This is the time-dependent coefficient estimator of Cao, Zeng
 and Fine (2015), the companion to
-[`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md).
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md).
 
 At a target time \\t\\ a response occasion and a covariate occasion are
 weighted by their **separate** distances to \\t\\, \$\$U_n\\\beta(t)\\ =
@@ -12,7 +12,7 @@ n^{-1} \sum_i \sum_j \sum_k W\_{h_1}(t - T\_{ij}) W\_{h_2}(t - S\_{ik})
 X_i(S\_{ik}) \[ Y_i(T\_{ij}) - g\\X_i(S\_{ik})^\top \beta(t)\\ \] =
 0.\$\$ The lag between the two occasions never enters, only their
 distances to \\t\\. That is the difference from
-[`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md),
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md),
 where the lag is everything.
 
 ## Usage
@@ -81,7 +81,7 @@ print(x, ...)
 
   Bandwidth for the response side, \\h_1\\. If omitted, a rule-of-thumb
   value is used and reported in a message; see
-  [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md).
+  [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md).
 
 - h2:
 
@@ -96,7 +96,7 @@ print(x, ...)
   average around `t`; restricting it as well would give a filtering
   estimate, which answers a different question. Both lags are measured
   as "how far in the past", matching
-  [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
+  [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md)
   and the survival estimators.
 
 - link:
@@ -206,8 +206,8 @@ Society, Series B* 77, 755-776.
 
 ## See also
 
-[`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md),
-[`plot.kee_td()`](https://dayusun.github.io/skmle/reference/plot.kee_td.md)
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md),
+[`plot.kee_td()`](https://www.sundayu.me/skmle/reference/plot.kee_td.md)
 
 ## Examples
 

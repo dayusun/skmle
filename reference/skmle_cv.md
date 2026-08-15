@@ -1,7 +1,7 @@
 # Select the Bandwidth by Cross-Validation
 
 Perform K-fold cross-validation to select the kernel bandwidth for
-[`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md).
+[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md).
 
 ## Usage
 
@@ -144,8 +144,8 @@ on both sides of the split.
 
 After choosing the bandwidth with the smallest average validation loss,
 the function refits
-[`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) on the
-full data set using the selected value. Because the fold assignment is
+[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) on the full
+data set using the selected value. Because the fold assignment is
 random, pass `seed` (or
 [`set.seed()`](https://rdrr.io/r/base/Random.html) before calling) to
 make the grid selection reproducible.

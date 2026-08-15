@@ -1,7 +1,7 @@
 # Default bandwidth for the survival estimators
 
 Geometric midpoint of the grid
-[`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
 searches, which is built from the observed lags between covariate
 observation times and event times.
 

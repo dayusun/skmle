@@ -55,8 +55,8 @@ skmle(
 
   Positive kernel bandwidth. If omitted, one is read off the observation
   times as a rule of thumb and reported in a message. Use
-  [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
-  to choose it from the data.
+  [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) to
+  choose it from the data.
 
 - nknots:
 

@@ -3,7 +3,7 @@
 Pointwise Wald intervals at each target time. They are pointwise, not
 simultaneous, and are not corrected for smoothing bias, so they cover
 \\E\hat\beta(t)\\ rather than \\\beta(t)\\; see
-[`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md).
+[`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md).
 
 ## Usage
 

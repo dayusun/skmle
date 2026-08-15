@@ -3,8 +3,8 @@
 ### Articles
 
 - [Getting Started with
-  skmle](https://dayusun.github.io/skmle/articles/tutorial.md):
+  skmle](https://www.sundayu.me/skmle/articles/tutorial.md):
 - [Asynchronous Longitudinal
-  Regression](https://dayusun.github.io/skmle/articles/asynchronous.md):
+  Regression](https://www.sundayu.me/skmle/articles/asynchronous.md):
 - [Benchmarking skmle Against
-  SurvSparse](https://dayusun.github.io/skmle/articles/benchmark_survsparse.md):
+  SurvSparse](https://www.sundayu.me/skmle/articles/benchmark_survsparse.md):
