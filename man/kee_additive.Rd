@@ -4,7 +4,15 @@
 \alias{kee_additive}
 \title{Fit an Additive Hazards KEE Model}
 \usage{
-kee_additive(formula, data, id, obs_times, h, lq_nodes = 64, one_sided = TRUE)
+kee_additive(
+  formula,
+  data,
+  id,
+  obs_times,
+  h = NULL,
+  lq_nodes = 64,
+  one_sided = TRUE
+)
 }
 \arguments{
 \item{formula}{A model formula with a \code{survival::Surv()} response.}
@@ -15,7 +23,9 @@ kee_additive(formula, data, id, obs_times, h, lq_nodes = 64, one_sided = TRUE)
 
 \item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
-\item{h}{Positive kernel bandwidth.}
+\item{h}{Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+off the observation times and reported in a message. That is a starting
+point, not a tuned choice: use \code{\link[=skmle_cv]{skmle_cv()}} to select it from the data.}
 
 \item{lq_nodes}{Number of quadrature nodes used in the numerical integration step.}
 

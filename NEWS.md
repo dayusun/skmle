@@ -10,6 +10,36 @@ restriction, and the `Description`, README, package help page and tutorial have
 been rewritten to present the two settings on equal footing rather than
 treating the second as an extra.
 
+## Getting a first answer
+
+The package assumed you already knew the method. Three things a newcomer could
+not supply now have defaults, each announced rather than hidden.
+
+* **`h` is optional in every fitting function.** When omitted, a rule-of-thumb
+  bandwidth is read off the observation times -- the geometric midpoint of the
+  grid the matching `_cv()` function searches -- and a message reports the
+  value, says it is a starting point rather than a tuned choice, and names the
+  function that tunes it. Supplying `h` keeps the message quiet.
+* **`s` defaults to `0` in `skmle()` and `skmle_cv()`**, the proportional
+  hazards model, so the Box-Cox parameter no longer has to be understood before
+  the first fit.
+* **`times` defaults in `kee_async_td()`** to 25 points spanning the 10th to
+  90th percentile of the observed response times, which keeps them away from
+  the edges where a one-sided window makes the curve unreliable.
+
+Together these mean `kee_cox(Surv(X, delta) ~ z, data, id = id,
+obs_times = obs_times)` and `data_y |> kee_async(data_x, y ~ x, id = id,
+time = time)` are complete calls.
+
+* `print()` and `summary()` now name the model in words and report the
+  bandwidth and kernel, so the output says what was fitted rather than assuming
+  you remember.
+* `plot()` on a `cv.skmle` or `cv.kee_async` object draws the held-out loss
+  against bandwidth with the selection marked, which is the quickest way to see
+  a minimum sitting on the edge of the grid.
+* A "Which function do I need?" table in `?skmle-package`, the README and the
+  tutorial.
+
 ## Interface
 
 * The asynchronous estimators take the two data frames **first**, so they

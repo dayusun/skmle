@@ -32,6 +32,31 @@ Both settings share one idea and one implementation: a kernel weight bridging
 mismatched time grids, with the heavy numerical work in C++ via `Rcpp` and
 `RcppArmadillo`, behind an ordinary R modelling interface.
 
+## Which function do I need?
+
+Two questions.
+
+**1. What is the outcome?** A *time to an event* (death, relapse, failure),
+possibly censored — the survival estimators, and your data is one long table.
+Or a *repeatedly measured quantity* (a score, a lab value) recorded on its own
+schedule — the asynchronous estimators, and your data is two tables.
+
+**2. Then:**
+
+| Outcome | Situation | Function |
+| :-- | :-- | :-- |
+| Survival | Start here; Cox model | `kee_cox()` |
+| Survival | Additive hazards instead | `kee_additive()` |
+| Survival | Want the baseline hazard, or a model between the two | `skmle()` |
+| Survival | Choose the bandwidth properly | `skmle_cv()` |
+| Longitudinal | Start here; one constant effect | `kee_async()` |
+| Longitudinal | Choose the bandwidth properly | `kee_async_cv()` |
+| Longitudinal | The effect may change over time | `kee_async_td()` |
+
+Every fitting function picks a bandwidth for you if you do not supply one, and
+says in a message what it chose. That is enough for a first answer; the `_cv()`
+functions choose it from the data, which is what to report.
+
 ## Main Functions
 
 **Survival outcomes**

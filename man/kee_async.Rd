@@ -10,7 +10,7 @@ kee_async(
   formula,
   id,
   time,
-  h,
+  h = NULL,
   one_sided = FALSE,
   link = c("identity", "log", "logistic"),
   intercept = TRUE,
@@ -38,7 +38,10 @@ Non-numeric identifiers are allowed.}
 \item{time}{Observation time, naming a column present in \strong{both} tables.
 Accepts the same three forms as \code{id}.}
 
-\item{h}{Positive bandwidth, on the same scale as \code{time}.}
+\item{h}{Positive bandwidth, on the same scale as \code{time}. If omitted, a
+rule-of-thumb value is read off the observation times and reported in a
+message. That is a starting point, not a tuned choice: use
+\code{\link[=kee_async_cv]{kee_async_cv()}} to select it from the data.}
 
 \item{one_sided}{Logical. \code{FALSE} (default) is the full two-sided kernel of
 the paper; \code{TRUE} is the half kernel, admitting only covariate observations

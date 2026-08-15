@@ -4,7 +4,7 @@
 \alias{kee_cox}
 \title{Fit a Cox-Type KEE Model}
 \usage{
-kee_cox(formula, data, id, obs_times, h, one_sided = TRUE)
+kee_cox(formula, data, id, obs_times, h = NULL, one_sided = TRUE)
 }
 \arguments{
 \item{formula}{A model formula with a \code{survival::Surv()} response.}
@@ -15,7 +15,9 @@ kee_cox(formula, data, id, obs_times, h, one_sided = TRUE)
 
 \item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
-\item{h}{Positive kernel bandwidth.}
+\item{h}{Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+off the observation times and reported in a message. That is a starting
+point, not a tuned choice: use \code{\link[=skmle_cv]{skmle_cv()}} to select it from the data.}
 
 \item{one_sided}{Logical. \code{TRUE} (the default) uses a \strong{half} kernel: only
 covariate observations strictly before the event or quadrature time inform

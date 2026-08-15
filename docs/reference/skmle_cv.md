@@ -11,7 +11,7 @@ skmle_cv(
   data,
   id,
   obs_times,
-  s,
+  s = 0,
   K = 5,
   h_grid = NULL,
   n_h = 10,
@@ -52,8 +52,10 @@ print(x, ...)
 
 - s:
 
-  Box-Cox transformation parameter. `s = 0` gives the proportional
-  hazards model and `s = 1` gives the additive hazards model.
+  Box-Cox transformation parameter, defaulting to `0`. `s = 0` is the
+  proportional hazards model, `s = 1` is the additive hazards model, and
+  values in between interpolate. If you do not have a reason to choose
+  otherwise, the default is the familiar Cox model.
 
 - K:
 

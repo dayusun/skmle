@@ -439,3 +439,48 @@ test_that("the standard model generics work on every fitted class", {
     expect_true(all(cid$lower < cid$estimate | is.na(cid$lower)))
     expect_error(confint(td, parm = "nope"), "selects no coefficient")
 })
+
+## ----------------------------------------------------- defaults for novices
+
+test_that("the asynchronous estimators run with only the data", {
+    skip_on_cran()
+    set.seed(71)
+    d <- sim_async_data(n = 200, beta = c(0.5, 1.5))
+
+    expect_message(
+        fit <- kee_async(d$y, d$x, y ~ x, id = id, time = time),
+        "rule-of-thumb"
+    )
+    expect_equal(unname(coef(fit)), c(0.5, 1.5), tolerance = 0.2)
+    expect_true(fit$h > 0)
+
+    # The default is the geometric midpoint of the grid kee_async_cv() searches,
+    # which is the claim the message makes.
+    pooled <- c(d$y$time, d$x$time)
+    iqr <- diff(stats::quantile(pooled, c(0.25, 0.75), names = FALSE))
+    expect_equal(fit$h, 2 * iqr * 200^(-0.5), tolerance = 1e-8)
+
+    # kee_async_td() also defaults its target times, inside the data.
+    expect_message(td <- kee_async_td(d$y, d$x, y ~ x, id = id, time = time))
+    expect_length(td$times, 25L)
+    expect_gte(min(td$times), min(d$y$time))
+    expect_lte(max(td$times), max(d$y$time))
+    expect_true(all(td$convergence == 0L))
+
+    expect_no_message(
+        kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25)
+    )
+})
+
+test_that("the cross-validation curve plots", {
+    skip_on_cran()
+    set.seed(73)
+    d <- sim_async_data(n = 120)
+    cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x,
+        id = id, time = time,
+        h_grid = c(0.1, 0.2, 0.3, 0.5), K = 3, seed = 1, quiet = TRUE
+    ))
+    pdf(NULL)
+    on.exit(dev.off(), add = TRUE)
+    expect_invisible(plot(cv))
+})

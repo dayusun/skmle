@@ -85,6 +85,7 @@ reference:
   - vcov.skmle
   - nobs.skmle
   - confint.kee_td
+  - plot.cv.skmle
 
 - title: Tidy output
   desc: >

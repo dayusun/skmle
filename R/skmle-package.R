@@ -5,6 +5,38 @@
 #' carrying a value forward or smoothing the covariate and substituting it.
 #' Two outcome types are covered.
 #'
+#' @section Which function do I need?:
+#' Answer two questions.
+#'
+#' **1. What is the outcome?**
+#'
+#' \describe{
+#'   \item{A time to an event}{(death, relapse, failure), possibly censored --
+#'     use the survival estimators. Your data is one long table with a row per
+#'     covariate measurement.}
+#'   \item{A repeatedly measured quantity}{(a score, a lab value) recorded on
+#'     its own schedule -- use the asynchronous estimators. Your data is two
+#'     tables, one per process.}
+#' }
+#'
+#' **2. Then pick within that group.**
+#'
+#' \tabular{lll}{
+#'   \strong{Outcome} \tab \strong{Situation} \tab \strong{Function} \cr
+#'   Survival \tab Start here; Cox model \tab [kee_cox()] \cr
+#'   Survival \tab Additive hazards instead \tab [kee_additive()] \cr
+#'   Survival \tab Want the baseline hazard, or a model between the two \tab [skmle()] \cr
+#'   Survival \tab Choose the bandwidth properly \tab [skmle_cv()] \cr
+#'   Longitudinal \tab Start here; one constant effect \tab [kee_async()] \cr
+#'   Longitudinal \tab Choose the bandwidth properly \tab [kee_async_cv()] \cr
+#'   Longitudinal \tab The effect may change over time \tab [kee_async_td()] \cr
+#' }
+#'
+#' Every fitting function will pick a bandwidth for you if you do not supply
+#' one, and will say in a message what it chose. That is enough to get a first
+#' answer; the `_cv()` functions choose it from the data, which is what to
+#' report.
+#'
 #' @section Survival outcomes:
 #' [skmle()] fits the transformed hazards family by the Sieve Maximum
 #' Kernel-weighted Log-likelihood Estimator of Sun, Sun, Zhao and Cao (2025).

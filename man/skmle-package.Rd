@@ -14,6 +14,40 @@ how far its measurement time sits from the time being modelled, rather than
 carrying a value forward or smoothing the covariate and substituting it.
 Two outcome types are covered.
 }
+\section{Which function do I need?}{
+
+Answer two questions.
+
+\strong{1. What is the outcome?}
+
+\describe{
+\item{A time to an event}{(death, relapse, failure), possibly censored --
+use the survival estimators. Your data is one long table with a row per
+covariate measurement.}
+\item{A repeatedly measured quantity}{(a score, a lab value) recorded on
+its own schedule -- use the asynchronous estimators. Your data is two
+tables, one per process.}
+}
+
+\strong{2. Then pick within that group.}
+
+\tabular{lll}{
+\strong{Outcome} \tab \strong{Situation} \tab \strong{Function} \cr
+Survival \tab Start here; Cox model \tab \code{\link[=kee_cox]{kee_cox()}} \cr
+Survival \tab Additive hazards instead \tab \code{\link[=kee_additive]{kee_additive()}} \cr
+Survival \tab Want the baseline hazard, or a model between the two \tab \code{\link[=skmle]{skmle()}} \cr
+Survival \tab Choose the bandwidth properly \tab \code{\link[=skmle_cv]{skmle_cv()}} \cr
+Longitudinal \tab Start here; one constant effect \tab \code{\link[=kee_async]{kee_async()}} \cr
+Longitudinal \tab Choose the bandwidth properly \tab \code{\link[=kee_async_cv]{kee_async_cv()}} \cr
+Longitudinal \tab The effect may change over time \tab \code{\link[=kee_async_td]{kee_async_td()}} \cr
+}
+
+Every fitting function will pick a bandwidth for you if you do not supply
+one, and will say in a message what it chose. That is enough to get a first
+answer; the \verb{_cv()} functions choose it from the data, which is what to
+report.
+}
+
 \section{Survival outcomes}{
 
 \code{\link[=skmle]{skmle()}} fits the transformed hazards family by the Sieve Maximum

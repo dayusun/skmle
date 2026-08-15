@@ -89,8 +89,8 @@ everything.</p>
 <span>  <span class="va">formula</span>,</span>
 <span>  <span class="va">id</span>,</span>
 <span>  <span class="va">time</span>,</span>
-<span>  <span class="va">times</span>,</span>
-<span>  <span class="va">h</span>,</span>
+<span>  times <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  h <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  h2 <span class="op">=</span> <span class="va">h</span>,</span>
 <span>  one_sided <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"identity"</span>, <span class="st">"log"</span>, <span class="st">"logistic"</span><span class="op">)</span>,</span>
@@ -138,11 +138,15 @@ Accepts the same three forms as <code>id</code>.</p></dd>
 
 <dt id="arg-times">times<a class="anchor" aria-label="anchor" href="#arg-times"></a></dt>
 <dd><p>Numeric vector of target times at which to estimate
-\(\beta(t)\). Keep them inside the range of the observed times.</p></dd>
+\(\beta(t)\). Defaults to 25 points spanning the 10th to 90th percentile
+of the observed response times, which keeps them inside the data: target
+times near the ends of the range are fitted from a one-sided window and are
+the least reliable part of the curve.</p></dd>
 
 
 <dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
-<dd><p>Bandwidth for the response side, \(h_1\).</p></dd>
+<dd><p>Bandwidth for the response side, \(h_1\). If omitted, a
+rule-of-thumb value is used and reported in a message; see <code><a href="kee_async.html">kee_async()</a></code>.</p></dd>
 
 
 <dt id="arg-h-">h2<a class="anchor" aria-label="anchor" href="#arg-h-"></a></dt>

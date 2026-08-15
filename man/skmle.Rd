@@ -9,8 +9,8 @@ skmle(
   data,
   id,
   obs_times,
-  s,
-  h,
+  s = 0,
+  h = NULL,
   nknots = 3,
   lq_nodes = 64,
   maxeval = 10000,
@@ -30,10 +30,14 @@ converted to integer subject codes.}
 
 \item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
-\item{s}{Box-Cox transformation parameter. \code{s = 0} gives the proportional hazards
-model and \code{s = 1} gives the additive hazards model.}
+\item{s}{Box-Cox transformation parameter, defaulting to \code{0}. \code{s = 0} is the
+proportional hazards model, \code{s = 1} is the additive hazards model, and
+values in between interpolate. If you do not have a reason to choose
+otherwise, the default is the familiar Cox model.}
 
-\item{h}{Positive kernel bandwidth.}
+\item{h}{Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+off the observation times and reported in a message. That is a starting
+point, not a tuned choice: use \code{\link[=skmle_cv]{skmle_cv()}} to select it from the data.}
 
 \item{nknots}{Number of interior knots used in the sieve approximation of the
 baseline component. Knots are placed at \code{(1:nknots)/(nknots + 1)}. The

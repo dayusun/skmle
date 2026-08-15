@@ -311,7 +311,10 @@
 #'   Non-numeric identifiers are allowed.
 #' @param time Observation time, naming a column present in **both** tables.
 #'   Accepts the same three forms as `id`.
-#' @param h Positive bandwidth, on the same scale as `time`.
+#' @param h Positive bandwidth, on the same scale as `time`. If omitted, a
+#'   rule-of-thumb value is read off the observation times and reported in a
+#'   message. That is a starting point, not a tuned choice: use
+#'   [kee_async_cv()] to select it from the data.
 #' @param one_sided Logical. `FALSE` (default) is the full two-sided kernel of
 #'   the paper; `TRUE` is the half kernel, admitting only covariate observations
 #'   strictly before the response.
@@ -363,16 +366,20 @@
 #' # Half kernel: only covariate observations preceding the response.
 #' kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25, one_sided = TRUE)
 #' @export
-kee_async <- function(data_y, data_x, formula, id, time, h, one_sided = FALSE,
+kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = FALSE,
                       link = c("identity", "log", "logistic"),
                       intercept = TRUE, maxit = 50L, tol = 1e-8) {
     link <- match.arg(link)
-    .async_check_h(h)
     .async_check_one_sided(one_sided)
     d <- .async_parse(
         formula, data_y, data_x,
         .async_name(rlang::enquo(id)), .async_name(rlang::enquo(time)), intercept
     )
+    if (is.null(h)) {
+        h <- default_bandwidth_async(c(d$yt, d$xt), d$n)
+        announce_bandwidth(h, "kee_async_cv")
+    }
+    .async_check_h(h)
 
     fit <- .async_fit_ti(d, h, one_sided, .async_link_code(link), maxit, tol)
     if (is.null(fit)) {
@@ -409,6 +416,10 @@ kee_async <- function(data_y, data_x, formula, id, time, h, one_sided = FALSE,
         h = h,
         one_sided = one_sided,
         link = link,
+        model = sprintf(
+            "Asynchronous longitudinal regression (%s link, %s kernel)",
+            link, if (one_sided) "half" else "full"
+        ),
         call = match.call()
     )
     # Tagged ahead of "kee" so augment() can dispatch on it: a fitted mean per
@@ -684,8 +695,12 @@ print.cv.kee_async <- function(x, ...) {
 #'
 #' @inheritParams kee_async
 #' @param times Numeric vector of target times at which to estimate
-#'   \eqn{\beta(t)}. Keep them inside the range of the observed times.
-#' @param h Bandwidth for the response side, \eqn{h_1}.
+#'   \eqn{\beta(t)}. Defaults to 25 points spanning the 10th to 90th percentile
+#'   of the observed response times, which keeps them inside the data: target
+#'   times near the ends of the range are fitted from a one-sided window and are
+#'   the least reliable part of the curve.
+#' @param h Bandwidth for the response side, \eqn{h_1}. If omitted, a
+#'   rule-of-thumb value is used and reported in a message; see [kee_async()].
 #' @param h2 Bandwidth for the covariate side, \eqn{h_2}. Defaults to `h`.
 #' @param one_sided Logical. `FALSE` (default) is the full two-sided kernel.
 #'   `TRUE` restricts the **covariate** side to observations strictly before the
@@ -726,21 +741,35 @@ print.cv.kee_async <- function(x, ...) {
 #' coef(fit)
 #' tidy(fit)
 #' @export
-kee_async_td <- function(data_y, data_x, formula, id, time, times, h, h2 = h,
-                         one_sided = FALSE,
+kee_async_td <- function(data_y, data_x, formula, id, time, times = NULL,
+                         h = NULL, h2 = h, one_sided = FALSE,
                          link = c("identity", "log", "logistic"),
                          intercept = TRUE, maxit = 50L, tol = 1e-8) {
     link <- match.arg(link)
-    .async_check_h(h)
-    .async_check_h(h2, "h2")
     .async_check_one_sided(one_sided)
-    if (!is.numeric(times) || !length(times) || anyNA(times)) {
-        stop("'times' must be a non-empty numeric vector without NA", call. = FALSE)
-    }
     d <- .async_parse(
         formula, data_y, data_x,
         .async_name(rlang::enquo(id)), .async_name(rlang::enquo(time)), intercept
     )
+    if (is.null(h)) {
+        h <- default_bandwidth_async(c(d$yt, d$xt), d$n)
+        announce_bandwidth(h, "kee_async_cv")
+        if (missing(h2)) h2 <- h
+    }
+    .async_check_h(h)
+    .async_check_h(h2, "h2")
+    if (is.null(times)) {
+        # Inside the data: the ends of the range are fitted from a one-sided
+        # window and are the least reliable part of any curve.
+        times <- seq(
+            stats::quantile(d$yt, 0.1, names = FALSE),
+            stats::quantile(d$yt, 0.9, names = FALSE),
+            length.out = 25L
+        )
+    }
+    if (!is.numeric(times) || !length(times) || anyNA(times)) {
+        stop("'times' must be a non-empty numeric vector without NA", call. = FALSE)
+    }
 
     lk <- .async_link_code(link)
     nt <- length(times)

@@ -48,6 +48,9 @@ print(fit)
 #> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
 #>     obs_times = obs_times, h = 0.5)
 #> 
+#> Cox-type proportional hazards, kernel estimating equation (half kernel)
+#> subjects: 60   bandwidth h = 0.5
+#> 
 #> Coefficients:
 #> covariates1 covariates2 
 #>   0.7665629  -0.3013032 

@@ -22,7 +22,7 @@ kee_async(
   formula,
   id,
   time,
-  h,
+  h = NULL,
   one_sided = FALSE,
   link = c("identity", "log", "logistic"),
   intercept = TRUE,
@@ -64,7 +64,11 @@ kee_async(
 
 - h:
 
-  Positive bandwidth, on the same scale as `time`.
+  Positive bandwidth, on the same scale as `time`. If omitted, a
+  rule-of-thumb value is read off the observation times and reported in
+  a message. That is a starting point, not a tuned choice: use
+  [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+  to select it from the data.
 
 - one_sided:
 
@@ -229,7 +233,8 @@ summary(fit)
 #> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.25)
 #> 
-#>   n= 150
+#> Asynchronous longitudinal regression (identity link, full kernel)
+#>   n= 150 subjects   bandwidth h = 0.25
 #> 
 #>             Estimate Std. Error z value  Pr(>|z|)    
 #> (Intercept) 0.628762   0.098039  6.4134 1.423e-10 ***
@@ -263,6 +268,9 @@ kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25, one_sided = TRUE)
 #> Call:
 #> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.25, one_sided = TRUE)
+#> 
+#> Asynchronous longitudinal regression (identity link, half kernel)
+#> subjects: 150   bandwidth h = 0.25
 #> 
 #> Coefficients:
 #> (Intercept)           x 

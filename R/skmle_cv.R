@@ -71,12 +71,12 @@
 #' }
 #'
 #' @export
-skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL,
+skmle_cv <- function(formula, data, id, obs_times, s = 0, K = 5, h_grid = NULL,
                      n_h = 10, nknots = 3, lq_nodes = 64,
                      maxeval = 10000, xtol_rel = 1e-6, seed = NULL,
                      quiet = FALSE, one_sided = TRUE) {
-  if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(s)) {
-    stop("formula, data, id, obs_times, and s must all be supplied")
+  if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
+    stop("formula, data, id and obs_times must all be supplied")
   }
 
   # parse formula and extract data once

@@ -142,7 +142,8 @@ summary(fit)
 #> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.25)
 #> 
-#>   n= 400
+#> Asynchronous longitudinal regression (identity link, full kernel)
+#>   n= 400 subjects   bandwidth h = 0.25
 #> 
 #>             Estimate Std. Error z value  Pr(>|z|)    
 #> (Intercept) 0.441986   0.057943  7.6279 2.386e-14 ***
@@ -484,7 +485,8 @@ summary(fit_b)
 #> kee_async(data_y = db$y, data_x = db$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.3, link = "logistic")
 #> 
-#>   n= 400
+#> Asynchronous longitudinal regression (logistic link, full kernel)
+#>   n= 400 subjects   bandwidth h = 0.3
 #> 
 #>             Estimate Std. Error z value  Pr(>|z|)    
 #> (Intercept) 0.285310   0.059651   4.783 1.727e-06 ***

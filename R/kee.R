@@ -8,7 +8,9 @@
 #' @param data Data frame containing all variables used in the fit.
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
-#' @param h Positive kernel bandwidth.
+#' @param h Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+#'   off the observation times and reported in a message. That is a starting
+#'   point, not a tuned choice: use [skmle_cv()] to select it from the data.
 #' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
@@ -66,12 +68,12 @@
 #' @importFrom stats model.frame model.matrix model.response
 #' @importFrom nleqslv nleqslv
 #' @export
-kee_cox <- function(formula, data, id, obs_times, h, one_sided = TRUE) {
+kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE) {
     # basic input validation
-    if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(h)) {
-        stop("formula, data, id, obs_times and h must all be supplied")
+    if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
+        stop("formula, data, id and obs_times must all be supplied")
     }
-    if (!is.numeric(h) || length(h) != 1 || h <= 0) {
+    if (!is.null(h) && (!is.numeric(h) || length(h) != 1 || h <= 0)) {
         stop("bandwidth 'h' must be a positive number")
     }
     if (!is.data.frame(data)) {
@@ -117,6 +119,10 @@ kee_cox <- function(formula, data, id, obs_times, h, one_sided = TRUE) {
     id_vec <- as.integer(factor(id_raw))
 
     n <- length(unique(id_vec))
+    if (is.null(h)) {
+        h <- default_bandwidth_surv(X_time, obs_times_vec, n)
+        announce_bandwidth(h, "skmle_cv")
+    }
     kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
 
     estequ <- function(beta) {
@@ -165,6 +171,11 @@ kee_cox <- function(formula, data, id, obs_times, h, one_sided = TRUE) {
         convergence = estres$termcd,
         n = n,
         h = h,
+        one_sided = one_sided,
+        model = sprintf(
+            "Cox-type proportional hazards, kernel estimating equation (%s kernel)",
+            if (one_sided) "half" else "full"
+        ),
         call = match.call()
     )
     class(out) <- "kee"
@@ -181,7 +192,9 @@ kee_cox <- function(formula, data, id, obs_times, h, one_sided = TRUE) {
 #' @param data Data frame containing all variables used in the fit.
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
-#' @param h Positive kernel bandwidth.
+#' @param h Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+#'   off the observation times and reported in a message. That is a starting
+#'   point, not a tuned choice: use [skmle_cv()] to select it from the data.
 #' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
@@ -239,13 +252,13 @@ kee_cox <- function(formula, data, id, obs_times, h, one_sided = TRUE) {
 #' @importFrom stats model.frame model.matrix model.response
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
-kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64,
+kee_additive <- function(formula, data, id, obs_times, h = NULL, lq_nodes = 64,
                          one_sided = TRUE) {
     # basic validation
-    if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(h)) {
-        stop("formula, data, id, obs_times and h must all be supplied")
+    if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
+        stop("formula, data, id and obs_times must all be supplied")
     }
-    if (!is.numeric(h) || length(h) != 1 || h <= 0) {
+    if (!is.null(h) && (!is.numeric(h) || length(h) != 1 || h <= 0)) {
         stop("bandwidth 'h' must be a positive number")
     }
     if (!is.numeric(lq_nodes) || length(lq_nodes) != 1 || lq_nodes <= 0) {
@@ -288,6 +301,10 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64,
     id_vec <- as.integer(factor(id_raw))
 
     n <- length(unique(id_vec))
+    if (is.null(h)) {
+        h <- default_bandwidth_surv(X_time, obs_times_vec, n)
+        announce_bandwidth(h, "skmle_cv")
+    }
     kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
 
     lqrule <- gaussquad::legendre.quadrature.rules(lq_nodes)[[lq_nodes]]
@@ -325,6 +342,11 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64,
         Sigma = Sigma,
         n = n,
         h = h,
+        one_sided = one_sided,
+        model = sprintf(
+            "Additive hazards, kernel estimating equation (%s kernel)",
+            if (one_sided) "half" else "full"
+        ),
         call = match.call()
     )
     class(out) <- "kee"
@@ -360,6 +382,10 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64,
 print.kee <- function(x, ...) {
     cat("Call:\n")
     print(x$call)
+    if (!is.null(x$model)) cat("\n", x$model, "\n", sep = "")
+    cat("subjects: ", x$n, "   bandwidth h = ", format(x$h, digits = 4), "\n",
+        sep = ""
+    )
     cat("\nCoefficients:\n")
     print(x$coefficients)
     invisible(x)
@@ -410,7 +436,9 @@ summary.kee <- function(object, ...) {
         call = object$call,
         coefficients = coef_table,
         convergence = if (is.null(object$convergence)) NA else object$convergence,
-        n = object$n
+        n = object$n,
+        model = object$model,
+        h = object$h
     )
     class(res) <- "summary.kee"
     return(res)
@@ -447,7 +475,10 @@ print.summary.kee <- function(x, ...) {
     cat("Call:\n")
     print(x$call)
     cat("\n")
-    cat(sprintf("  n= %d\n\n", x$n))
+    if (!is.null(x$model)) cat(x$model, "\n", sep = "")
+    cat(sprintf("  n= %d subjects", x$n))
+    if (!is.null(x$h)) cat(sprintf("   bandwidth h = %s", format(x$h, digits = 4)))
+    cat("\n\n")
 
     if (nrow(x$coefficients) > 0) {
         stats::printCoefmat(x$coefficients, P.values = TRUE, has.Pvalue = TRUE)

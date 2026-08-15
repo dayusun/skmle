@@ -98,3 +98,70 @@ kernel_weights <- function(lag, h, one_sided = TRUE) {
     if (one_sided) kv <- kv * (lag > 0)
     kv
 }
+
+
+# Data-driven default bandwidths.
+#
+# A student should not have to invent a number to get a first fit.  These are
+# rules of thumb, not a substitute for cross-validation, and the message that
+# accompanies them says so and names the function that does it properly.
+
+#' Default bandwidth for the survival estimators
+#'
+#' Geometric midpoint of the grid `skmle_cv()` searches, which is built from the
+#' observed lags between covariate observation times and event times.
+#'
+#' @param X_time,obs_times Event/censoring and covariate observation times.
+#' @param n Number of subjects.
+#' @return A positive bandwidth.
+#' @keywords internal
+default_bandwidth_surv <- function(X_time, obs_times, n) {
+  pos <- X_time - obs_times
+  pos <- pos[pos > 0 & is.finite(pos)]
+  if (!length(pos)) {
+    stop(
+      "no covariate observation precedes an event time, so no bandwidth can ",
+      "be chosen automatically; supply 'h'",
+      call. = FALSE
+    )
+  }
+  lo <- max(min(pos), n^(-0.6))
+  hi <- min(max(pos), n^(-0.3))
+  if (!is.finite(lo) || !is.finite(hi) || hi <= lo) lo else sqrt(lo * hi)
+}
+
+#' Default bandwidth for the asynchronous estimators
+#'
+#' Geometric midpoint of the grid `kee_async_cv()` searches,
+#' \eqn{2 (Q_3 - Q_1) n^{-1/2}}, so it adapts to whatever units `time` is in.
+#'
+#' @param times Pooled observation times from both tables.
+#' @param n Number of subjects.
+#' @return A positive bandwidth.
+#' @keywords internal
+default_bandwidth_async <- function(times, n) {
+  iqr <- diff(stats::quantile(times, c(0.25, 0.75), names = FALSE, na.rm = TRUE))
+  if (!is.finite(iqr) || iqr <= 0) iqr <- diff(range(times, na.rm = TRUE))
+  if (!is.finite(iqr) || iqr <= 0) {
+    stop("observation times are constant; supply 'h'", call. = FALSE)
+  }
+  2 * iqr * n^(-0.5)
+}
+
+#' Tell the user which bandwidth was chosen for them
+#'
+#' @param h The chosen bandwidth.
+#' @param cv_fun Name of the cross-validation function to point at.
+#' @return `h`, invisibly.
+#' @keywords internal
+announce_bandwidth <- function(h, cv_fun) {
+  message(sprintf(
+    paste0(
+      "'h' not supplied. Using h = %s, a rule-of-thumb value read off the\n",
+      "observation times. It is a starting point, not a tuned choice --\n",
+      "see %s() to select the bandwidth from the data."
+    ),
+    format(h, digits = 3), cv_fun
+  ))
+  invisible(h)
+}

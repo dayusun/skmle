@@ -12,9 +12,13 @@
 #' @param id Subject identifier. Non-numeric identifiers are allowed and are internally
 #'   converted to integer subject codes.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
-#' @param s Box-Cox transformation parameter. `s = 0` gives the proportional hazards
-#'   model and `s = 1` gives the additive hazards model.
-#' @param h Positive kernel bandwidth.
+#' @param s Box-Cox transformation parameter, defaulting to `0`. `s = 0` is the
+#'   proportional hazards model, `s = 1` is the additive hazards model, and
+#'   values in between interpolate. If you do not have a reason to choose
+#'   otherwise, the default is the familiar Cox model.
+#' @param h Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+#'   off the observation times and reported in a message. That is a starting
+#'   point, not a tuned choice: use [skmle_cv()] to select it from the data.
 #' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
@@ -90,13 +94,14 @@
 #' @importFrom splines ns
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
-skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE) {
+skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE) {
   # validate inputs --------------------------------------------------------
-  if (missing(formula) || missing(data) || missing(id) ||
-    missing(obs_times) || missing(s) || missing(h)) {
-    stop("formula, data, id, obs_times, s and h must all be supplied")
+  if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
+    stop("formula, data, id and obs_times must all be supplied")
   }
-  if (!is.numeric(h) || length(h) != 1 || h <= 0) stop("'h' must be a positive number")
+  if (!is.null(h) && (!is.numeric(h) || length(h) != 1 || h <= 0)) {
+    stop("'h' must be a positive number")
+  }
   if (!is.numeric(s) || length(s) != 1) stop("'s' must be a numeric scalar")
   if (!is.numeric(nknots) || length(nknots) != 1 || nknots < 1) stop("'nknots' must be >= 1")
   if (!is.numeric(lq_nodes) || length(lq_nodes) != 1 || lq_nodes < 1) stop("'lq_nodes' must be >= 1")
@@ -137,6 +142,10 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, lq_nodes = 64,
   id_vec <- as.integer(factor(id_raw))
 
   n <- length(unique(id_vec))
+  if (is.null(h)) {
+    h <- default_bandwidth_surv(X_time, obs_times_vec, n)
+    announce_bandwidth(h, "skmle_cv")
+  }
   kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
 
   knots <- (1:nknots) / (nknots + 1)
@@ -231,6 +240,11 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, lq_nodes = 64,
   dimnames(var_est) <- list(colnames(Z), colnames(Z))
 
   out <- list(
+    model = sprintf(
+      "Transformed hazards, sieve maximum kernel-weighted likelihood (s = %s%s)",
+      format(s, digits = 3),
+      if (s == 0) ", proportional hazards" else if (s == 1) ", additive hazards" else ""
+    ),
     coefficients = beta_est,
     var = var_est,
     gamma = gamma_est,

@@ -26,6 +26,41 @@ according to how far its measurement time sits from the time being
 modelled, rather than carrying a value forward or smoothing the
 covariate and substituting it. Two outcome types are covered.
 
+## Which function do I need?
+
+Answer two questions.
+
+**1. What is the outcome?**
+
+- A time to an event:
+
+  (death, relapse, failure), possibly censored – use the survival
+  estimators. Your data is one long table with a row per covariate
+  measurement.
+
+- A repeatedly measured quantity:
+
+  (a score, a lab value) recorded on its own schedule – use the
+  asynchronous estimators. Your data is two tables, one per process.
+
+**2. Then pick within that group.**
+
+|  |  |  |
+|----|----|----|
+| **Outcome** | **Situation** | **Function** |
+| Survival | Start here; Cox model | [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) |
+| Survival | Additive hazards instead | [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md) |
+| Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) |
+| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md) |
+| Longitudinal | Start here; one constant effect | [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md) |
+| Longitudinal | Choose the bandwidth properly | [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md) |
+| Longitudinal | The effect may change over time | [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md) |
+
+Every fitting function will pick a bandwidth for you if you do not
+supply one, and will say in a message what it chose. That is enough to
+get a first answer; the `_cv()` functions choose it from the data, which
+is what to report.
+
 ## Survival outcomes
 
 [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) fits the

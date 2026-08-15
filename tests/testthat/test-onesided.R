@@ -158,3 +158,46 @@ test_that("vcov and confint work on the survival fits", {
   expect_equal(dim(confint(s)), c(2L, 2L))
   expect_identical(nobs(s), 60L)
 })
+
+## ----------------------------------------------------- defaults for novices
+
+test_that("a first fit needs no bandwidth and says what it picked", {
+  skip_on_cran()
+  dat <- make_onesided_sim(60)
+
+  expect_message(
+    f <- kee_cox(survival::Surv(X, delta) ~ covariates,
+      data = dat, id = id, obs_times = obs_times
+    ),
+    "rule-of-thumb"
+  )
+  expect_true(all(is.finite(coef(f))))
+  expect_true(f$h > 0)
+
+  # The chosen value must sit inside the grid skmle_cv() would search, since
+  # that is the claim the message makes.
+  n <- length(unique(dat$id))
+  pos <- (dat$X - dat$obs_times)[dat$X - dat$obs_times > 0]
+  expect_gte(f$h, max(min(pos), n^(-0.6)) - 1e-12)
+  expect_lte(f$h, min(max(pos), n^(-0.3)) + 1e-12)
+
+  # s defaults to the Cox model, so skmle() needs neither s nor h.
+  expect_message(
+    s0 <- skmle(survival::Surv(X, delta) ~ covariates,
+      data = dat, id = id, obs_times = obs_times, nknots = 3
+    ),
+    "rule-of-thumb"
+  )
+  expect_equal(s0$s, 0)
+  expect_true(all(is.finite(coef(s0))))
+})
+
+test_that("supplying h keeps the message quiet", {
+  skip_on_cran()
+  dat <- make_onesided_sim(60)
+  expect_no_message(
+    kee_cox(survival::Surv(X, delta) ~ covariates,
+      data = dat, id = id, obs_times = obs_times, h = 0.5
+    )
+  )
+})

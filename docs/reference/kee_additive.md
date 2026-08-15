@@ -6,7 +6,15 @@ using a kernel estimating-equation approach.
 ## Usage
 
 ``` r
-kee_additive(formula, data, id, obs_times, h, lq_nodes = 64, one_sided = TRUE)
+kee_additive(
+  formula,
+  data,
+  id,
+  obs_times,
+  h = NULL,
+  lq_nodes = 64,
+  one_sided = TRUE
+)
 ```
 
 ## Arguments
@@ -31,7 +39,11 @@ kee_additive(formula, data, id, obs_times, h, lq_nodes = 64, one_sided = TRUE)
 
 - h:
 
-  Positive kernel bandwidth.
+  Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+  off the observation times and reported in a message. That is a
+  starting point, not a tuned choice: use
+  [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+  to select it from the data.
 
 - lq_nodes:
 
@@ -100,7 +112,8 @@ summary(fit_add)
 #> kee_additive(formula = Surv(X, delta) ~ covariates, data = dat, 
 #>     id = id, obs_times = obs_times, h = 0.5)
 #> 
-#>   n= 80
+#> Additive hazards, kernel estimating equation (half kernel)
+#>   n= 80 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)  
 #> covariates1  1.26747    0.66610  1.9028  0.05706 .

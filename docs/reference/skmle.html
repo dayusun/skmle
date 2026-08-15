@@ -61,8 +61,8 @@ log-likelihood estimator (SMKLE).</p>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">id</span>,</span>
 <span>  <span class="va">obs_times</span>,</span>
-<span>  <span class="va">s</span>,</span>
-<span>  <span class="va">h</span>,</span>
+<span>  s <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  h <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  nknots <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  lq_nodes <span class="op">=</span> <span class="fl">64</span>,</span>
 <span>  maxeval <span class="op">=</span> <span class="fl">10000</span>,</span>
@@ -95,12 +95,16 @@ converted to integer subject codes.</p></dd>
 
 
 <dt id="arg-s">s<a class="anchor" aria-label="anchor" href="#arg-s"></a></dt>
-<dd><p>Box-Cox transformation parameter. <code>s = 0</code> gives the proportional hazards
-model and <code>s = 1</code> gives the additive hazards model.</p></dd>
+<dd><p>Box-Cox transformation parameter, defaulting to <code>0</code>. <code>s = 0</code> is the
+proportional hazards model, <code>s = 1</code> is the additive hazards model, and
+values in between interpolate. If you do not have a reason to choose
+otherwise, the default is the familiar Cox model.</p></dd>
 
 
 <dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
-<dd><p>Positive kernel bandwidth.</p></dd>
+<dd><p>Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+off the observation times and reported in a message. That is a starting
+point, not a tuned choice: use <code><a href="skmle_cv.html">skmle_cv()</a></code> to select it from the data.</p></dd>
 
 
 <dt id="arg-nknots">nknots<a class="anchor" aria-label="anchor" href="#arg-nknots"></a></dt>

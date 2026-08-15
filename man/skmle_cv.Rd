@@ -10,7 +10,7 @@ skmle_cv(
   data,
   id,
   obs_times,
-  s,
+  s = 0,
   K = 5,
   h_grid = NULL,
   n_h = 10,
@@ -37,8 +37,10 @@ converted to integer subject codes.}
 
 \item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
-\item{s}{Box-Cox transformation parameter. \code{s = 0} gives the proportional hazards
-model and \code{s = 1} gives the additive hazards model.}
+\item{s}{Box-Cox transformation parameter, defaulting to \code{0}. \code{s = 0} is the
+proportional hazards model, \code{s = 1} is the additive hazards model, and
+values in between interpolate. If you do not have a reason to choose
+otherwise, the default is the familiar Cox model.}
 
 \item{K}{Number of folds.}
 

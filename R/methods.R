@@ -122,3 +122,47 @@ confint.kee_td <- function(object, parm, level = 0.95, ...) {
     names(out)[5:6] <- paste0(format(100 * c(a, 1 - a), trim = TRUE), " %")
     out
 }
+
+
+#' Plot a cross-validation curve
+#'
+#' The held-out loss against the candidate bandwidths, with the selected value
+#' marked. Worth a glance every time: if the curve is still falling at an
+#' endpoint of the grid, the "selected" bandwidth is where you stopped looking
+#' rather than a minimum, and the grid should be widened.
+#'
+#' @param x A `cv.skmle` or `cv.kee_async` object.
+#' @param ... Passed to [graphics::plot()].
+#' @return `x`, invisibly. Called for the plot.
+#' @examples
+#' set.seed(1)
+#' d <- sim_async_data(n = 150)
+#' cv <- d$y |>
+#'   kee_async_cv(d$x, y ~ x,
+#'     id = id, time = time,
+#'     h_grid = c(0.1, 0.2, 0.3, 0.5), K = 3, seed = 1, quiet = TRUE
+#'   )
+#' plot(cv)
+#' @importFrom graphics abline points
+#' @name plot.cv.skmle
+#' @export
+plot.cv.kee_async <- function(x, ...) .plot_cv(x$cv_results, x$h_cv, ...)
+
+#' @rdname plot.cv.skmle
+#' @export
+plot.cv.skmle <- function(x, ...) .plot_cv(x$cv_results, x$h_cv, ...)
+
+.plot_cv <- function(res, h_cv, ...) {
+  ok <- is.finite(res$cvloss)
+  if (!any(ok)) stop("no candidate bandwidth produced a loss to plot", call. = FALSE)
+  plot(res$h[ok], res$cvloss[ok],
+    type = "b", pch = 19, log = "x",
+    xlab = "bandwidth h (log scale)", ylab = "held-out loss",
+    main = "Cross-validation", ...
+  )
+  abline(v = h_cv, col = "#1f5aa6", lty = 2)
+  points(h_cv, res$cvloss[which.min(abs(res$h - h_cv))],
+    pch = 19, cex = 1.4, col = "#1f5aa6"
+  )
+  invisible(res)
+}

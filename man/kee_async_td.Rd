@@ -11,8 +11,8 @@ kee_async_td(
   formula,
   id,
   time,
-  times,
-  h,
+  times = NULL,
+  h = NULL,
   h2 = h,
   one_sided = FALSE,
   link = c("identity", "log", "logistic"),
@@ -44,9 +44,13 @@ Non-numeric identifiers are allowed.}
 Accepts the same three forms as \code{id}.}
 
 \item{times}{Numeric vector of target times at which to estimate
-\eqn{\beta(t)}. Keep them inside the range of the observed times.}
+\eqn{\beta(t)}. Defaults to 25 points spanning the 10th to 90th percentile
+of the observed response times, which keeps them inside the data: target
+times near the ends of the range are fitted from a one-sided window and are
+the least reliable part of the curve.}
 
-\item{h}{Bandwidth for the response side, \eqn{h_1}.}
+\item{h}{Bandwidth for the response side, \eqn{h_1}. If omitted, a
+rule-of-thumb value is used and reported in a message; see \code{\link[=kee_async]{kee_async()}}.}
 
 \item{h2}{Bandwidth for the covariate side, \eqn{h_2}. Defaults to \code{h}.}
 
