@@ -150,17 +150,17 @@ benchmark_results <- benchmark_results %>%
   )
 
 benchmark_results
-#>                 scenario           expression    median_ms   itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 3.260228e-07  3.903410
-#> 2     Additive (n = 200)   skmle_kee_additive 4.967598e-08 19.301599
-#> 3     Additive (n = 200)         skmle_spline 5.867977e-08 10.086168
-#> 4     Additive (n = 500)   SurvSparse_add_haz 7.247194e-07  1.409537
-#> 5     Additive (n = 500)   skmle_kee_additive 4.875878e-08 19.376941
-#> 6     Additive (n = 500)         skmle_spline 1.112667e-07  9.281962
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 3.962702e-07  2.323874
-#> 8  Transformed (n = 100)         skmle_spline 5.391217e-08 17.222832
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 7.643521e-07  1.235832
-#> 10 Transformed (n = 200)         skmle_spline 5.541297e-08 16.497358
+#>                 scenario           expression    median_ms    itr/sec
+#> 1     Additive (n = 200)   SurvSparse_add_haz 1.508022e-07  5.0476807
+#> 2     Additive (n = 200)   skmle_kee_additive 6.111374e-08 16.2962363
+#> 3     Additive (n = 200)         skmle_spline 1.120992e-07  8.7605801
+#> 4     Additive (n = 500)   SurvSparse_add_haz 1.049569e-06  0.9153186
+#> 5     Additive (n = 500)   skmle_kee_additive 8.307637e-08 11.4978604
+#> 6     Additive (n = 500)         skmle_spline 1.873645e-07  5.1708184
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 3.215933e-07  2.8082818
+#> 8  Transformed (n = 100)         skmle_spline 7.915759e-08 12.2101172
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 6.987471e-07  1.4289434
+#> 10 Transformed (n = 200)         skmle_spline 1.095247e-07  9.1924102
 #>                  method
 #> 1    SurvSparse add.haz
 #> 2    skmle kee_additive
@@ -191,28 +191,28 @@ speed_summary <- benchmark_results %>%
   dplyr::mutate(speedup_vs_baseline = median_ms / baseline_ms)
 
 speed_summary
-#>                 scenario           expression    median_ms   itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 3.260228e-07  3.903410
-#> 2     Additive (n = 200)   skmle_kee_additive 4.967598e-08 19.301599
-#> 3     Additive (n = 200)         skmle_spline 5.867977e-08 10.086168
-#> 4     Additive (n = 500)   SurvSparse_add_haz 7.247194e-07  1.409537
-#> 5     Additive (n = 500)   skmle_kee_additive 4.875878e-08 19.376941
-#> 6     Additive (n = 500)         skmle_spline 1.112667e-07  9.281962
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 3.962702e-07  2.323874
-#> 8  Transformed (n = 100)         skmle_spline 5.391217e-08 17.222832
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 7.643521e-07  1.235832
-#> 10 Transformed (n = 200)         skmle_spline 5.541297e-08 16.497358
+#>                 scenario           expression    median_ms    itr/sec
+#> 1     Additive (n = 200)   SurvSparse_add_haz 1.508022e-07  5.0476807
+#> 2     Additive (n = 200)   skmle_kee_additive 6.111374e-08 16.2962363
+#> 3     Additive (n = 200)         skmle_spline 1.120992e-07  8.7605801
+#> 4     Additive (n = 500)   SurvSparse_add_haz 1.049569e-06  0.9153186
+#> 5     Additive (n = 500)   skmle_kee_additive 8.307637e-08 11.4978604
+#> 6     Additive (n = 500)         skmle_spline 1.873645e-07  5.1708184
+#> 7  Transformed (n = 100) SurvSparse_trans_haz 3.215933e-07  2.8082818
+#> 8  Transformed (n = 100)         skmle_spline 7.915759e-08 12.2101172
+#> 9  Transformed (n = 200) SurvSparse_trans_haz 6.987471e-07  1.4289434
+#> 10 Transformed (n = 200)         skmle_spline 1.095247e-07  9.1924102
 #>                  method  baseline_ms speedup_vs_baseline
-#> 1    SurvSparse add.haz 4.967598e-08            6.562988
-#> 2    skmle kee_additive 4.967598e-08            1.000000
-#> 3          skmle spline 4.967598e-08            1.181250
-#> 4    SurvSparse add.haz 4.875878e-08           14.863362
-#> 5    skmle kee_additive 4.875878e-08            1.000000
-#> 6          skmle spline 4.875878e-08            2.281982
-#> 7  SurvSparse trans.haz 5.391217e-08            7.350292
-#> 8          skmle spline 5.391217e-08            1.000000
-#> 9  SurvSparse trans.haz 5.541297e-08           13.793740
-#> 10         skmle spline 5.541297e-08            1.000000
+#> 1    SurvSparse add.haz 6.111374e-08            2.467566
+#> 2    skmle kee_additive 6.111374e-08            1.000000
+#> 3          skmle spline 6.111374e-08            1.834271
+#> 4    SurvSparse add.haz 8.307637e-08           12.633786
+#> 5    skmle kee_additive 8.307637e-08            1.000000
+#> 6          skmle spline 8.307637e-08            2.255328
+#> 7  SurvSparse trans.haz 7.915759e-08            4.062697
+#> 8          skmle spline 7.915759e-08            1.000000
+#> 9  SurvSparse trans.haz 1.095247e-07            6.379816
+#> 10         skmle spline 1.095247e-07            1.000000
 ```
 
 ## Runtime Visualization

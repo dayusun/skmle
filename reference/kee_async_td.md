@@ -19,9 +19,9 @@ where the lag is everything.
 
 ``` r
 kee_async_td(
-  formula,
   data_y,
   data_x,
+  formula,
   id,
   time,
   times,
@@ -40,30 +40,34 @@ print(x, ...)
 
 ## Arguments
 
-- formula:
-
-  A two-sided formula, `y ~ x1 + x2`. The left-hand side is evaluated in
-  `data_y`, the right-hand side in `data_x`.
-
 - data_y:
 
   Data frame of response occasions: one row per time the response was
-  recorded.
+  recorded. First argument, so the function pipes.
 
 - data_x:
 
   Data frame of covariate occasions: one row per time the covariates
   were recorded. Its time grid need not overlap `data_y`'s at all.
 
+- formula:
+
+  A two-sided formula, `y ~ x1 + x2`. **The left-hand side is looked up
+  in `data_y` and the right-hand side in `data_x`**, which is the one
+  unusual thing about this interface and follows from the data being in
+  two tables: there is no single frame holding both.
+
 - id:
 
-  Subject identifier, unquoted or as a string. Must name a column
-  present in **both** tables. Non-numeric identifiers are allowed.
+  Subject identifier naming a column present in **both** tables. Give it
+  unquoted (`id = subject`), as a string (`id = "subject"`), or embraced
+  (`id = {{ col }}`) when calling from inside another function.
+  Non-numeric identifiers are allowed.
 
 - time:
 
-  Observation time, unquoted or as a string. Must name a column present
-  in **both** tables.
+  Observation time, naming a column present in **both** tables. Accepts
+  the same three forms as `id`.
 
 - times:
 
@@ -203,10 +207,11 @@ Society, Series B* 77, 755-776.
 ``` r
 set.seed(1)
 d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-fit <- kee_async_td(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
-  times = seq(0.2, 0.8, by = 0.1), h = 0.3
-)
+fit <- d$y |>
+  kee_async_td(d$x, y ~ x,
+    id = id, time = time,
+    times = seq(0.2, 0.8, by = 0.1), h = 0.3
+  )
 coef(fit)
 #>      (Intercept)        x
 #> [1,]   0.5936535 1.194805
@@ -216,4 +221,22 @@ coef(fit)
 #> [5,]   0.6653495 1.360668
 #> [6,]   0.6794972 1.418637
 #> [7,]   0.6088444 1.482852
+tidy(fit)
+#> # A tibble: 14 × 6
+#>     time term        estimate std.error statistic  p.value
+#>    <dbl> <chr>          <dbl>     <dbl>     <dbl>    <dbl>
+#>  1   0.2 (Intercept)    0.594    0.0833      7.12 1.05e-12
+#>  2   0.3 (Intercept)    0.601    0.0804      7.48 7.67e-14
+#>  3   0.4 (Intercept)    0.614    0.0818      7.51 5.86e-14
+#>  4   0.5 (Intercept)    0.651    0.0940      6.93 4.19e-12
+#>  5   0.6 (Intercept)    0.665    0.112       5.95 2.74e- 9
+#>  6   0.7 (Intercept)    0.679    0.112       6.05 1.41e- 9
+#>  7   0.8 (Intercept)    0.609    0.117       5.22 1.77e- 7
+#>  8   0.2 x              1.19     0.0817     14.6  2.10e-48
+#>  9   0.3 x              1.17     0.0743     15.8  6.11e-56
+#> 10   0.4 x              1.21     0.0724     16.7  2.06e-62
+#> 11   0.5 x              1.26     0.0871     14.5  2.26e-47
+#> 12   0.6 x              1.36     0.105      13.0  1.64e-38
+#> 13   0.7 x              1.42     0.103      13.8  3.76e-43
+#> 14   0.8 x              1.48     0.0993     14.9  2.19e-50
 ```

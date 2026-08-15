@@ -61,12 +61,12 @@ head(dat)
 #> # A tibble: 6 × 6
 #>   id        X delta covariates[,1]  [,2] obs_times censoring
 #>   <chr> <dbl> <lgl>          <dbl> <dbl>     <dbl>     <dbl>
-#> 1 1     0.827 TRUE          -0.226     0     0.129     0.930
-#> 2 1     0.827 TRUE          -0.864     0     0.217     0.930
-#> 3 1     0.827 TRUE          -0.864     0     0.247     0.930
-#> 4 1     0.827 TRUE          -0.834     0     0.433     0.930
-#> 5 1     0.827 TRUE           0.110     0     0.798     0.930
-#> 6 2     0.509 TRUE           0.418     1     0.288     0.865
+#> 1 1     0.805 TRUE         -0.714      0     0.129     0.930
+#> 2 1     0.805 TRUE         -0.916      0     0.217     0.930
+#> 3 1     0.805 TRUE         -0.916      0     0.247     0.930
+#> 4 1     0.805 TRUE         -0.387      0     0.433     0.930
+#> 5 1     0.805 TRUE         -0.0782     0     0.798     0.930
+#> 6 2     0.504 TRUE          0.402      1     0.288     0.865
 ```
 
 The simulated data are stored in long format. Each row corresponds to
@@ -107,7 +107,7 @@ fit_skmle
 #> 
 #> Coefficients:
 #> covariates1 covariates2 
-#>   1.1034515  -0.6214752
+#>   0.9215573  -0.5463503
 ```
 
 The printed object gives the fitted coefficients. As in many R model
@@ -124,12 +124,12 @@ summary(fit_skmle)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.10345    0.34655  3.1841 0.001452 **
-#> covariates2 -0.62148    0.35735 -1.7391 0.082015 . 
+#> covariates1  0.92156    0.31342  2.9403 0.003279 **
+#> covariates2 -0.54635    0.34045 -1.6048 0.108543   
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> Log-likelihood: -0.1486
+#> Log-likelihood: -0.0753
 ```
 
 The summary table reports:
@@ -176,8 +176,8 @@ summary(fit_kee_cox)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.01867    0.33405  3.0495 0.002292 **
-#> covariates2 -0.57047    0.36633 -1.5572 0.119414   
+#> covariates1  0.85832    0.29253  2.9341 0.003345 **
+#> covariates2 -0.49833    0.34661 -1.4377 0.150516   
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -215,9 +215,9 @@ summary(fit_kee_add)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.28942    0.48935  2.6349 0.008415 **
-#> covariates2  0.18235    0.61387  0.2970 0.766429   
+#>             Estimate Std. Error z value Pr(>|z|)  
+#> covariates1  1.19769    0.52669  2.2740  0.02297 *
+#> covariates2  0.26643    0.68259  0.3903  0.69630  
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -244,12 +244,14 @@ cv_fit <- skmle_cv(
 )
 
 cv_fit$h_cv
-#> [1] 0.5
+#> [1] 0.3
 cv_fit$cv_results
-#>     h    cvloss
-#> 1 0.3 0.8533812
-#> 2 0.4 0.8508904
-#> 3 0.5 0.8043724
+#> # A tibble: 3 × 2
+#>       h cvloss
+#>   <dbl>  <dbl>
+#> 1   0.3  0.551
+#> 2   0.4  0.586
+#> 3   0.5  0.602
 ```
 
 The returned object contains:
@@ -265,17 +267,17 @@ You can then inspect the final refit in the usual way.
 summary(cv_fit$fit)
 #> Call:
 #> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 
-#>     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.5)
+#>     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.3)
 #> 
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.10345    0.34655  3.1841 0.001452 **
-#> covariates2 -0.62148    0.35735 -1.7391 0.082015 . 
+#> covariates1  1.06391    0.34671  3.0686 0.002151 **
+#> covariates2 -0.53609    0.38391 -1.3964 0.162594   
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> Log-likelihood: -0.1486
+#> Log-likelihood: 0.06305
 ```
 
 ## Half Kernel or Full Kernel
@@ -295,8 +297,8 @@ fit_full <- kee_cox(
 )
 cbind(half = coef(fit_kee_cox), full = coef(fit_full))
 #>                   half       full
-#> covariates1  1.0186701  0.8157294
-#> covariates2 -0.5704703 -0.5519590
+#> covariates1  0.8583207  0.7803046
+#> covariates2 -0.4983319 -0.5343272
 ```
 
 The switch reaches the risk-set averages inside the C++ backend as well
@@ -320,15 +322,19 @@ covariate) pair contributes in proportion to its time separation.
 set.seed(202)
 d <- sim_async_data(n = 300, beta = c(0.5, 1.5))
 head(d$y, 3)
-#>   id      time         y
-#> 1  1 0.2037272 0.3064489
-#> 2  1 0.3297899 0.4304008
-#> 3  1 0.3682846 0.2979238
+#> # A tibble: 3 × 3
+#>      id  time     y
+#>   <int> <dbl> <dbl>
+#> 1     1 0.204 0.306
+#> 2     1 0.330 0.430
+#> 3     1 0.368 0.298
 head(d$x, 3)
-#>   id       time          x
-#> 1  1 0.07627971 -0.4664268
-#> 2  1 0.19848389 -0.8345285
-#> 3  1 0.21907798 -0.6879458
+#> # A tibble: 3 × 3
+#>      id   time      x
+#>   <int>  <dbl>  <dbl>
+#> 1     1 0.0763 -0.466
+#> 2     1 0.198  -0.835
+#> 3     1 0.219  -0.688
 ```
 
 The two tables are deliberately separate — they are on different grids,
@@ -339,13 +345,13 @@ each.
 
 ``` r
 
-fit_a <- kee_async(y ~ x,
-  data_y = d$y, data_x = d$x,
+fit_a <- kee_async(d$y, d$x,
+  y ~ x,
   id = id, time = time, h = 0.25
 )
 summary(fit_a)
 #> Call:
-#> kee_async(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.25)
 #> 
 #>   n= 300
@@ -370,25 +376,27 @@ the kernel-weighted squared error on the held-out subjects:
 
 ``` r
 
-cv <- kee_async_cv(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
+cv <- kee_async_cv(d$y, d$x,
+  y ~ x, id = id, time = time,
   h_grid = c(0.10, 0.15, 0.25, 0.40), K = 5, seed = 1, quiet = TRUE
 )
 #> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid
 #> to check that the minimum is interior
 cv
 #> Call:
-#> kee_async_cv(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#> kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), K = 5, seed = 1, 
 #>     quiet = TRUE)
 #> 
 #> 5-fold subject-level cross-validation
 #> 
-#>     h cvloss nfold_used
-#>  0.10 1.0892          5
-#>  0.15 1.1565          5
-#>  0.25 1.2665          5
-#>  0.40 1.4166          5
+#> # A tibble: 4 × 3
+#>       h cvloss nfold_used
+#>   <dbl>  <dbl>      <dbl>
+#> 1  0.1    1.09          5
+#> 2  0.15   1.16          5
+#> 3  0.25   1.27          5
+#> 4  0.4    1.42          5
 #> 
 #> Selected h = 0.1
 #> 
@@ -411,8 +419,8 @@ dt <- sim_async_data(
   lambda_y = 8, lambda_x = 8,
   x_cov = function(s, t) exp(-4 * (s - t)^2)
 )
-fit_td <- kee_async_td(y ~ x,
-  data_y = dt$y, data_x = dt$x, id = id, time = time,
+fit_td <- kee_async_td(dt$y, dt$x,
+  y ~ x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.05), h = 0.2
 )
 plot(fit_td)

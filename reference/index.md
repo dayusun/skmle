@@ -56,6 +56,22 @@ response and a covariate observed on different time grids.
   : Number of subjects contributing to a fit
 - [`confint(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/confint.kee_td.md)
   : Wald confidence intervals for a coefficient curve
+
+## Tidy output
+
+broom generics returning tibbles, so fits compose with the rest of a
+tidy workflow.
+
+- [`tidy(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/tidy.skmle.md)
+  [`tidy(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/tidy.skmle.md)
+  [`tidy(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/tidy.skmle.md)
+  : Summarise a fit as a tibble
+- [`glance(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/glance.skmle.md)
+  [`glance(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/glance.skmle.md)
+  [`glance(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/glance.skmle.md)
+  : One-row summary of a fit
+- [`augment(`*`<kee_async>`*`)`](https://dayusun.github.io/skmle/reference/augment.kee_async.md)
+  : Add fitted means to the covariate table
 - [`summary(`*`<skmle>`*`)`](https://dayusun.github.io/skmle/reference/summary.skmle.md)
   : Summary for skmle object
 - [`summary(`*`<kee>`*`)`](https://dayusun.github.io/skmle/reference/summary.kee.md)

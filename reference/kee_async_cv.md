@@ -13,9 +13,9 @@ g\\X_i(S\_{ik})^\top \hat\beta\\\]^2} {\sum\_{i \in \mathrm{test}}
 
 ``` r
 kee_async_cv(
-  formula,
   data_y,
   data_x,
+  formula,
   id,
   time,
   h_grid = NULL,
@@ -36,30 +36,34 @@ print(x, ...)
 
 ## Arguments
 
-- formula:
-
-  A two-sided formula, `y ~ x1 + x2`. The left-hand side is evaluated in
-  `data_y`, the right-hand side in `data_x`.
-
 - data_y:
 
   Data frame of response occasions: one row per time the response was
-  recorded.
+  recorded. First argument, so the function pipes.
 
 - data_x:
 
   Data frame of covariate occasions: one row per time the covariates
   were recorded. Its time grid need not overlap `data_y`'s at all.
 
+- formula:
+
+  A two-sided formula, `y ~ x1 + x2`. **The left-hand side is looked up
+  in `data_y` and the right-hand side in `data_x`**, which is the one
+  unusual thing about this interface and follows from the data being in
+  two tables: there is no single frame holding both.
+
 - id:
 
-  Subject identifier, unquoted or as a string. Must name a column
-  present in **both** tables. Non-numeric identifiers are allowed.
+  Subject identifier naming a column present in **both** tables. Give it
+  unquoted (`id = subject`), as a string (`id = "subject"`), or embraced
+  (`id = {{ col }}`) when calling from inside another function.
+  Non-numeric identifiers are allowed.
 
 - time:
 
-  Observation time, unquoted or as a string. Must name a column present
-  in **both** tables.
+  Observation time, naming a column present in **both** tables. Accepts
+  the same three forms as `id`.
 
 - h_grid:
 
@@ -182,27 +186,37 @@ Society, Series B* 77, 755-776.
 ``` r
 set.seed(1)
 d <- sim_async_data(n = 150, beta = c(0.5, 1.5))
-cv <- kee_async_cv(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
-  h_grid = c(0.15, 0.25, 0.40), K = 3, seed = 1, quiet = TRUE
-)
+cv <- d$y |>
+  kee_async_cv(d$x, y ~ x,
+    id = id, time = time,
+    h_grid = c(0.15, 0.25, 0.40), K = 3, seed = 1, quiet = TRUE
+  )
 #> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid to check that the minimum is interior
 cv
 #> Call:
-#> kee_async_cv(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#> kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h_grid = c(0.15, 0.25, 0.4), K = 3, seed = 1, 
 #>     quiet = TRUE)
 #> 
 #> 3-fold subject-level cross-validation
 #> 
-#>     h cvloss nfold_used
-#>  0.15 1.3529          3
-#>  0.25 1.5137          3
-#>  0.40 1.6674          3
+#> # A tibble: 3 × 3
+#>       h cvloss nfold_used
+#>   <dbl>  <dbl>      <dbl>
+#> 1  0.15   1.35          3
+#> 2  0.25   1.51          3
+#> 3  0.4    1.67          3
 #> 
 #> Selected h = 0.15
 #> 
 #> Coefficients at the refit:
 #> (Intercept)           x 
 #>   0.6103921   1.5031392 
+cv$cv_results
+#> # A tibble: 3 × 3
+#>       h cvloss nfold_used
+#>   <dbl>  <dbl>      <dbl>
+#> 1  0.15   1.35          3
+#> 2  0.25   1.51          3
+#> 3  0.4    1.67          3
 ```
