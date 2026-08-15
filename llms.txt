@@ -240,6 +240,7 @@ Society: Series B, 77*(4), 755-776. <https://doi.org/10.1111/rssb.12086>
 - [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) : Fit
   a Transformed Hazards Model by SMKLE
 - [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+  [`print(`*`<cv.skmle>`*`)`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
   : Select the Bandwidth by Cross-Validation
 - [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) :
   Fit a Cox-Type KEE Model

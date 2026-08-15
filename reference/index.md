@@ -10,6 +10,7 @@
 - [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) : Fit
   a Transformed Hazards Model by SMKLE
 - [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+  [`print(`*`<cv.skmle>`*`)`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
   : Select the Bandwidth by Cross-Validation
 - [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) :
   Fit a Cox-Type KEE Model

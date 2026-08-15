@@ -164,11 +164,11 @@ summary(fit)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.10345    0.34655  3.1841 0.001452 **
-#> covariates2 -0.62148    0.35735 -1.7391 0.082015 . 
+#> covariates1  0.92156    0.31342  2.9403 0.003279 **
+#> covariates2 -0.54635    0.34045 -1.6048 0.108543   
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 
-#> Log-likelihood: -0.1486 
+#> Log-likelihood: -0.0753 
 # }
 ```
