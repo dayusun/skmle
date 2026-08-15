@@ -67,7 +67,7 @@ kee_async(
   Positive bandwidth, on the same scale as `time`. If omitted, a value
   is read off the observation times as a rule of thumb and reported in a
   message. Use
-  [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+  [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
   to choose it from the data.
 
 - one_sided:
@@ -159,7 +159,7 @@ The estimator is consistent and asymptotically normal at the smoothing
 rate \\(nh)^{1/2}\\. Standard errors shrink more slowly than in a
 parametric fit, and the bandwidth becomes a real modelling choice: too
 small and few pairs contribute, too large and the bias grows.
-[`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
 picks it from the data.
 
 `h` is on the **same scale as the observation times**. Unlike the
@@ -198,11 +198,11 @@ Society, Series B* 77, 755-776.
 
 ## See also
 
-[`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
 to choose `h`,
-[`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+[`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
 for a coefficient curve \\\beta(t)\\,
-[`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
+[`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md)
 to simulate.
 
 ## Examples

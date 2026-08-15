@@ -48,13 +48,13 @@ Then pick within that group.
 |  |  |  |
 |----|----|----|
 | **Outcome** | **Situation** | **Function** |
-| Survival | Start here; Cox model | [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) |
-| Survival | Additive hazards instead | [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md) |
-| Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) |
-| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md) |
-| Longitudinal | Start here; one constant effect | [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md) |
-| Longitudinal | Choose the bandwidth properly | [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md) |
-| Longitudinal | The effect may change over time | [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md) |
+| Survival | Start here; Cox model | [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) |
+| Survival | Additive hazards instead | [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md) |
+| Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) |
+| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
+| Longitudinal | Start here; one constant effect | [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) |
+| Longitudinal | Choose the bandwidth properly | [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md) |
+| Longitudinal | The effect may change over time | [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md) |
 
 Every fitting function will pick a bandwidth for you if you do not
 supply one, and will say in a message what it chose. That is enough to
@@ -63,29 +63,28 @@ is what to report.
 
 ## Survival outcomes
 
-[`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) fits the
+[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) fits the
 transformed hazards family by the Sieve Maximum Kernel-weighted
 Log-likelihood Estimator of Sun, Sun, Zhao and Cao (2025). The Box-Cox
 parameter `s` indexes the family: `s = 0` is proportional hazards,
 `s = 1` is additive hazards, and other values interpolate.
-[`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) and
-[`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+[`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) and
+[`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
 are faster specialised estimating equations for the two named cases, and
-[`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
 selects the bandwidth by subject-level cross-validation. Simulate with
-[`sim_skmle_data()`](https://dayusun.github.io/skmle/reference/sim_skmle_data.md).
+[`sim_skmle_data()`](https://www.sundayu.me/skmle/reference/sim_skmle_data.md).
 
 ## Asynchronous longitudinal outcomes
 
 When the outcome is itself a sparsely observed longitudinal process,
 recorded on a time grid that does not line up with the covariate's,
-[`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
-and
-[`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) and
+[`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
 fit generalised linear models by the kernel-weighted estimating
 equations of Cao, Zeng and Fine (2015), with time-invariant coefficients
 and with a coefficient curve \\\beta(t)\\ respectively. Simulate with
-[`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md).
+[`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md).
 
 ## Half and full kernels
 

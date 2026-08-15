@@ -1,9 +1,9 @@
 # Epanechnikov kernel and the row weights built from it
 
 The kernel was written out inline in
-[`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md),
-[`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) and
-[`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md).
+[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md),
+[`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) and
+[`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md).
 Keeping one copy matters now that the half/full choice is a user-facing
 argument: three inline copies are three places for the switch to be
 forgotten.

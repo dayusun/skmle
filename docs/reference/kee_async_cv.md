@@ -1,7 +1,7 @@
 # Choose the bandwidth for an asynchronous longitudinal fit
 
 K-fold cross-validation over **subjects** for
-[`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md).
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md).
 For each candidate bandwidth the estimator is fitted on the training
 subjects and scored on the held-out subjects by the kernel-weighted
 squared error of the fitted mean, \$\$ \frac{\sum\_{i \in \mathrm{test}}
@@ -126,7 +126,7 @@ An object of class `cv.kee_async`:
 - fit:
 
   The
-  [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
+  [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md)
   fit refitted on all subjects at `h_cv`.
 
 - cv_results:
@@ -179,7 +179,7 @@ Society, Series B* 77, 755-776.
 
 ## See also
 
-[`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md)
 
 ## Examples
 

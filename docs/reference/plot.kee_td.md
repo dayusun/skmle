@@ -15,7 +15,7 @@ plot(x, which = seq_len(ncol(x$coefficients)), level = 0.95, ...)
 - x:
 
   A `kee_td` object from
-  [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md).
+  [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md).
 
 - which:
 

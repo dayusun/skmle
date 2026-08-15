@@ -41,8 +41,8 @@ kee_additive(
 
   Positive kernel bandwidth. If omitted, one is read off the observation
   times as a rule of thumb and reported in a message. Use
-  [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
-  to choose it from the data.
+  [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) to
+  choose it from the data.
 
 - lq_nodes:
 
@@ -67,7 +67,7 @@ variance estimation, and model metadata.
 ## Details
 
 `kee_additive()` is the specialized additive-hazards counterpart to
-[`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md). It
+[`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md). It
 uses a kernel-smoothed martingale estimating equation and typically runs
 faster than the general `skmle(s = 1)` fit because it solves a more
 specialized problem.

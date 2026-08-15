@@ -64,9 +64,9 @@ a pure-R prototype.
 ### Three estimators, one shared pipeline
 
 All three estimator wrappers
-([`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md),
-[`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md),
-[`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+([`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md),
+[`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md),
+[`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
 in `R/skmle.R`, `R/kee.R`) share the same front-end pattern:
 
 1.  Parse the formula via
@@ -90,15 +90,14 @@ in `R/skmle.R`, `R/kee.R`) share the same front-end pattern:
 
 ### skmle sieve fit
 
-[`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md)
-precomputes a B-spline sieve
-([`splines::ns`](https://rdrr.io/r/splines/ns.html) with equally spaced
-interior knots `(1:nknots)/(nknots+1)` on `[0,1]`) for the baseline
-hazard, plus Legendre-Gauss quadrature nodes from `gaussquad` for the
-cumulative-hazard integral. Two basis matrices are built: `bsmat` at
-event/censoring times `X`, and `bsmat_tt_all` at mapped quadrature nodes
-`0.5*lq_x + 0.5`, along with `kerval_tt_all` = kernel values between
-each quadrature node and every observation time.
+[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) precomputes
+a B-spline sieve ([`splines::ns`](https://rdrr.io/r/splines/ns.html)
+with equally spaced interior knots `(1:nknots)/(nknots+1)` on `[0,1]`)
+for the baseline hazard, plus Legendre-Gauss quadrature nodes from
+`gaussquad` for the cumulative-hazard integral. Two basis matrices are
+built: `bsmat` at event/censoring times `X`, and `bsmat_tt_all` at
+mapped quadrature nodes `0.5*lq_x + 0.5`, along with `kerval_tt_all` =
+kernel values between each quadrature node and every observation time.
 
 When `s != 0` (non-Cox transformations), an `ineqmat` of nloptr
 inequality constraints is built from rows where
@@ -112,19 +111,19 @@ the Box-Cox transform. `src/skmle_cpp.cpp` defines `trans_fun`,
 
 ### KEE estimators
 
-[`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md)
-solves a partial-likelihood-style kernel estimating equation via
+[`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) solves
+a partial-likelihood-style kernel estimating equation via
 [`nleqslv::nleqslv`](https://bertcarnell.github.io/nleqslv/reference/nleqslv.html);
 variance comes from `kee_cox_var` returning `W`, `Sigma` and is
 assembled as `W^{-1} Σ W^{-1}`.
 
-[`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md)
+[`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
 is closed-form — `kee_additive_est` returns the estimate plus `A_est`,
 `B_est`, `Sigma_est` in one C++ call.
 
 ### Cross-validation
 
-[`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
 (R/skmle_cv.R, exported) generates an automatic log-spaced `h_grid` in
 `[max(min(pos_diffs), n^-0.6), min(max(max_diffs), n^-0.3)]`, assigns
 folds by **subject id** (not by row), and delegates the whole
@@ -132,12 +131,12 @@ K×\|h_grid\| loop to `skmle_cv_cpp` in one call — the C++ side refits on
 each train split and evaluates `skmle_eval_nll_cpp` on the held-out
 subjects. After selecting `h_cv`, it refits on the full data by
 rewriting `call[[1]]` to
-[`skmle::skmle`](https://dayusun.github.io/skmle/reference/skmle.md) and
+[`skmle::skmle`](https://www.sundayu.me/skmle/reference/skmle.md) and
 stripping CV-only arguments.
 
 ### Simulation
 
-[`sim_skmle_data()`](https://dayusun.github.io/skmle/reference/sim_skmle_data.md)
+[`sim_skmle_data()`](https://www.sundayu.me/skmle/reference/sim_skmle_data.md)
 (`R/simulate.R`) draws a bivariate covariate (step-function AR-like
 process + binary indicator), inverts the transformed cumulative hazard
 via Legendre-Gauss quadrature + `nleqslv`, and draws observation times

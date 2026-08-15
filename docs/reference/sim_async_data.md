@@ -42,7 +42,7 @@ sim_async_data(
 - link:
 
   One of `"identity"`, `"log"` or `"logistic"`, matching
-  [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md).
+  [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md).
   Under `"logistic"` the response is Bernoulli and no error process is
   added; under `"log"` the response is Poisson.
 
@@ -76,10 +76,10 @@ assumptions instead.
 
 `beta` may be a numeric vector, giving time-invariant coefficients
 suitable for
-[`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md),
-or a function of time returning one row per supplied time, giving a
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md), or
+a function of time returning one row per supplied time, giving a
 coefficient curve suitable for
-[`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md).
+[`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md).
 In both cases the first element is the intercept and the remaining `p`
 elements multiply the `p` covariate coordinates.
 
