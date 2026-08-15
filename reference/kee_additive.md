@@ -114,10 +114,8 @@ summary(fit_add)
 #> Additive hazards, kernel estimating equation (half kernel)
 #>   n= 80 subjects   bandwidth h = 0.5
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  1.26747    0.66610  1.9028  0.05706 .
-#> covariates2 -0.54733    0.75574 -0.7242  0.46892  
-#> ---
-#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#>             Estimate Std. Error z value Pr(>|z|)
+#> covariates1  0.86274    0.67004  1.2876   0.1979
+#> covariates2 -0.18020    0.65683 -0.2744   0.7838
 # }
 ```

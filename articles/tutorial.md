@@ -88,12 +88,12 @@ head(dat)
 #> # A tibble: 6 × 6
 #>   id        X delta covariates[,1]  [,2] obs_times censoring
 #>   <chr> <dbl> <lgl>          <dbl> <dbl>     <dbl>     <dbl>
-#> 1 1     0.805 TRUE         -0.714      0     0.129     0.930
-#> 2 1     0.805 TRUE         -0.916      0     0.217     0.930
-#> 3 1     0.805 TRUE         -0.916      0     0.247     0.930
-#> 4 1     0.805 TRUE         -0.387      0     0.433     0.930
-#> 5 1     0.805 TRUE         -0.0782     0     0.798     0.930
-#> 6 2     0.504 TRUE          0.402      1     0.288     0.865
+#> 1 1     0.550 TRUE         0.419       1     0.129     0.930
+#> 2 1     0.550 TRUE         0.593       1     0.217     0.930
+#> 3 1     0.550 TRUE         0.593       1     0.247     0.930
+#> 4 1     0.550 TRUE         0.412       1     0.433     0.930
+#> 5 1     0.550 TRUE         0.933       1     0.798     0.930
+#> 6 2     0.747 TRUE        -0.00422     1     0.288     0.865
 ```
 
 The simulated data are stored in long format. Each row corresponds to
@@ -134,7 +134,7 @@ fit_skmle
 #> 
 #> Coefficients:
 #> covariates1 covariates2 
-#>   0.9215573  -0.5463503
+#>   1.0297295  -0.4157912
 ```
 
 The printed object gives the fitted coefficients. As in many R model
@@ -150,13 +150,13 @@ summary(fit_skmle)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  0.92156    0.31342  2.9403 0.003279 **
-#> covariates2 -0.54635    0.34045 -1.6048 0.108543   
+#>             Estimate Std. Error z value Pr(>|z|)  
+#> covariates1  1.02973    0.41714  2.4686  0.01357 *
+#> covariates2 -0.41579    0.28015 -1.4842  0.13776  
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> Log-likelihood: -0.0753
+#> Log-likelihood: -0.1331
 ```
 
 The summary table reports:
@@ -204,8 +204,8 @@ summary(fit_kee_cox)
 #>   n= 80 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  0.85832    0.29253  2.9341 0.003345 **
-#> covariates2 -0.49833    0.34661 -1.4377 0.150516   
+#> covariates1  1.02085    0.36037  2.8328 0.004615 **
+#> covariates2 -0.36751    0.29950 -1.2271 0.219797   
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -245,8 +245,8 @@ summary(fit_kee_add)
 #>   n= 80 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  1.19769    0.52669  2.2740  0.02297 *
-#> covariates2  0.26643    0.68259  0.3903  0.69630  
+#> covariates1  0.94335    0.47788  1.9740  0.04838 *
+#> covariates2 -0.41208    0.65185 -0.6322  0.52728  
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
@@ -273,14 +273,14 @@ cv_fit <- skmle_cv(
 )
 
 cv_fit$h_cv
-#> [1] 0.3
+#> [1] 0.5
 cv_fit$cv_results
 #> # A tibble: 3 × 2
 #>       h cvloss
 #>   <dbl>  <dbl>
-#> 1   0.3  0.551
-#> 2   0.4  0.586
-#> 3   0.5  0.602
+#> 1   0.3  0.758
+#> 2   0.4  0.729
+#> 3   0.5  0.699
 ```
 
 The returned object contains:
@@ -296,17 +296,17 @@ You can then inspect the final refit in the usual way.
 summary(cv_fit$fit)
 #> Call:
 #> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 
-#>     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.3)
+#>     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.5)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.06391    0.34671  3.0686 0.002151 **
-#> covariates2 -0.53609    0.38391 -1.3964 0.162594   
+#>             Estimate Std. Error z value Pr(>|z|)  
+#> covariates1  1.02973    0.41714  2.4686  0.01357 *
+#> covariates2 -0.41579    0.28015 -1.4842  0.13776  
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> Log-likelihood: 0.06305
+#> Log-likelihood: -0.1331
 ```
 
 ## Half kernel or full kernel
@@ -325,9 +325,9 @@ fit_full <- kee_cox(
   h = 0.5, one_sided = FALSE
 )
 cbind(half = coef(fit_kee_cox), full = coef(fit_full))
-#>                   half       full
-#> covariates1  0.8583207  0.7803046
-#> covariates2 -0.4983319 -0.5343272
+#>                  half       full
+#> covariates1  1.020846  0.8561813
+#> covariates2 -0.367506 -0.3589201
 ```
 
 The switch reaches the risk-set averages inside the C++ backend as well
