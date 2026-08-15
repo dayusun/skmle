@@ -24,8 +24,8 @@ kee_async_td(
   formula,
   id,
   time,
-  times,
-  h,
+  times = NULL,
+  h = NULL,
   h2 = h,
   one_sided = FALSE,
   link = c("identity", "log", "logistic"),
@@ -71,12 +71,17 @@ print(x, ...)
 
 - times:
 
-  Numeric vector of target times at which to estimate \\\beta(t)\\. Keep
-  them inside the range of the observed times.
+  Numeric vector of target times at which to estimate \\\beta(t)\\.
+  Defaults to 25 points spanning the 10th to 90th percentile of the
+  observed response times, which keeps them inside the data: target
+  times near the ends of the range are fitted from a one-sided window
+  and are the least reliable part of the curve.
 
 - h:
 
-  Bandwidth for the response side, \\h_1\\.
+  Bandwidth for the response side, \\h_1\\. If omitted, a rule-of-thumb
+  value is used and reported in a message; see
+  [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md).
 
 - h2:
 

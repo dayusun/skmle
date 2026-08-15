@@ -6,7 +6,7 @@ data using a kernel estimating-equation approach.
 ## Usage
 
 ``` r
-kee_cox(formula, data, id, obs_times, h, one_sided = TRUE)
+kee_cox(formula, data, id, obs_times, h = NULL, one_sided = TRUE)
 ```
 
 ## Arguments
@@ -31,7 +31,11 @@ kee_cox(formula, data, id, obs_times, h, one_sided = TRUE)
 
 - h:
 
-  Positive kernel bandwidth.
+  Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+  off the observation times and reported in a message. That is a
+  starting point, not a tuned choice: use
+  [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+  to select it from the data.
 
 - one_sided:
 
@@ -97,7 +101,8 @@ summary(fit_cox)
 #> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
 #>     obs_times = obs_times, h = 0.5)
 #> 
-#>   n= 80
+#> Cox-type proportional hazards, kernel estimating equation (half kernel)
+#>   n= 80 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
 #> covariates1  0.85832    0.29253  2.9341 0.003345 **

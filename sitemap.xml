@@ -9,8 +9,11 @@
 <url><loc>https://dayusun.github.io/skmle/authors.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/index.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/news/index.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/reference/announce_bandwidth.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/augment.kee_async.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/confint.kee_td.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/reference/default_bandwidth_async.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/reference/default_bandwidth_surv.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/epan_kernel.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/glance.skmle.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/index.html</loc></url>
@@ -20,6 +23,7 @@
 <url><loc>https://dayusun.github.io/skmle/reference/kee_async_td.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/kee_cox.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/nobs.skmle.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/reference/plot.cv.skmle.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/plot.kee_td.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/plot.skmle.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/print.kee.html</loc></url>

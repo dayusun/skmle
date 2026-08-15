@@ -60,7 +60,7 @@ with \(W_h(u) = W(u/h)/h\) and \(W\) the Epanechnikov kernel."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Asynchronous longitudinal regression with time-invariant coefficients</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/R/kee_async.R" class="external-link"><code>R/kee_async.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/R/kee_async.R" class="external-link"><code>R/kee_async.R</code></a></small>
       <div class="d-none name"><code>kee_async.Rd</code></div>
     </div>
 
@@ -86,7 +86,7 @@ with \(W_h(u) = W(u/h)/h\) and \(W\) the Epanechnikov kernel.</p>
 <span>  <span class="va">formula</span>,</span>
 <span>  <span class="va">id</span>,</span>
 <span>  <span class="va">time</span>,</span>
-<span>  <span class="va">h</span>,</span>
+<span>  h <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  one_sided <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"identity"</span>, <span class="st">"log"</span>, <span class="st">"logistic"</span><span class="op">)</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -129,7 +129,10 @@ Accepts the same three forms as <code>id</code>.</p></dd>
 
 
 <dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
-<dd><p>Positive bandwidth, on the same scale as <code>time</code>.</p></dd>
+<dd><p>Positive bandwidth, on the same scale as <code>time</code>. If omitted, a
+rule-of-thumb value is read off the observation times and reported in a
+message. That is a starting point, not a tuned choice: use
+<code><a href="kee_async_cv.html">kee_async_cv()</a></code> to select it from the data.</p></dd>
 
 
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>
@@ -270,7 +273,8 @@ curve \(\beta(t)\), <code><a href="sim_async_data.html">sim_async_data()</a></co
 <span class="r-out co"><span class="r-pr">#&gt;</span> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     time = time, h = 0.25)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   n= 150</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Asynchronous longitudinal regression (identity link, full kernel)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n= 150 subjects   bandwidth h = 0.25</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value  Pr(&gt;|z|)    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) 0.628762   0.098039  6.4134 1.423e-10 ***</span>
@@ -304,6 +308,9 @@ curve \(\beta(t)\), <code><a href="sim_async_data.html">sim_async_data()</a></co
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     time = time, h = 0.25, one_sided = TRUE)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Asynchronous longitudinal regression (identity link, half kernel)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> subjects: 150   bandwidth h = 0.25</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)           x </span>

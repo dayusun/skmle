@@ -12,8 +12,8 @@ skmle(
   data,
   id,
   obs_times,
-  s,
-  h,
+  s = 0,
+  h = NULL,
   nknots = 3,
   lq_nodes = 64,
   maxeval = 10000,
@@ -46,12 +46,18 @@ skmle(
 
 - s:
 
-  Box-Cox transformation parameter. `s = 0` gives the proportional
-  hazards model and `s = 1` gives the additive hazards model.
+  Box-Cox transformation parameter, defaulting to `0`. `s = 0` is the
+  proportional hazards model, `s = 1` is the additive hazards model, and
+  values in between interpolate. If you do not have a reason to choose
+  otherwise, the default is the familiar Cox model.
 
 - h:
 
-  Positive kernel bandwidth.
+  Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
+  off the observation times and reported in a message. That is a
+  starting point, not a tuned choice: use
+  [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md)
+  to select it from the data.
 
 - nknots:
 

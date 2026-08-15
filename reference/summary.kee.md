@@ -49,7 +49,8 @@ summary(fit)
 #> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
 #>     obs_times = obs_times, h = 0.5)
 #> 
-#>   n= 60
+#> Cox-type proportional hazards, kernel estimating equation (half kernel)
+#>   n= 60 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)  
 #> covariates1  0.76656    0.33898  2.2613  0.02374 *

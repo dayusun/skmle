@@ -56,6 +56,9 @@ response and a covariate observed on different time grids.
   : Number of subjects contributing to a fit
 - [`confint(`*`<kee_td>`*`)`](https://dayusun.github.io/skmle/reference/confint.kee_td.md)
   : Wald confidence intervals for a coefficient curve
+- [`plot(`*`<cv.kee_async>`*`)`](https://dayusun.github.io/skmle/reference/plot.cv.skmle.md)
+  [`plot(`*`<cv.skmle>`*`)`](https://dayusun.github.io/skmle/reference/plot.cv.skmle.md)
+  : Plot a cross-validation curve
 
 ## Tidy output
 

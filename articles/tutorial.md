@@ -34,6 +34,33 @@ the summary output, plot the estimated baseline component, select a
 bandwidth by cross-validation, then move to the asynchronous
 longitudinal setting.
 
+## Which function do I need?
+
+Two questions.
+
+**1. What is the outcome?** A *time to an event* (death, relapse,
+failure), possibly censored — the survival estimators, and your data is
+one long table. Or a *repeatedly measured quantity* (a score, a lab
+value) recorded on its own schedule — the asynchronous estimators, and
+your data is two tables.
+
+**2. Then:**
+
+| Outcome | Situation | Function |
+|:---|:---|:---|
+| Survival | Start here; Cox model | [`kee_cox()`](https://dayusun.github.io/skmle/reference/kee_cox.md) |
+| Survival | Additive hazards instead | [`kee_additive()`](https://dayusun.github.io/skmle/reference/kee_additive.md) |
+| Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://dayusun.github.io/skmle/reference/skmle.md) |
+| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://dayusun.github.io/skmle/reference/skmle_cv.md) |
+| Longitudinal | Start here; one constant effect | [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md) |
+| Longitudinal | Choose the bandwidth properly | [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md) |
+| Longitudinal | The effect may change over time | [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md) |
+
+Every fitting function picks a bandwidth for you if you do not supply
+one, and says in a message what it chose. That is enough for a first
+answer; the `_cv()` functions choose it from the data, which is what to
+report.
+
 ``` r
 
 library(nloptr)
@@ -173,7 +200,8 @@ summary(fit_kee_cox)
 #> kee_cox(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
 #>     obs_times = obs_times, h = 0.5)
 #> 
-#>   n= 80
+#> Cox-type proportional hazards, kernel estimating equation (half kernel)
+#>   n= 80 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
 #> covariates1  0.85832    0.29253  2.9341 0.003345 **
@@ -213,7 +241,8 @@ summary(fit_kee_add)
 #> kee_additive(formula = Surv(X, delta) ~ covariates, data = dat_add, 
 #>     id = id, obs_times = obs_times, h = 0.5)
 #> 
-#>   n= 80
+#> Additive hazards, kernel estimating equation (half kernel)
+#>   n= 80 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)  
 #> covariates1  1.19769    0.52669  2.2740  0.02297 *
@@ -354,7 +383,8 @@ summary(fit_a)
 #> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.25)
 #> 
-#>   n= 300
+#> Asynchronous longitudinal regression (identity link, full kernel)
+#>   n= 300 subjects   bandwidth h = 0.25
 #> 
 #>             Estimate Std. Error z value  Pr(>|z|)    
 #> (Intercept) 0.610058   0.065411  9.3266 < 2.2e-16 ***
