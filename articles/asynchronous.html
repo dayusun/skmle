@@ -146,10 +146,10 @@ dominate.</p>
 a smoothing problem wearing a regression problem’s clothes, so standard
 errors shrink more slowly than you are used to and the bandwidth becomes
 something you have to think about.</p>
-<p>Time does not have to lie on <span class="math inline">\([0,1]\)</span> here. The equation sees times only
-through <span class="math inline">\((T - S)/h\)</span>, so any units
-work as long as <code>h</code> is in the same ones. That is the one
-thing to get right, and the package warns when it looks wrong.</p>
+<p>The equation sees times only through <span class="math inline">\((T -
+S)/h\)</span>, so any units work as long as <code>h</code> is in the
+same ones. That is the one thing to get right, and the package warns
+when it looks wrong.</p>
 </div>
 <div class="section level2">
 <h2 id="a-worked-example">A worked example<a class="anchor" aria-label="anchor" href="#a-worked-example"></a>
@@ -513,10 +513,9 @@ cross-validation loss stays on the response scale.</p>
 </h2>
 <p>The single most common mistake is a bandwidth on a different scale
 from the observation times: times in days, with <code>h</code> chosen as
-though they were on the unit interval. Nothing about the estimator
-requires <span class="math inline">\([0,1]\)</span>, so the package
-cannot simply reject the data; instead it tells you when almost nothing
-is contributing.</p>
+though they were on the unit interval. Times can be on any scale, so the
+package cannot simply reject the data; instead it tells you when almost
+nothing is contributing.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_days</span> <span class="op">&lt;-</span> <span class="va">d</span></span>
 <span><span class="va">d_days</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span> <span class="op">*</span> <span class="fl">365</span></span>
@@ -537,9 +536,10 @@ exactly, which is the scale-equivariance of the estimating equation:</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_ok</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
-<p>Note that this differs from the survival estimators in the package,
-which <em>do</em> require times on <span class="math inline">\([0,1]\)</span> because their spline basis and
-quadrature are built there, and which stop with an error otherwise.</p>
+<p>The survival estimators behave the same way. Their spline basis and
+cumulative-hazard quadrature are built on the observed follow-up rather
+than a fixed interval, so rescaling time and the bandwidth together
+leaves the coefficients unchanged.</p>
 </div>
 <div class="section level2">
 <h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>

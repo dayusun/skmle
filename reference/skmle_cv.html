@@ -92,7 +92,10 @@ converted to integer subject codes.</p></dd>
 
 
 <dt id="arg-obs-times">obs_times<a class="anchor" aria-label="anchor" href="#arg-obs-times"></a></dt>
-<dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.</p></dd>
+<dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.
+Times may be on any scale; the sieve basis and the cumulative-hazard
+quadrature are built on the observed follow-up, so there is no need to
+rescale to the unit interval first. <code>h</code> must be on the same scale.</p></dd>
 
 
 <dt id="arg-s">s<a class="anchor" aria-label="anchor" href="#arg-s"></a></dt>

@@ -48,7 +48,10 @@ print(x, ...)
 
 - obs_times:
 
-  Longitudinal observation times aligned row-wise with `data`.
+  Longitudinal observation times aligned row-wise with `data`. Times may
+  be on any scale; the sieve basis and the cumulative-hazard quadrature
+  are built on the observed follow-up, so there is no need to rescale to
+  the unit interval first. `h` must be on the same scale.
 
 - s:
 
