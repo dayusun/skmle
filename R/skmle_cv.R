@@ -18,9 +18,9 @@
 #' uses.
 #'
 #' @details
-#' `skmle_cv()` splits subjects, not rows, across folds. This is the appropriate
-#' unit for cross-validation because multiple rows belong to the same subject in the
-#' long-format data structure.
+#' `skmle_cv()` splits subjects across folds. Several rows belong to the same
+#' subject in long format, so splitting by row would put one subject on both
+#' sides of the split.
 #'
 #' After choosing the bandwidth with the smallest average validation loss, the
 #' function refits `skmle()` on the full data set using the selected value.

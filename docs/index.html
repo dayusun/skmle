@@ -67,15 +67,15 @@
 
 <p>Longitudinal covariates are rarely measured when you need them. A biomarker is drawn at a handful of clinic visits; the event you are modelling happens somewhere between two of them, and the outcome you are modelling is recorded on a schedule of its own. Carrying the last value forward answers a different question, and smoothing the covariate first and substituting it is regression calibration, which is not consistent when the sampling is sparse.</p>
 <p><code>skmle</code> handles the mismatch directly, by weighting each observation according to how far its measurement time sits from the time being modelled. It covers two settings:</p>
-<p><strong>Survival outcomes.</strong> The transformed hazards family, with covariates observed sparsely and intermittently. The Box-Cox parameter <code>s</code> indexes the family: <code>s = 0</code> is proportional hazards, <code>s = 1</code> is additive hazards, and other values interpolate. This is the Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and Cao (2025), plus faster specialised estimating equations for the two named cases.</p>
-<p><strong>Longitudinal outcomes.</strong> Generalised linear models where the response and the covariate are measured on <em>different</em> time grids and never observed together — the asynchronous case. This is the kernel-weighted estimating equations of Cao, Zeng and Fine (2015), with either time-invariant coefficients or a coefficient curve <code>β(t)</code>.</p>
+<p>For survival outcomes, the transformed hazards family, with covariates observed sparsely and intermittently. The Box-Cox parameter <code>s</code> indexes the family: <code>s = 0</code> is proportional hazards, <code>s = 1</code> is additive hazards, and other values interpolate. This is the Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and Cao (2025), plus faster specialised estimating equations for the two named cases.</p>
+<p>For longitudinal outcomes, generalised linear models where the response and the covariate are measured on <em>different</em> time grids and never observed together. This is the asynchronous case. This is the kernel-weighted estimating equations of Cao, Zeng and Fine (2015), with either time-invariant coefficients or a coefficient curve <code>β(t)</code>.</p>
 <p>Both settings share one idea and one implementation: a kernel weight bridging mismatched time grids, with the heavy numerical work in C++ via <code>Rcpp</code> and <code>RcppArmadillo</code>, behind an ordinary R modelling interface.</p>
 <div class="section level2">
 <h2 id="which-function-do-i-need">Which function do I need?<a class="anchor" aria-label="anchor" href="#which-function-do-i-need"></a>
 </h2>
 <p>Two questions.</p>
-<p><strong>1. What is the outcome?</strong> A <em>time to an event</em> (death, relapse, failure), possibly censored — the survival estimators, and your data is one long table. Or a <em>repeatedly measured quantity</em> (a score, a lab value) recorded on its own schedule — the asynchronous estimators, and your data is two tables.</p>
-<p><strong>2. Then:</strong></p>
+<p>First, what is the outcome? A <em>time to an event</em> (death, relapse, failure), possibly censored? Use the survival estimators; your data is one long table. Or a <em>repeatedly measured quantity</em> (a score, a lab value) recorded on its own schedule? Use the asynchronous estimators; your data is two tables.</p>
+<p>Then:</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -128,31 +128,31 @@
 <p>Every fitting function picks a bandwidth for you if you do not supply one, and says in a message what it chose. That is enough for a first answer; the <code>_cv()</code> functions choose it from the data, which is what to report.</p>
 </div>
 <div class="section level2">
-<h2 id="main-functions">Main Functions<a class="anchor" aria-label="anchor" href="#main-functions"></a>
+<h2 id="the-functions">The functions<a class="anchor" aria-label="anchor" href="#the-functions"></a>
 </h2>
 <p><strong>Survival outcomes</strong></p>
 <ul>
 <li>
-<code><a href="reference/skmle.html">skmle()</a></code> — the general transformed hazards model, by sieve maximum kernel-weighted likelihood.</li>
+<code><a href="reference/skmle.html">skmle()</a></code> fits the general transformed hazards model, by sieve maximum kernel-weighted likelihood.</li>
 <li>
-<code><a href="reference/kee_cox.html">kee_cox()</a></code> — proportional hazards, by kernel estimating equation.</li>
+<code><a href="reference/kee_cox.html">kee_cox()</a></code> fits proportional hazards, by kernel estimating equation.</li>
 <li>
-<code><a href="reference/kee_additive.html">kee_additive()</a></code> — additive hazards, closed form.</li>
+<code><a href="reference/kee_additive.html">kee_additive()</a></code> fits additive hazards, in closed form.</li>
 <li>
-<code><a href="reference/skmle_cv.html">skmle_cv()</a></code> — bandwidth selection by subject-level cross-validation, with a refit on the full data.</li>
+<code><a href="reference/skmle_cv.html">skmle_cv()</a></code> selects the bandwidth by subject-level cross-validation, with a refit on the full data.</li>
 <li>
-<code><a href="reference/sim_skmle_data.html">sim_skmle_data()</a></code> — simulate sparse longitudinal survival data.</li>
+<code><a href="reference/sim_skmle_data.html">sim_skmle_data()</a></code> simulates sparse longitudinal survival data.</li>
 </ul>
 <p><strong>Asynchronous longitudinal outcomes</strong></p>
 <ul>
 <li>
-<code><a href="reference/kee_async.html">kee_async()</a></code> — time-invariant coefficients.</li>
+<code><a href="reference/kee_async.html">kee_async()</a></code> fits one constant coefficient per covariate.</li>
 <li>
-<code><a href="reference/kee_async_cv.html">kee_async_cv()</a></code> — bandwidth selection by subject-level cross-validation.</li>
+<code><a href="reference/kee_async_cv.html">kee_async_cv()</a></code> selects the bandwidth by subject-level cross-validation.</li>
 <li>
-<code><a href="reference/kee_async_td.html">kee_async_td()</a></code> — a coefficient curve <code>β(t)</code>, estimated pointwise.</li>
+<code><a href="reference/kee_async_td.html">kee_async_td()</a></code> estimates a coefficient curve <code>β(t)</code>, pointwise.</li>
 <li>
-<code><a href="reference/sim_async_data.html">sim_async_data()</a></code> — simulate a response and a covariate on independent observation-time streams.</li>
+<code><a href="reference/sim_async_data.html">sim_async_data()</a></code> simulates a response and a covariate on independent observation-time streams.</li>
 </ul>
 <p>Fitted objects support <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>, <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>, <code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code>, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and the broom generics <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code>, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance()</a></code> and <code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">augment()</a></code>, all returning tibbles. The two data frames come first in the asynchronous estimators so they compose with the native pipe.</p>
 <p>Every estimator takes <code>one_sided</code>, choosing between a half kernel (only measurements <em>before</em> the modelled time contribute, the causal reading and the risk-set restriction of a hazard model) and a full, two-sided kernel.</p>
@@ -167,7 +167,7 @@
 <p>Because the package compiles C++ code, you need a working toolchain such as <code>Rtools</code> on Windows or the Xcode command line tools on macOS.</p>
 </div>
 <div class="section level2">
-<h2 id="survival-outcomes">Survival Outcomes<a class="anchor" aria-label="anchor" href="#survival-outcomes"></a>
+<h2 id="survival-outcomes">Survival outcomes<a class="anchor" aria-label="anchor" href="#survival-outcomes"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.sundayu.me/skmle/" class="external-link">skmle</a></span><span class="op">)</span></span>
@@ -216,7 +216,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="asynchronous-longitudinal-outcomes">Asynchronous Longitudinal Outcomes<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-outcomes"></a>
+<h2 id="asynchronous-longitudinal-outcomes">Asynchronous longitudinal outcomes<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-outcomes"></a>
 </h2>
 <p>Here the outcome is itself a sparsely observed process, and its measurement times do not line up with the covariate’s. The two are supplied as separate tables, because there is no single data frame holding both without inventing rows:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -239,7 +239,7 @@
 <span>  <span class="fu"><a href="reference/kee_async_cv.html">kee_async_cv</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>, K <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cv</span><span class="op">$</span><span class="va">h_cv</span></span></code></pre></div>
-<p>Each (response, covariate) pair within a subject contributes in proportion to its time separation, so nothing is discarded and nothing is carried forward. The estimator converges at the smoothing rate <code>(nh)^(1/2)</code>, not at <code>sqrt(n)</code>.</p>
+<p>Each (response, covariate) pair within a subject contributes in proportion to its time separation, so nothing is discarded and nothing is carried forward. The estimator converges at the smoothing rate <code>(nh)^(1/2)</code>, so standard errors shrink more slowly than in a parametric fit.</p>
 <p>If the coefficients vary with time, <code><a href="reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve pointwise. Both time arguments are smoothed there, so it converges at the bivariate rate <code>(n h1 h2)^(1/2)</code> and the bands are correspondingly wide:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_td</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span> <span class="op">|&gt;</span></span>
@@ -249,13 +249,13 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span>          <span class="co"># beta_j(t) with pointwise 95% bands</span></span>
 <span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span>          <span class="co"># one row per (time, term)</span></span></code></pre></div>
-<p>There is a full article on this setting — why last-value-carried-forward and regression calibration fail, how to read the bandwidth diagnostics, what the half kernel changes:</p>
+<p>There is a full article on this setting: why last-value-carried-forward and regression calibration fail, how to read the bandwidth diagnostics, and what the half kernel changes.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"asynchronous"</span>, package <span class="op">=</span> <span class="st">"skmle"</span><span class="op">)</span></span></code></pre></div>
 <p>Identity, log and logistic links are supported in both.</p>
 </div>
 <div class="section level2">
-<h2 id="benchmarking-against-survsparse">Benchmarking Against SurvSparse<a class="anchor" aria-label="anchor" href="#benchmarking-against-survsparse"></a>
+<h2 id="benchmarks-against-survsparse">Benchmarks against SurvSparse<a class="anchor" aria-label="anchor" href="#benchmarks-against-survsparse"></a>
 </h2>
 <p>The package includes a benchmark vignette comparing <code>skmle</code> with <code>SurvSparse</code> on matched sparse longitudinal survival-data settings.</p>
 <p>In the current benchmark sweep:</p>

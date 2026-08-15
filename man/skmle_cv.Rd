@@ -66,11 +66,11 @@ If \code{NULL}, the current RNG state is used and no explicit seed is set.}
 
 \item{quiet}{Logical; if \code{TRUE}, suppress progress output.}
 
-\item{one_sided}{Logical. \code{TRUE} (the default) uses a \strong{half} kernel: only
+\item{one_sided}{Logical. \code{TRUE} (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform
 that time, which is the risk-set restriction and the estimator as
-published. \code{FALSE} uses a \strong{full}, two-sided kernel, smoothing the
-covariate path from both sides. The switch applies to the risk-set
+published. \code{FALSE} uses a full, two-sided kernel, smoothing the covariate
+path from both sides. The switch applies to the risk-set
 averages inside the C++ backend as well as to the row weights, so the two
 are always consistent.}
 
@@ -94,9 +94,9 @@ An object of class \code{cv.skmle} with components:
 Perform K-fold cross-validation to select the kernel bandwidth for \code{skmle()}.
 }
 \details{
-\code{skmle_cv()} splits subjects, not rows, across folds. This is the appropriate
-unit for cross-validation because multiple rows belong to the same subject in the
-long-format data structure.
+\code{skmle_cv()} splits subjects across folds. Several rows belong to the same
+subject in long format, so splitting by row would put one subject on both
+sides of the split.
 
 After choosing the bandwidth with the smallest average validation loss, the
 function refits \code{skmle()} on the full data set using the selected value.

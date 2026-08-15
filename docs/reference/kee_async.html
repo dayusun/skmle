@@ -130,9 +130,8 @@ Accepts the same three forms as <code>id</code>.</p></dd>
 
 <dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
 <dd><p>Positive bandwidth, on the same scale as <code>time</code>. If omitted, a
-rule-of-thumb value is read off the observation times and reported in a
-message. That is a starting point, not a tuned choice: use
-<code><a href="kee_async_cv.html">kee_async_cv()</a></code> to select it from the data.</p></dd>
+value is read off the observation times as a rule of thumb and reported in
+a message. Use <code><a href="kee_async_cv.html">kee_async_cv()</a></code> to choose it from the data.</p></dd>
 
 
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>
@@ -204,9 +203,10 @@ about the response occasion.</p>
     <div class="section level2">
     <h2 id="rate-and-bandwidth">Rate and bandwidth<a class="anchor" aria-label="anchor" href="#rate-and-bandwidth"></a></h2>
     <p>The estimator is consistent and asymptotically normal at the smoothing rate
-\((nh)^{1/2}\), not at \(\sqrt n\). The bandwidth therefore matters: too
-small and few pairs contribute, too large and the bias grows. Use
-<code><a href="kee_async_cv.html">kee_async_cv()</a></code> rather than guessing.</p>
+\((nh)^{1/2}\). Standard errors shrink more slowly than in a parametric
+fit, and the bandwidth becomes a real modelling choice: too small and few
+pairs contribute, too large and the bias grows. <code><a href="kee_async_cv.html">kee_async_cv()</a></code> picks it
+from the data.</p>
 <p><code>h</code> is on the <strong>same scale as the observation times</strong>. Unlike the survival
 estimators there is no requirement that times lie on \([0, 1]\), but <code>h</code>
 must match whatever scale is used. A warning is issued when fewer than 5% of

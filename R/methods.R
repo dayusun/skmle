@@ -44,10 +44,9 @@ vcov.kee_td <- function(object, time = NULL, ...) {
 #' Number of subjects contributing to a fit
 #'
 #' The asymptotics of every estimator in this package are in the number of
-#' **subjects**, not the number of rows: rows within a subject are repeated
-#' measurements of one trajectory and carry far less than one observation's
-#' worth of information. `nobs()` therefore returns the subject count, which is
-#' also what `summary()` prints as `n`.
+#' subjects. Rows within a subject are repeated measurements of one trajectory
+#' and carry far less than one observation's worth of information, so `nobs()`
+#' returns the subject count, which is what `summary()` prints as `n`.
 #'
 #' @param object A fitted `skmle`, `kee` or `kee_td` object.
 #' @param ... Unused.

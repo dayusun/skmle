@@ -148,15 +148,14 @@ glance.kee_td <- function(x, ...) {
 
 #' Add fitted means to the covariate table
 #'
-#' Every fitted mean lives at a **covariate** occasion, not a response
-#' occasion: the estimating equation evaluates the link at each observed
-#' covariate vector, and it is the weight, not the fitted value, that connects
-#' it to a response. So `augment()` returns `data_x` with a `.fitted` column,
-#' \eqn{g(X_i(S_{ik})^\top \hat\beta)}.
+#' Fitted means belong to covariate occasions. The estimating equation
+#' evaluates the link at each observed covariate vector, and the kernel weight
+#' is what ties that vector to a response occasion. So `augment()` returns
+#' `data_x` with a `.fitted` column, \eqn{g(X_i(S_{ik})^\top \hat\beta)}.
 #'
-#' There is deliberately no `.resid`. A residual would need a response value at
-#' \eqn{S_{ik}}, which is exactly what asynchronous data does not have; any
-#' residual reported here would have to invent one.
+#' There is deliberately no `.resid`. A residual needs a response value at
+#' \eqn{S_{ik}}, and asynchronous data has none; any residual reported here
+#' would have to be invented.
 #'
 #' The fit does not retain its data, so `data_x` must be supplied.
 #'

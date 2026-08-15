@@ -64,11 +64,11 @@ kee_async(
 
 - h:
 
-  Positive bandwidth, on the same scale as `time`. If omitted, a
-  rule-of-thumb value is read off the observation times and reported in
-  a message. That is a starting point, not a tuned choice: use
+  Positive bandwidth, on the same scale as `time`. If omitted, a value
+  is read off the observation times as a rule of thumb and reported in a
+  message. Use
   [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
-  to select it from the data.
+  to choose it from the data.
 
 - one_sided:
 
@@ -156,11 +156,11 @@ observation says about the response occasion.
 ## Rate and bandwidth
 
 The estimator is consistent and asymptotically normal at the smoothing
-rate \\(nh)^{1/2}\\, not at \\\sqrt n\\. The bandwidth therefore
-matters: too small and few pairs contribute, too large and the bias
-grows. Use
+rate \\(nh)^{1/2}\\. Standard errors shrink more slowly than in a
+parametric fit, and the bandwidth becomes a real modelling choice: too
+small and few pairs contribute, too large and the bias grows.
 [`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
-rather than guessing.
+picks it from the data.
 
 `h` is on the **same scale as the observation times**. Unlike the
 survival estimators there is no requirement that times lie on \\\[0,

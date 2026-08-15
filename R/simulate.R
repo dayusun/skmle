@@ -320,8 +320,8 @@ sim_async_data <- function(n, beta = c(0.5, 1.5), lambda_y = 5, lambda_x = 5,
             logistic = rbinom(nT, 1L, 1 / (1 + exp(-eta)))
         )
 
-        # Plain numeric columns, not a matrix column: the covariate names have
-        # to be usable on the right-hand side of a formula.
+        # Covariates go in as plain numeric columns so their names can be used
+        # on the right-hand side of a formula.
         yl[[i]] <- data.frame(id = i, time = Tt, y = as.numeric(yv))
         xl[[i]] <- data.frame(id = rep(i, nS), time = Ss, Xs)
     }

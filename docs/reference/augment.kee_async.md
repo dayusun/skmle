@@ -1,9 +1,8 @@
 # Add fitted means to the covariate table
 
-Every fitted mean lives at a **covariate** occasion, not a response
-occasion: the estimating equation evaluates the link at each observed
-covariate vector, and it is the weight, not the fitted value, that
-connects it to a response. So
+Fitted means belong to covariate occasions. The estimating equation
+evaluates the link at each observed covariate vector, and the kernel
+weight is what ties that vector to a response occasion. So
 [`augment()`](https://generics.r-lib.org/reference/augment.html) returns
 `data_x` with a `.fitted` column, \\g(X_i(S\_{ik})^\top \hat\beta)\\.
 
@@ -34,9 +33,9 @@ augment(x, data_x, ...)
 
 ## Details
 
-There is deliberately no `.resid`. A residual would need a response
-value at \\S\_{ik}\\, which is exactly what asynchronous data does not
-have; any residual reported here would have to invent one.
+There is deliberately no `.resid`. A residual needs a response value at
+\\S\_{ik}\\, and asynchronous data has none; any residual reported here
+would have to be invented.
 
 The fit does not retain its data, so `data_x` must be supplied.
 

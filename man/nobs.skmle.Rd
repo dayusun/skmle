@@ -22,10 +22,9 @@ An integer, the number of subjects.
 }
 \description{
 The asymptotics of every estimator in this package are in the number of
-\strong{subjects}, not the number of rows: rows within a subject are repeated
-measurements of one trajectory and carry far less than one observation's
-worth of information. \code{nobs()} therefore returns the subject count, which is
-also what \code{summary()} prints as \code{n}.
+subjects. Rows within a subject are repeated measurements of one trajectory
+and carry far less than one observation's worth of information, so \code{nobs()}
+returns the subject count, which is what \code{summary()} prints as \code{n}.
 }
 \examples{
 set.seed(1)

@@ -8,7 +8,7 @@
 #' @section Which function do I need?:
 #' Answer two questions.
 #'
-#' **1. What is the outcome?**
+#' First, what is the outcome?
 #'
 #' \describe{
 #'   \item{A time to an event}{(death, relapse, failure), possibly censored --
@@ -19,7 +19,7 @@
 #'     tables, one per process.}
 #' }
 #'
-#' **2. Then pick within that group.**
+#' Then pick within that group.
 #'
 #' \tabular{lll}{
 #'   \strong{Outcome} \tab \strong{Situation} \tab \strong{Function} \cr

@@ -15,16 +15,16 @@ calibration, which is not consistent when the sampling is sparse.
 to how far its measurement time sits from the time being modelled. It covers
 two settings:
 
-**Survival outcomes.** The transformed hazards family, with covariates observed
+For survival outcomes, the transformed hazards family, with covariates observed
 sparsely and intermittently. The Box-Cox parameter `s` indexes the family:
 `s = 0` is proportional hazards, `s = 1` is additive hazards, and other values
 interpolate. This is the Sieve Maximum Kernel-weighted Log-likelihood Estimator
 (SMKLE) of Sun, Sun, Zhao and Cao (2025), plus faster specialised estimating
 equations for the two named cases.
 
-**Longitudinal outcomes.** Generalised linear models where the response and the
-covariate are measured on *different* time grids and never observed together —
-the asynchronous case. This is the kernel-weighted estimating equations of Cao,
+For longitudinal outcomes, generalised linear models where the response and the
+covariate are measured on *different* time grids and never observed together.
+This is the asynchronous case. This is the kernel-weighted estimating equations of Cao,
 Zeng and Fine (2015), with either time-invariant coefficients or a coefficient
 curve `β(t)`.
 
@@ -36,12 +36,12 @@ mismatched time grids, with the heavy numerical work in C++ via `Rcpp` and
 
 Two questions.
 
-**1. What is the outcome?** A *time to an event* (death, relapse, failure),
-possibly censored — the survival estimators, and your data is one long table.
+First, what is the outcome? A *time to an event* (death, relapse, failure),
+possibly censored? Use the survival estimators; your data is one long table.
 Or a *repeatedly measured quantity* (a score, a lab value) recorded on its own
-schedule — the asynchronous estimators, and your data is two tables.
+schedule? Use the asynchronous estimators; your data is two tables.
 
-**2. Then:**
+Then:
 
 | Outcome | Situation | Function |
 | :-- | :-- | :-- |
@@ -57,24 +57,24 @@ Every fitting function picks a bandwidth for you if you do not supply one, and
 says in a message what it chose. That is enough for a first answer; the `_cv()`
 functions choose it from the data, which is what to report.
 
-## Main Functions
+## The functions
 
 **Survival outcomes**
 
-- `skmle()` — the general transformed hazards model, by sieve maximum
+- `skmle()` fits the general transformed hazards model, by sieve maximum
   kernel-weighted likelihood.
-- `kee_cox()` — proportional hazards, by kernel estimating equation.
-- `kee_additive()` — additive hazards, closed form.
-- `skmle_cv()` — bandwidth selection by subject-level cross-validation, with a
+- `kee_cox()` fits proportional hazards, by kernel estimating equation.
+- `kee_additive()` fits additive hazards, in closed form.
+- `skmle_cv()` selects the bandwidth by subject-level cross-validation, with a
   refit on the full data.
-- `sim_skmle_data()` — simulate sparse longitudinal survival data.
+- `sim_skmle_data()` simulates sparse longitudinal survival data.
 
 **Asynchronous longitudinal outcomes**
 
-- `kee_async()` — time-invariant coefficients.
-- `kee_async_cv()` — bandwidth selection by subject-level cross-validation.
-- `kee_async_td()` — a coefficient curve `β(t)`, estimated pointwise.
-- `sim_async_data()` — simulate a response and a covariate on independent
+- `kee_async()` fits one constant coefficient per covariate.
+- `kee_async_cv()` selects the bandwidth by subject-level cross-validation.
+- `kee_async_td()` estimates a coefficient curve `β(t)`, pointwise.
+- `sim_async_data()` simulates a response and a covariate on independent
   observation-time streams.
 
 Fitted objects support `coef()`, `vcov()`, `confint()`, `nobs()`, `summary()`
@@ -98,7 +98,7 @@ devtools::install_github("dayusun/skmle")
 Because the package compiles C++ code, you need a working toolchain such as
 `Rtools` on Windows or the Xcode command line tools on macOS.
 
-## Survival Outcomes
+## Survival outcomes
 
 ```r
 library(skmle)
@@ -158,7 +158,7 @@ cv_fit$h_cv
 summary(cv_fit$fit)
 ```
 
-## Asynchronous Longitudinal Outcomes
+## Asynchronous longitudinal outcomes
 
 Here the outcome is itself a sparsely observed process, and its measurement
 times do not line up with the covariate's. The two are supplied as separate
@@ -193,7 +193,8 @@ cv$h_cv
 
 Each (response, covariate) pair within a subject contributes in proportion to
 its time separation, so nothing is discarded and nothing is carried forward.
-The estimator converges at the smoothing rate `(nh)^(1/2)`, not at `sqrt(n)`.
+The estimator converges at the smoothing rate `(nh)^(1/2)`, so standard errors
+shrink more slowly than in a parametric fit.
 
 If the coefficients vary with time, `kee_async_td()` estimates the curve
 pointwise. Both time arguments are smoothed there, so it converges at the
@@ -209,9 +210,9 @@ plot(fit_td)          # beta_j(t) with pointwise 95% bands
 tidy(fit_td)          # one row per (time, term)
 ```
 
-There is a full article on this setting — why last-value-carried-forward and
-regression calibration fail, how to read the bandwidth diagnostics, what the
-half kernel changes:
+There is a full article on this setting: why last-value-carried-forward and
+regression calibration fail, how to read the bandwidth diagnostics, and what
+the half kernel changes.
 
 ```r
 vignette("asynchronous", package = "skmle")
@@ -219,7 +220,7 @@ vignette("asynchronous", package = "skmle")
 
 Identity, log and logistic links are supported in both.
 
-## Benchmarking Against SurvSparse
+## Benchmarks against SurvSparse
 
 The package includes a benchmark vignette comparing `skmle` with `SurvSparse`
 on matched sparse longitudinal survival-data settings.

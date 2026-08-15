@@ -15,15 +15,15 @@ kee_cox(formula, data, id, obs_times, h = NULL, one_sided = TRUE)
 
 \item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
 
-\item{h}{Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
-off the observation times and reported in a message. That is a starting
-point, not a tuned choice: use \code{\link[=skmle_cv]{skmle_cv()}} to select it from the data.}
+\item{h}{Positive kernel bandwidth. If omitted, one is read off the
+observation times as a rule of thumb and reported in a message. Use
+\code{\link[=skmle_cv]{skmle_cv()}} to choose it from the data.}
 
-\item{one_sided}{Logical. \code{TRUE} (the default) uses a \strong{half} kernel: only
+\item{one_sided}{Logical. \code{TRUE} (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform
 that time, which is the risk-set restriction and the estimator as
-published. \code{FALSE} uses a \strong{full}, two-sided kernel, smoothing the
-covariate path from both sides. The switch applies to the risk-set
+published. \code{FALSE} uses a full, two-sided kernel, smoothing the covariate
+path from both sides. The switch applies to the risk-set
 averages inside the C++ backend as well as to the row weights, so the two
 are always consistent.}
 }

@@ -265,9 +265,10 @@
 #' # Rate and bandwidth
 #'
 #' The estimator is consistent and asymptotically normal at the smoothing rate
-#' \eqn{(nh)^{1/2}}, not at \eqn{\sqrt n}. The bandwidth therefore matters: too
-#' small and few pairs contribute, too large and the bias grows. Use
-#' [kee_async_cv()] rather than guessing.
+#' \eqn{(nh)^{1/2}}. Standard errors shrink more slowly than in a parametric
+#' fit, and the bandwidth becomes a real modelling choice: too small and few
+#' pairs contribute, too large and the bias grows. [kee_async_cv()] picks it
+#' from the data.
 #'
 #' `h` is on the **same scale as the observation times**. Unlike the survival
 #' estimators there is no requirement that times lie on \eqn{[0, 1]}, but `h`
@@ -312,9 +313,8 @@
 #' @param time Observation time, naming a column present in **both** tables.
 #'   Accepts the same three forms as `id`.
 #' @param h Positive bandwidth, on the same scale as `time`. If omitted, a
-#'   rule-of-thumb value is read off the observation times and reported in a
-#'   message. That is a starting point, not a tuned choice: use
-#'   [kee_async_cv()] to select it from the data.
+#'   value is read off the observation times as a rule of thumb and reported in
+#'   a message. Use [kee_async_cv()] to choose it from the data.
 #' @param one_sided Logical. `FALSE` (default) is the full two-sided kernel of
 #'   the paper; `TRUE` is the half kernel, admitting only covariate observations
 #'   strictly before the response.
@@ -456,8 +456,8 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #'
 #' # Why squared error and not a likelihood
 #'
-#' The estimator solves an estimating equation, not a likelihood, so there is no
-#' held-out log-likelihood to evaluate. The same weighted squared error on the
+#' These estimators solve an estimating equation. There is no likelihood, so
+#' nothing to evaluate as a held-out log-likelihood. The same weighted squared error on the
 #' response scale is used for all three links, applied after `link`.
 #'
 #' # The default grid
@@ -667,14 +667,16 @@ print.cv.kee_async <- function(x, ...) {
 #'
 #' A practical consequence: a sample that gives a comfortable time-invariant fit
 #' can be far too small for a credible curve. If the bands cover a horizontal
-#' line across the whole range, the honest reading is that the data do not
-#' resolve time variation, not that \eqn{\beta(t)} is flat.
+#' line across the whole range, the honest reading is that the data cannot
+#' resolve time variation. That is a different statement from evidence that
+#' \eqn{\beta(t)} is flat.
 #'
 #' # Reading the output
 #'
-#' `se` holds pointwise sandwich standard errors at each target time. They are
-#' pointwise, not simultaneous, so a curve leaving the band at one or two target
-#' times is not evidence of anything on its own.
+#' `se` holds sandwich standard errors at each target time separately. Each band
+#' covers its own target time; read across the whole curve and the coverage is
+#' much worse than the nominal level, so a curve straying outside at one or two
+#' times means little on its own.
 #'
 #' No undersmoothing correction is applied, so the intervals are centred on the
 #' smoothed curve \eqn{E\hat\beta(t)} rather than on \eqn{\beta(t)}. With a large
@@ -706,7 +708,8 @@ print.cv.kee_async <- function(x, ...) {
 #'   `TRUE` restricts the **covariate** side to observations strictly before the
 #'   target time, so \eqn{\beta(t)} uses only covariate values already available
 #'   at `t`. The response side stays two-sided: it is a local average around
-#'   `t`, not a filtering step. Both lags are measured as "how far in the past",
+#'   `t`; restricting it as well would give a filtering estimate, which answers
+#'   a different question. Both lags are measured as "how far in the past",
 #'   matching [kee_async()] and the survival estimators.
 #'
 #' @return An object of class `kee_td`:
@@ -885,10 +888,10 @@ print.kee_td <- function(x, ...) {
 #' Draws \eqn{\hat\beta_j(t)} against `t` with pointwise Wald bands, one panel
 #' per coefficient.
 #'
-#' The bands are pointwise, not simultaneous: reading them as a confidence
-#' region for the whole curve overstates the evidence. They are also not
-#' corrected for smoothing bias, so they cover \eqn{E\hat\beta(t)} rather than
-#' \eqn{\beta(t)}; a large bandwidth flattens the curve without widening the
+#' Each band covers its own target time. Reading them together as a region for
+#' the whole curve overstates the evidence. They also carry no correction for
+#' smoothing bias, so they cover \eqn{E\hat\beta(t)} instead of
+#' \eqn{\beta(t)}: a large bandwidth flattens the curve without widening the
 #' band to say so.
 #'
 #' @param x A `kee_td` object from [kee_async_td()].

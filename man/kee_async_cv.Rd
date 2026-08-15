@@ -105,8 +105,8 @@ the smallest candidate every time.
 }
 
 \section{Why squared error and not a likelihood}{
-The estimator solves an estimating equation, not a likelihood, so there is no
-held-out log-likelihood to evaluate. The same weighted squared error on the
+These estimators solve an estimating equation. There is no likelihood, so
+nothing to evaluate as a held-out log-likelihood. The same weighted squared error on the
 response scale is used for all three links, applied after \code{link}.
 }
 

@@ -8,14 +8,14 @@
 #' @param data Data frame containing all variables used in the fit.
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
-#' @param h Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
-#'   off the observation times and reported in a message. That is a starting
-#'   point, not a tuned choice: use [skmle_cv()] to select it from the data.
-#' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
+#' @param h Positive kernel bandwidth. If omitted, one is read off the
+#'   observation times as a rule of thumb and reported in a message. Use
+#'   [skmle_cv()] to choose it from the data.
+#' @param one_sided Logical. `TRUE` (the default) uses a half kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
-#'   published. `FALSE` uses a **full**, two-sided kernel, smoothing the
-#'   covariate path from both sides. The switch applies to the risk-set
+#'   published. `FALSE` uses a full, two-sided kernel, smoothing the covariate
+#'   path from both sides. The switch applies to the risk-set
 #'   averages inside the C++ backend as well as to the row weights, so the two
 #'   are always consistent.
 #'
@@ -192,14 +192,14 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE) {
 #' @param data Data frame containing all variables used in the fit.
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
-#' @param h Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
-#'   off the observation times and reported in a message. That is a starting
-#'   point, not a tuned choice: use [skmle_cv()] to select it from the data.
-#' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
+#' @param h Positive kernel bandwidth. If omitted, one is read off the
+#'   observation times as a rule of thumb and reported in a message. Use
+#'   [skmle_cv()] to choose it from the data.
+#' @param one_sided Logical. `TRUE` (the default) uses a half kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
-#'   published. `FALSE` uses a **full**, two-sided kernel, smoothing the
-#'   covariate path from both sides. The switch applies to the risk-set
+#'   published. `FALSE` uses a full, two-sided kernel, smoothing the covariate
+#'   path from both sides. The switch applies to the risk-set
 #'   averages inside the C++ backend as well as to the row weights, so the two
 #'   are always consistent.
 #' @param lq_nodes Number of quadrature nodes used in the numerical integration step.

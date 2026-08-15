@@ -50,7 +50,7 @@ library(bench)
 library(ggplot2)
 ```
 
-## Data Generation
+## Generating the data
 
 We simulate sparse longitudinal survival data using `sim_skmle_data()`. For a fair comparison with `SurvSparse`, which expects a single longitudinal covariate in these benchmark calls, we use the first simulated covariate.
 
@@ -80,7 +80,7 @@ make_benchmark_data <- function(n, s_val) {
 }
 ```
 
-## Benchmark Helpers
+## Helpers
 
 ```{r}
 run_additive_benchmark <- function(n, iterations = 5) {
@@ -140,7 +140,7 @@ run_transformed_benchmark <- function(n, iterations = 5) {
 }
 ```
 
-## Results Across Multiple Scenarios
+## Results across scenarios
 
 ```{r benchmark-grid, warning=FALSE, message=FALSE}
 set.seed(20260325)
@@ -183,7 +183,7 @@ speed_summary <- benchmark_results %>%
 speed_summary
 ```
 
-## Runtime Visualization
+## Runtimes
 
 The first plot shows the median runtime in milliseconds for each method and scenario.
 

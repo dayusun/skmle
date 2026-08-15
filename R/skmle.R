@@ -16,14 +16,14 @@
 #'   proportional hazards model, `s = 1` is the additive hazards model, and
 #'   values in between interpolate. If you do not have a reason to choose
 #'   otherwise, the default is the familiar Cox model.
-#' @param h Positive kernel bandwidth. If omitted, a rule-of-thumb value is read
-#'   off the observation times and reported in a message. That is a starting
-#'   point, not a tuned choice: use [skmle_cv()] to select it from the data.
-#' @param one_sided Logical. `TRUE` (the default) uses a **half** kernel: only
+#' @param h Positive kernel bandwidth. If omitted, one is read off the
+#'   observation times as a rule of thumb and reported in a message. Use
+#'   [skmle_cv()] to choose it from the data.
+#' @param one_sided Logical. `TRUE` (the default) uses a half kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
-#'   published. `FALSE` uses a **full**, two-sided kernel, smoothing the
-#'   covariate path from both sides. The switch applies to the risk-set
+#'   published. `FALSE` uses a full, two-sided kernel, smoothing the covariate
+#'   path from both sides. The switch applies to the risk-set
 #'   averages inside the C++ backend as well as to the row weights, so the two
 #'   are always consistent.
 #' @param nknots Number of interior knots used in the sieve approximation of the

@@ -58,7 +58,8 @@ rule-of-thumb value is used and reported in a message; see \code{\link[=kee_asyn
 \code{TRUE} restricts the \strong{covariate} side to observations strictly before the
 target time, so \eqn{\beta(t)} uses only covariate values already available
 at \code{t}. The response side stays two-sided: it is a local average around
-\code{t}, not a filtering step. Both lags are measured as "how far in the past",
+\code{t}; restricting it as well would give a filtering estimate, which answers
+a different question. Both lags are measured as "how far in the past",
 matching \code{\link[=kee_async]{kee_async()}} and the survival estimators.}
 
 \item{link}{One of \code{"identity"} (closed form), \code{"log"} or \code{"logistic"}
@@ -112,14 +113,16 @@ without checking it against them.
 
 A practical consequence: a sample that gives a comfortable time-invariant fit
 can be far too small for a credible curve. If the bands cover a horizontal
-line across the whole range, the honest reading is that the data do not
-resolve time variation, not that \eqn{\beta(t)} is flat.
+line across the whole range, the honest reading is that the data cannot
+resolve time variation. That is a different statement from evidence that
+\eqn{\beta(t)} is flat.
 }
 
 \section{Reading the output}{
-\code{se} holds pointwise sandwich standard errors at each target time. They are
-pointwise, not simultaneous, so a curve leaving the band at one or two target
-times is not evidence of anything on its own.
+\code{se} holds sandwich standard errors at each target time separately. Each band
+covers its own target time; read across the whole curve and the coverage is
+much worse than the nominal level, so a curve straying outside at one or two
+times means little on its own.
 
 No undersmoothing correction is applied, so the intervals are centred on the
 smoothed curve \eqn{E\hat\beta(t)} rather than on \eqn{\beta(t)}. With a large

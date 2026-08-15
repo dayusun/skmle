@@ -47,12 +47,12 @@ cross-validation, then move to the asynchronous longitudinal setting.
 
 Two questions.
 
-**1. What is the outcome?** A *time to an event* (death, relapse, failure),
-possibly censored — the survival estimators, and your data is one long table.
+First, what is the outcome? A *time to an event* (death, relapse, failure),
+possibly censored? Use the survival estimators; your data is one long table.
 Or a *repeatedly measured quantity* (a score, a lab value) recorded on its own
-schedule — the asynchronous estimators, and your data is two tables.
+schedule? Use the asynchronous estimators; your data is two tables.
 
-**2. Then:**
+Then:
 
 | Outcome | Situation | Function |
 | :-- | :-- | :-- |
@@ -74,7 +74,7 @@ library(skmle)
 library(survival)
 ```
 
-## Simulate Example Data
+## Simulating some data
 
 ```{r}
 set.seed(123)
@@ -102,7 +102,7 @@ The key columns are:
 - `covariates`: observed covariate values at that visit time
 - `obs_times`: longitudinal observation time
 
-## Fit the General Transformed Hazards Model
+## Fitting the general transformed hazards model
 
 The `covariates` column returned by `sim_skmle_data()` is a matrix. You can either use it directly in the formula or split it into separate columns. Using the matrix directly is convenient for routine work.
 
@@ -133,7 +133,7 @@ The summary table reports:
 - z statistics
 - p-values
 
-## Plot the Estimated Baseline Component
+## Plotting the baseline
 
 ```{r}
 plot(fit_skmle)
@@ -141,11 +141,11 @@ plot(fit_skmle)
 
 This plot visualizes the estimated nonparametric baseline component from the sieve fit.
 
-## Fit the Specialized Estimating-Equation Methods
+## The specialised estimating equations
 
 When the model of interest matches one of the specialized settings, the package also provides dedicated estimating-equation estimators.
 
-### Cox-Type Estimator
+### Cox-type
 
 ```{r}
 fit_kee_cox <- kee_cox(
@@ -159,7 +159,7 @@ fit_kee_cox <- kee_cox(
 summary(fit_kee_cox)
 ```
 
-### Additive Hazards Estimator
+### Additive hazards
 
 For the additive hazards estimator, simulate data under `s = 1`.
 
@@ -187,7 +187,7 @@ fit_kee_add <- kee_additive(
 summary(fit_kee_add)
 ```
 
-## Select a Bandwidth by Cross-Validation
+## Selecting a bandwidth
 
 Bandwidth selection can be handled by `skmle_cv()`.
 
@@ -222,7 +222,7 @@ You can then inspect the final refit in the usual way.
 summary(cv_fit$fit)
 ```
 
-## Half Kernel or Full Kernel
+## Half kernel or full kernel
 
 Every estimator weights a covariate observation by how far it sits from the time
 being modelled. By default that window is *one-sided*: only observations
@@ -244,7 +244,7 @@ row weights, so the two halves of the estimator always use the same support.
 `skmle_cv()` takes it too, so the bandwidth is selected under the same kernel
 the final fit uses.
 
-## Asynchronous Longitudinal Data
+## Asynchronous longitudinal data
 
 The estimators above model a survival outcome. When the outcome is itself a
 sparsely observed longitudinal process, measured at times that do **not** line
@@ -260,8 +260,8 @@ head(d$y, 3)
 head(d$x, 3)
 ```
 
-The two tables are deliberately separate — they are on different grids, so there
-is no single data frame that holds both without inventing rows. The formula
+The two tables are deliberately separate. They sit on different grids, so no
+single data frame holds both without inventing rows. The formula
 spans both: its left-hand side is looked up in `data_y`, its right-hand side in
 `data_x`, and `id` and `time` name columns present in each.
 
@@ -304,11 +304,11 @@ fit_td <- kee_async_td(dt$y, dt$x,
 plot(fit_td)
 ```
 
-For a fuller treatment — why last-value-carried-forward and regression
-calibration fail here, how to read the bandwidth diagnostics, and what the
-half kernel changes — see `vignette("asynchronous", package = "skmle")`.
+`vignette("asynchronous", package = "skmle")` covers this properly: why
+last-value-carried-forward and regression calibration fail here, how to read
+the bandwidth diagnostics, and what the half kernel changes.
 
-## Typical Workflow
+## A typical workflow
 
 For routine use, the usual sequence is:
 

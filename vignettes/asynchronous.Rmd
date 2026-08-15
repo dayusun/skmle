@@ -47,19 +47,18 @@ a coefficient curve $\beta(t)$.
 
 ## Two shortcuts that do not work
 
-Before the estimator, it is worth being clear about why the obvious fixes fail,
-because both are common in practice and both fail *silently* — they return
-plausible numbers with plausible standard errors.
+Both of the obvious fixes are common in practice, and both fail quietly. They
+return plausible numbers with plausible standard errors.
 
-**Last value carried forward.** Replace $X_i(T_{ij})$ by the most recent
-observed covariate value. This is measurement error with a twist: the error does
-not shrink as the sample grows. With sparse sampling the expected gap back to
-the previous observation is a property of the visit process, not of $n$, so the
-substituted covariate keeps a fixed error variance forever. The result is
-classical attenuation — $\hat\beta$ converges, but to something closer to zero
-than $\beta$.
+*Last value carried forward* replaces $X_i(T_{ij})$ by the most recent
+observed covariate value. This is measurement error with a twist: the error
+does not shrink as the sample grows. The expected gap back to the previous
+observation is set by the visit schedule and has nothing to do with $n$, so the
+substituted covariate keeps a fixed error variance forever. You get classical
+attenuation. $\hat\beta$ converges, but to something closer to zero than
+$\beta$.
 
-**Regression calibration.** Smooth the covariate path first, then substitute the
+*Regression calibration* smooths the covariate path first and substitutes the
 smoothed value. This feels more careful and has the same problem: to smooth at
 $T_{ij}$ you need observations near $T_{ij}$, and under sparse sampling the
 window cannot shrink without emptying. Whatever bandwidth keeps the window
@@ -68,8 +67,8 @@ a nonlinear link there is a second error on top: the estimating equation needs
 the average of $g(\cdot)$, and you have supplied $g$ of the average.
 
 What the kernel-weighted equation does instead is give up on reconstructing
-$X_i(T_{ij})$ at all. It evaluates the link at each **observed** covariate
-vector and lets a weight express how much that observation says about that
+$X_i(T_{ij})$ at all. It evaluates the link at each covariate vector you actually
+have, and lets a weight express how much that observation says about a given
 response occasion.
 
 ## The estimator
@@ -82,17 +81,13 @@ with $W_h(u) = W(u/h)/h$ and $W$ the Epanechnikov kernel. Every
 apart in time the two occasions are. Pairs more than $h$ apart drop out; pairs
 close together dominate.
 
-Two things follow that are easy to miss.
+The rate is $(nh)^{1/2}$. This is a smoothing problem wearing a regression
+problem's clothes, so standard errors shrink more slowly than you are used to
+and the bandwidth becomes something you have to think about.
 
-First, **the rate is $(nh)^{1/2}$, not $\sqrt{n}$.** This is a smoothing
-problem wearing a regression problem's clothes. Standard errors shrink more
-slowly than you are used to, and the bandwidth is a real modelling choice rather
-than a nuisance.
-
-Second, **there is no requirement that time lie on $[0,1]$.** The equation
-depends on times only through $(T - S)/h$, so any units work — provided `h` is
-in the same units. That is the one thing to get right, and the package warns
-when it looks wrong.
+Time does not have to lie on $[0,1]$ here. The equation sees times only through
+$(T - S)/h$, so any units work as long as `h` is in the same ones. That is the
+one thing to get right, and the package warns when it looks wrong.
 
 ## A worked example
 
@@ -121,8 +116,8 @@ c(
 )
 ```
 
-The formula spans both tables — left-hand side from `data_y`, right-hand side
-from `data_x` — and `id` and `time` name columns present in each:
+The formula spans both tables, taking its left-hand side from `data_y` and its
+right-hand side from `data_x`. `id` and `time` name columns present in each:
 
 ```{r fit}
 fit <- d$y |>
@@ -159,8 +154,8 @@ glance(fit)
 
 `augment()` attaches the fitted mean to the **covariate** table, because that is
 where a fitted value lives here: the estimating equation evaluates the link at
-each observed covariate vector, and it is the kernel weight, not the fitted
-value, that connects it to a response occasion.
+each observed covariate vector, and the kernel weight is what ties that vector
+to a response occasion.
 
 ```{r augment}
 augment(fit, d$x)
@@ -215,13 +210,13 @@ Leaving `h_grid` unset generates one from the data, log-spaced over
 $[2(Q_3 - Q_1)n^{-0.7},\, 2(Q_3 - Q_1)n^{-0.3}]$ where $Q_1, Q_3$ are quartiles
 of the pooled observation times. It adapts to whatever units `time` is in.
 
-## Sensitivity to the bandwidth is a diagnostic, not a nuisance
+## Check how much the answer moves with h
 
 Cao, Zeng and Fine assume the covariance function of the covariate process is
 twice differentiable, which gives a bias of order $h^2$. Their Section 6 notes
-that relaxing this to one-sided differentiability — which admits processes with
-independent increments, including the Ornstein-Uhlenbeck process that
-`sim_async_data()` uses by default — leaves a bias of order $h$ instead.
+that relaxing this to one-sided differentiability leaves a bias of order $h$
+instead. That weaker class admits processes with independent increments,
+including the Ornstein-Uhlenbeck process `sim_async_data()` uses by default.
 
 The practical symptom is an estimate that drifts steadily as `h` grows. It costs
 nothing to look:
@@ -256,8 +251,8 @@ not one bandwidth.
 
 By default the kernel is two-sided: a response at $T_{ij}$ is informed by
 covariate observations on either side of it. If the covariate must be *already
-known* at the response time — a causal reading, or simply a design where later
-covariate values could not have influenced the response — set
+known* at the response time, whether for a causal reading or because later
+covariate values could not have influenced the response, set
 `one_sided = TRUE`.
 
 ```{r half}
@@ -274,7 +269,7 @@ rbind(
 ```
 
 The half kernel discards roughly half the pairs, so at a fixed `h` it is noisier.
-Select `h` under the same setting you intend to fit with — `kee_async_cv()`
+Select `h` under the same setting you intend to fit with. `kee_async_cv()`
 takes `one_sided` for exactly this reason.
 
 ## Time-varying coefficients
@@ -318,18 +313,22 @@ tidy(fit_td, conf.int = TRUE) |>
 
 Three cautions when reading such a plot:
 
-1. **The bands are pointwise, not simultaneous.** A curve leaving the band at
-   one or two target times is not evidence of anything.
-2. **They are not corrected for smoothing bias**, so they cover
-   $E\hat\beta(t)$, not $\beta(t)$. A large bandwidth flattens the curve toward
-   a constant and the bands do not widen to say so. Refit at a smaller `h` to
-   see how much of the shape is smoothing.
-3. **Edges are unreliable.** Target times within a bandwidth of the ends of the
-   observed range draw on a one-sided window. Keep `times` inside the data.
+Each band covers its own target time. Read them together as a region for the
+whole curve and you are claiming much more than the data supports, so a curve
+straying outside at one or two times means little.
+
+They carry no correction for smoothing bias either, so they cover
+$E\hat\beta(t)$ instead of $\beta(t)$. A large bandwidth flattens the curve
+toward a constant and the bands stay the same width. Refit at a smaller `h` to
+see how much of the shape is smoothing.
+
+Target times within a bandwidth of either end of the observed range draw on a
+one-sided window and are the least trustworthy part of the picture. Keep
+`times` inside the data.
 
 If the bands cover a horizontal line across the whole range, the honest
-conclusion is that the data do not resolve time variation — not that $\beta(t)$
-is flat.
+conclusion is that the data cannot resolve time variation. That is a different
+statement from evidence that $\beta(t)$ is flat.
 
 ## Links other than the identity
 
@@ -350,8 +349,8 @@ summary(fit_b)
 ## Getting the units right
 
 The single most common mistake is a bandwidth on a different scale from the
-observation times — times in days, `h` chosen as though they were on the unit
-interval. Nothing about the estimator requires $[0,1]$, so the package cannot
+observation times: times in days, with `h` chosen as though they were on the
+unit interval. Nothing about the estimator requires $[0,1]$, so the package cannot
 simply reject the data; instead it tells you when almost nothing is
 contributing.
 

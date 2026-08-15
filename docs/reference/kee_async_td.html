@@ -158,7 +158,8 @@ rule-of-thumb value is used and reported in a message; see <code><a href="kee_as
 <code>TRUE</code> restricts the <strong>covariate</strong> side to observations strictly before the
 target time, so \(\beta(t)\) uses only covariate values already available
 at <code>t</code>. The response side stays two-sided: it is a local average around
-<code>t</code>, not a filtering step. Both lags are measured as "how far in the past",
+<code>t</code>; restricting it as well would give a filtering estimate, which answers
+a different question. Both lags are measured as "how far in the past",
 matching <code><a href="kee_async.html">kee_async()</a></code> and the survival estimators.</p></dd>
 
 
@@ -219,14 +220,16 @@ together. Expect wide bands. Do not read a wiggle in the curve as structure
 without checking it against them.</p>
 <p>A practical consequence: a sample that gives a comfortable time-invariant fit
 can be far too small for a credible curve. If the bands cover a horizontal
-line across the whole range, the honest reading is that the data do not
-resolve time variation, not that \(\beta(t)\) is flat.</p>
+line across the whole range, the honest reading is that the data cannot
+resolve time variation. That is a different statement from evidence that
+\(\beta(t)\) is flat.</p>
     </div>
     <div class="section level2">
     <h2 id="reading-the-output">Reading the output<a class="anchor" aria-label="anchor" href="#reading-the-output"></a></h2>
-    <p><code>se</code> holds pointwise sandwich standard errors at each target time. They are
-pointwise, not simultaneous, so a curve leaving the band at one or two target
-times is not evidence of anything on its own.</p>
+    <p><code>se</code> holds sandwich standard errors at each target time separately. Each band
+covers its own target time; read across the whole curve and the coverage is
+much worse than the nominal level, so a curve straying outside at one or two
+times means little on its own.</p>
 <p>No undersmoothing correction is applied, so the intervals are centred on the
 smoothed curve \(E\hat\beta(t)\) rather than on \(\beta(t)\). With a large
 bandwidth the curve is flattened toward a constant and the bands do not widen

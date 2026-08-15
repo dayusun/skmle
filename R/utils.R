@@ -103,8 +103,8 @@ kernel_weights <- function(lag, h, one_sided = TRUE) {
 # Data-driven default bandwidths.
 #
 # A student should not have to invent a number to get a first fit.  These are
-# rules of thumb, not a substitute for cross-validation, and the message that
-# accompanies them says so and names the function that does it properly.
+# rules of thumb.  Cross-validation does the job properly, and the message that
+# accompanies the default says so and names the function.
 
 #' Default bandwidth for the survival estimators
 #'
@@ -157,9 +157,8 @@ default_bandwidth_async <- function(times, n) {
 announce_bandwidth <- function(h, cv_fun) {
   message(sprintf(
     paste0(
-      "'h' not supplied. Using h = %s, a rule-of-thumb value read off the\n",
-      "observation times. It is a starting point, not a tuned choice --\n",
-      "see %s() to select the bandwidth from the data."
+      "'h' not supplied. Using h = %s, read off the observation times as a\n",
+      "rule of thumb. See %s() to choose the bandwidth from the data."
     ),
     format(h, digits = 3), cv_fun
   ))

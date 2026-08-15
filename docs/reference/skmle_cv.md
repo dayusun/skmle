@@ -102,10 +102,10 @@ print(x, ...)
 
 - one_sided:
 
-  Logical. `TRUE` (the default) uses a **half** kernel: only covariate
+  Logical. `TRUE` (the default) uses a half kernel: only covariate
   observations strictly before the event or quadrature time inform that
   time, which is the risk-set restriction and the estimator as
-  published. `FALSE` uses a **full**, two-sided kernel, smoothing the
+  published. `FALSE` uses a full, two-sided kernel, smoothing the
   covariate path from both sides. The switch applies to the risk-set
   averages inside the C++ backend as well as to the row weights, so the
   two are always consistent.
@@ -138,9 +138,9 @@ An object of class `cv.skmle` with components:
 
 ## Details
 
-`skmle_cv()` splits subjects, not rows, across folds. This is the
-appropriate unit for cross-validation because multiple rows belong to
-the same subject in the long-format data structure.
+`skmle_cv()` splits subjects across folds. Several rows belong to the
+same subject in long format, so splitting by row would put one subject
+on both sides of the split.
 
 After choosing the bandwidth with the smallest average validation loss,
 the function refits

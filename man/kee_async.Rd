@@ -39,9 +39,8 @@ Non-numeric identifiers are allowed.}
 Accepts the same three forms as \code{id}.}
 
 \item{h}{Positive bandwidth, on the same scale as \code{time}. If omitted, a
-rule-of-thumb value is read off the observation times and reported in a
-message. That is a starting point, not a tuned choice: use
-\code{\link[=kee_async_cv]{kee_async_cv()}} to select it from the data.}
+value is read off the observation times as a rule of thumb and reported in
+a message. Use \code{\link[=kee_async_cv]{kee_async_cv()}} to choose it from the data.}
 
 \item{one_sided}{Logical. \code{FALSE} (default) is the full two-sided kernel of
 the paper; \code{TRUE} is the half kernel, admitting only covariate observations
@@ -105,9 +104,10 @@ about the response occasion.
 
 \section{Rate and bandwidth}{
 The estimator is consistent and asymptotically normal at the smoothing rate
-\eqn{(nh)^{1/2}}, not at \eqn{\sqrt n}. The bandwidth therefore matters: too
-small and few pairs contribute, too large and the bias grows. Use
-\code{\link[=kee_async_cv]{kee_async_cv()}} rather than guessing.
+\eqn{(nh)^{1/2}}. Standard errors shrink more slowly than in a parametric
+fit, and the bandwidth becomes a real modelling choice: too small and few
+pairs contribute, too large and the bias grows. \code{\link[=kee_async_cv]{kee_async_cv()}} picks it
+from the data.
 
 \code{h} is on the \strong{same scale as the observation times}. Unlike the survival
 estimators there is no requirement that times lie on \eqn{[0, 1]}, but \code{h}

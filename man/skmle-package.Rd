@@ -18,7 +18,7 @@ Two outcome types are covered.
 
 Answer two questions.
 
-\strong{1. What is the outcome?}
+First, what is the outcome?
 
 \describe{
 \item{A time to an event}{(death, relapse, failure), possibly censored --
@@ -29,7 +29,7 @@ its own schedule -- use the asynchronous estimators. Your data is two
 tables, one per process.}
 }
 
-\strong{2. Then pick within that group.}
+Then pick within that group.
 
 \tabular{lll}{
 \strong{Outcome} \tab \strong{Situation} \tab \strong{Function} \cr
