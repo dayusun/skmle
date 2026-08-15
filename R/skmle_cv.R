@@ -35,7 +35,8 @@
 #' * `cv_results`: data frame of candidate bandwidths and CV losses,
 #' * `h_grid`: bandwidth grid used in the search,
 #' * `fold_id`: the subject-to-fold assignment vector (length `n`),
-#' * `seed`: the value of `seed` supplied by the user, or `NULL`.
+#' * `seed`: the value of `seed` supplied by the user, or `NULL`,
+#' * `call`: the matched call.
 #'
 #' @examples
 #' \donttest{
@@ -200,15 +201,40 @@ skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL,
 
   fit <- eval(fit_call, envir = parent.frame())
 
+  # The frozen data frame has done its job by now.  Leaving it in the fitted
+  # object's call means print() and summary() deparse the whole data set in
+  # place of the call, so put the user's original expression back.  The fit
+  # itself was still evaluated against the frozen frame.
+  fit$call <- fit_call
+  fit$call$data <- call$data
+
   out <- list(
     h_cv = best_h,
     fit = fit,
     cv_results = cv_results,
     h_grid = h_grid,
     fold_id = fold_id_subj,
-    seed = seed
+    seed = seed,
+    call = call
   )
 
   class(out) <- "cv.skmle"
   return(out)
+}
+
+
+#' @param x A `cv.skmle` object.
+#' @param ... Ignored.
+#' @rdname skmle_cv
+#' @export
+print.cv.skmle <- function(x, ...) {
+  cat("Call:\n")
+  print(x$call)
+  cat("\n", length(unique(x$fold_id)),
+      "-fold subject-level cross-validation\n\n", sep = "")
+  print(x$cv_results, row.names = FALSE, digits = 5)
+  cat("\nSelected h = ", format(x$h_cv), "\n", sep = "")
+  cat("\nCoefficients at the refit:\n")
+  print(x$fit$coefficients)
+  invisible(x)
 }

@@ -2,6 +2,7 @@
 
 S3method(plot,kee_td)
 S3method(plot,skmle)
+S3method(print,cv.skmle)
 S3method(print,kee)
 S3method(print,kee_td)
 S3method(print,skmle)

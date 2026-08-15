@@ -2,6 +2,7 @@
 % Please edit documentation in R/skmle_cv.R
 \name{skmle_cv}
 \alias{skmle_cv}
+\alias{print.cv.skmle}
 \title{Select the Bandwidth by Cross-Validation}
 \usage{
 skmle_cv(
@@ -22,6 +23,8 @@ skmle_cv(
   quiet = FALSE,
   one_sided = TRUE
 )
+
+\method{print}{cv.skmle}(x, ...)
 }
 \arguments{
 \item{formula}{A model formula. The left-hand side must be a \code{survival::Surv()}
@@ -70,6 +73,10 @@ published. \code{FALSE} uses a \strong{full}, two-sided kernel, smoothing the
 covariate path from both sides. The switch applies to the risk-set
 averages inside the C++ backend as well as to the row weights, so the two
 are always consistent.}
+
+\item{x}{A \code{cv.skmle} object.}
+
+\item{...}{Ignored.}
 }
 \value{
 An object of class \code{cv.skmle} with components:
@@ -79,7 +86,8 @@ An object of class \code{cv.skmle} with components:
 \item \code{cv_results}: data frame of candidate bandwidths and CV losses,
 \item \code{h_grid}: bandwidth grid used in the search,
 \item \code{fold_id}: the subject-to-fold assignment vector (length \code{n}),
-\item \code{seed}: the value of \code{seed} supplied by the user, or \code{NULL}.
+\item \code{seed}: the value of \code{seed} supplied by the user, or \code{NULL},
+\item \code{call}: the matched call.
 }
 }
 \description{
