@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>CLAUDE.md</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
     </div>
 
 <div id="claudemd" class="section level1">
@@ -47,13 +47,13 @@
 <h2 id="build--develop-commands">Build / develop commands<a class="anchor" aria-label="anchor" href="#build--develop-commands"></a></h2>
 <p>Use <code>devtools</code> from the package root:</p>
 <ul><li>
-<code><a href="https://devtools.r-lib.org/reference/load_all.html" class="external-link">devtools::load_all()</a></code> — compile C++ and load the package for interactive work.</li>
+<code>devtools::load_all()</code> — compile C++ and load the package for interactive work.</li>
 <li>
-<code><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">devtools::document()</a></code> — regenerate <code>man/*.Rd</code> and <code>NAMESPACE</code> from roxygen comments. Always run after editing roxygen blocks.</li>
+<code>devtools::document()</code> — regenerate <code>man/*.Rd</code> and <code>NAMESPACE</code> from roxygen comments. Always run after editing roxygen blocks.</li>
 <li>
 <code><a href="https://rdrr.io/pkg/Rcpp/man/compileAttributes.html" class="external-link">Rcpp::compileAttributes()</a></code> — regenerate <code>src/RcppExports.cpp</code> and <code>R/RcppExports.R</code> after adding/changing <code>// [[Rcpp::export]]</code> signatures. Must be run before <code>document()</code> when exported C++ prototypes change.</li>
 <li>
-<code><a href="https://devtools.r-lib.org/reference/install.html" class="external-link">devtools::install()</a></code> / <code>R CMD INSTALL .</code> — full install.</li>
+<code>devtools::install()</code> / <code>R CMD INSTALL .</code> — full install.</li>
 <li>
 <code>R CMD build . &amp;&amp; R CMD check skmle_*.tar.gz</code> — full CRAN-style check.</li>
 </ul><div class="section level3">

@@ -16,17 +16,15 @@ optimizer.
 
 Use `devtools` from the package root:
 
-- [`devtools::load_all()`](https://devtools.r-lib.org/reference/load_all.html)
-  — compile C++ and load the package for interactive work.
-- [`devtools::document()`](https://devtools.r-lib.org/reference/document.html)
-  — regenerate `man/*.Rd` and `NAMESPACE` from roxygen comments. Always
-  run after editing roxygen blocks.
+- `devtools::load_all()` — compile C++ and load the package for
+  interactive work.
+- `devtools::document()` — regenerate `man/*.Rd` and `NAMESPACE` from
+  roxygen comments. Always run after editing roxygen blocks.
 - [`Rcpp::compileAttributes()`](https://rdrr.io/pkg/Rcpp/man/compileAttributes.html)
   — regenerate `src/RcppExports.cpp` and `R/RcppExports.R` after
   adding/changing `// [[Rcpp::export]]` signatures. Must be run before
   `document()` when exported C++ prototypes change.
-- [`devtools::install()`](https://devtools.r-lib.org/reference/install.html)
-  / `R CMD INSTALL .` — full install.
+- `devtools::install()` / `R CMD INSTALL .` — full install.
 - `R CMD build . && R CMD check skmle_*.tar.gz` — full CRAN-style check.
 
 ### Makevars nloptr include path
