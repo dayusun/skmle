@@ -38,7 +38,6 @@ Imports:
     generics,
     graphics,
     ggplot2,
-    MASS,
     nleqslv,
     nloptr,
     Rcpp,

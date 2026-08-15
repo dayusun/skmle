@@ -93,7 +93,6 @@ NonHPP_gen <- function(lambdat, censor, lambda.bar) {
 #' head(sim_data[, c("id", "X", "delta", "obs_times", "Z1", "Z2")])
 #'
 #' @importFrom stats pnorm runif stepfun
-#' @importFrom MASS mvrnorm
 #' @importFrom nleqslv nleqslv
 #' @importFrom gaussquad legendre.quadrature legendre.quadrature.rules
 #' @importFrom tibble tibble
@@ -142,8 +141,16 @@ sim_skmle_data <- function(n,
         # 2. Generate Z(t) and h(t) as a step function
         Sigmat_z <- exp(-abs(outer(1:nstep, 1:nstep, "-")) / nstep)
 
-        # Generate the first covariate (time-varying step function)
-        z <- 2 * (pnorm(c(MASS::mvrnorm(1, rep(0, nstep), Sigmat_z))) - 0.5)
+        # Generate the first covariate (time-varying step function).
+        #
+        # Drawn through a Cholesky factor rather than MASS::mvrnorm, which goes
+        # via an eigen decomposition.  Eigenvector signs are not fixed by the
+        # LAPACK interface, so mvrnorm can return different draws from the same
+        # seed on different builds of R, and this simulator sits under every
+        # example and vignette in the package.
+        z <- 2 * (pnorm(as.numeric(
+            t(chol(Sigmat_z + diag(1e-10, nstep))) %*% rnorm(nstep)
+        )) - 0.5)
         left_time_points <- (0:(nstep - 1)) / nstep
         z_fun <- stepfun(left_time_points, c(0, z))
 
@@ -165,10 +172,25 @@ sim_skmle_data <- function(n,
         u <- runif(1)
         lqrule64 <- gaussquad::legendre.quadrature.rules(64)[[64]]
 
-        # Solve for failure time using nleqslv and Legendre-Gauss Quadrature
-        fail_time <- nleqslv::nleqslv(cen_i / 2, function(ttt) {
-            gaussquad::legendre.quadrature(lam_fun, lower = 0, upper = ttt, lqrule64) + log(u)
-        })$x
+        # Solve Lambda(t) = -log(u) for the failure time.  Lambda is increasing
+        # and Lambda(0) = 0, so the root is bracketed by [0, cen_i] whenever the
+        # subject fails within follow-up; when it does not, the subject is
+        # censored and the failure time never needs to be found.
+        #
+        # This used to hand the equation to nleqslv from a starting value, with
+        # nothing holding the answer positive.  On roughly one draw in twenty at
+        # s = 1 it converged to a spurious negative root and the subject was
+        # returned with a negative event time.
+        cumhaz <- function(ttt) {
+            gaussquad::legendre.quadrature(lam_fun, lower = 0, upper = ttt, lqrule64)
+        }
+        fail_time <- if (cumhaz(cen_i) + log(u) < 0) {
+            Inf
+        } else {
+            stats::uniroot(function(ttt) cumhaz(ttt) + log(u),
+                interval = c(0, cen_i), tol = .Machine$double.eps^0.5
+            )$root
+        }
 
         X <- min(fail_time, cen_i)
 

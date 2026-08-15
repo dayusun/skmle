@@ -449,7 +449,7 @@ test_that("the asynchronous estimators run with only the data", {
 
     expect_message(
         fit <- kee_async(d$y, d$x, y ~ x, id = id, time = time),
-        "rule-of-thumb"
+        "rule of thumb"
     )
     expect_equal(unname(coef(fit)), c(0.5, 1.5), tolerance = 0.2)
     expect_true(fit$h > 0)

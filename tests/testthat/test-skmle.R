@@ -80,3 +80,28 @@ test_that("print/summary/plot methods work on skmle objects", {
   expect_output(print(sm), "n=")
   expect_s3_class(plot(fit), "ggplot")
 })
+
+test_that("sim_skmle_data never returns a negative event time", {
+  # The failure time solves Lambda(t) = -log(u).  Handing that to a general
+  # root finder from a starting value let it converge to a spurious negative
+  # root on roughly one draw in twenty at s = 1, which produced survival data
+  # with X < 0.  Nothing rejected it until kee_additive() started checking the
+  # time scale, and then it surfaced as a cross-platform test failure.
+  for (s in c(0, 1)) {
+    for (sd in 1:25) {
+      set.seed(sd)
+      d <- sim_skmle_data(
+        n = 15,
+        mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+        mu_bar = 8,
+        alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+        beta = c(1, -0.5), s = s, cen = 0.7
+      )
+      expect_true(all(d$X > 0), label = paste0("s=", s, " seed=", sd, " min X"))
+      expect_true(all(d$X <= 1))
+      expect_true(all(d$obs_times >= 0 & d$obs_times <= 1))
+      # Censored subjects must be exactly at their censoring time.
+      expect_equal(d$X[!d$delta], d$censoring[!d$delta])
+    }
+  }
+})

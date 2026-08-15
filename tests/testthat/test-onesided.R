@@ -169,7 +169,7 @@ test_that("a first fit needs no bandwidth and says what it picked", {
     f <- kee_cox(survival::Surv(X, delta) ~ covariates,
       data = dat, id = id, obs_times = obs_times
     ),
-    "rule-of-thumb"
+    "rule of thumb"
   )
   expect_true(all(is.finite(coef(f))))
   expect_true(f$h > 0)
@@ -186,7 +186,7 @@ test_that("a first fit needs no bandwidth and says what it picked", {
     s0 <- skmle(survival::Surv(X, delta) ~ covariates,
       data = dat, id = id, obs_times = obs_times, nknots = 3
     ),
-    "rule-of-thumb"
+    "rule of thumb"
   )
   expect_equal(s0$s, 0)
   expect_true(all(is.finite(coef(s0))))
