@@ -1,5 +1,5 @@
 Package: skmle
-Title: Survival and Longitudinal Models with Asynchronous Covariates
+Title: Sieve Kernel Maximum Likelihood Estimation
 Version: 0.1.0
 Authors@R:
     person(given = "Dayu",

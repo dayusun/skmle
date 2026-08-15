@@ -3,7 +3,7 @@
 ## Package overview
 
 - [`skmle-package`](https://dayusun.github.io/skmle/reference/skmle-package.md)
-  : skmle: Survival and Longitudinal Models with Asynchronous Covariates
+  : skmle: Sieve Kernel Maximum Likelihood Estimation
 
 ## Survival models with sparse longitudinal covariates
 

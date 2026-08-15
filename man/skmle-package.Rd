@@ -3,7 +3,7 @@
 \docType{package}
 \name{skmle-package}
 \alias{skmle-package}
-\title{skmle: Survival and Longitudinal Models with Asynchronous Covariates}
+\title{skmle: Sieve Kernel Maximum Likelihood Estimation}
 \description{
 Estimation and inference when a longitudinal covariate is observed sparsely and intermittently, at times that do not line up with the times at which the outcome is measured. For a survival outcome, fits the transformed hazards family -- proportional hazards, additive hazards, and the Box-Cox transformations between them -- by the Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and Cao (2025) \doi{10.1080/01621459.2025.2476781}, with specialised kernel estimating-equation alternatives for the proportional and additive cases. For a longitudinal outcome recorded on its own time grid, fits generalised linear models by the kernel-weighted estimating equations of Cao, Zeng and Fine (2015) \doi{10.1111/rssb.12086}, with either time-invariant or time-dependent coefficients. Half and full kernels, data simulation, and bandwidth selection by cross-validation are available throughout, and the numerical routines use 'Rcpp', 'RcppArmadillo' and the 'nloptr' C API.
 }

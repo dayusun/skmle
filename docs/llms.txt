@@ -233,7 +233,7 @@ Society: Series B, 77*(4), 755-776. <https://doi.org/10.1111/rssb.12086>
 ## Package overview
 
 - [`skmle-package`](https://dayusun.github.io/skmle/reference/skmle-package.md)
-  : skmle: Survival and Longitudinal Models with Asynchronous Covariates
+  : skmle: Sieve Kernel Maximum Likelihood Estimation
 
 ## Survival models with sparse longitudinal covariates
 

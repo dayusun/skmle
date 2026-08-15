@@ -7,10 +7,10 @@
 The package covers two settings, not one. Alongside the transformed
 hazards models for survival outcomes it now fits generalised linear
 models for asynchronous longitudinal outcomes, where the response and
-the covariate are recorded on different time grids. The `Title`,
-`Description`, README, package help page and tutorial have been
-rewritten to present both as equal footing rather than treating the
-second as an extra.
+the covariate are recorded on different time grids. The `Title` drops
+its “for Survival Models” restriction, and the `Description`, README,
+package help page and tutorial have been rewritten to present the two
+settings on equal footing rather than treating the second as an extra.
 
 ### Asynchronous longitudinal data
 
