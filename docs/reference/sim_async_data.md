@@ -53,7 +53,7 @@ sim_async_data(
 
 ## Value
 
-A list with two data frames on different time grids:
+A list of two tibbles on different time grids:
 
 - y:
 
@@ -96,11 +96,11 @@ set.seed(1)
 d <- sim_async_data(n = 50)
 str(d)
 #> List of 2
-#>  $ y:'data.frame':   257 obs. of  3 variables:
+#>  $ y: tibble [257 × 3] (S3: tbl_df/tbl/data.frame)
 #>   ..$ id  : int [1:257] 1 1 1 1 2 2 2 2 2 2 ...
 #>   ..$ time: num [1:257] 0.202 0.573 0.898 0.908 0.108 ...
 #>   ..$ y   : num [1:257] -2.945 -0.819 0.211 0.33 2.494 ...
-#>  $ x:'data.frame':   258 obs. of  3 variables:
+#>  $ x: tibble [258 × 3] (S3: tbl_df/tbl/data.frame)
 #>   ..$ id  : int [1:258] 1 1 1 1 2 2 2 2 2 2 ...
 #>   ..$ time: num [1:258] 0.0618 0.6291 0.6608 0.9447 0.0233 ...
 #>   ..$ x   : num [1:258] -0.864 0.345 0.437 0.253 0.292 ...
@@ -108,15 +108,19 @@ str(d)
 # The two tables share `id` and nothing else; their `time` grids are
 # independent draws, which is what makes the data asynchronous.
 head(d$y, 3)
-#>   id      time          y
-#> 1  1 0.2016819 -2.9454025
-#> 2  1 0.5728534 -0.8186868
-#> 3  1 0.8983897  0.2109702
+#> # A tibble: 3 × 3
+#>      id  time      y
+#>   <int> <dbl>  <dbl>
+#> 1     1 0.202 -2.95 
+#> 2     1 0.573 -0.819
+#> 3     1 0.898  0.211
 head(d$x, 3)
-#>   id       time          x
-#> 1  1 0.06178627 -0.8642242
-#> 2  1 0.62911404  0.3452775
-#> 3  1 0.66079779  0.4373871
+#> # A tibble: 3 × 3
+#>      id   time      x
+#>   <int>  <dbl>  <dbl>
+#> 1     1 0.0618 -0.864
+#> 2     1 0.629   0.345
+#> 3     1 0.661   0.437
 
 # A coefficient curve, for kee_async_td().
 d2 <- sim_async_data(n = 50, beta = function(tt) cbind(0.5, 1 + tt))

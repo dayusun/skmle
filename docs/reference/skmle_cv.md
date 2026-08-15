@@ -186,10 +186,12 @@ cv_fit <- skmle_cv(
 cv_fit$h_cv
 #> [1] 0.5
 cv_fit$cv_results
-#>     h    cvloss
-#> 1 0.3 0.8171964
-#> 2 0.4 0.7012594
-#> 3 0.5 0.6076993
+#> # A tibble: 3 × 2
+#>       h cvloss
+#>   <dbl>  <dbl>
+#> 1   0.3  0.817
+#> 2   0.4  0.701
+#> 3   0.5  0.608
 summary(cv_fit$fit)
 #> Call:
 #> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 

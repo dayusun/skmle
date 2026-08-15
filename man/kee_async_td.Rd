@@ -6,9 +6,9 @@
 \title{Asynchronous longitudinal regression with time-dependent coefficients}
 \usage{
 kee_async_td(
-  formula,
   data_y,
   data_x,
+  formula,
   id,
   time,
   times,
@@ -24,20 +24,24 @@ kee_async_td(
 \method{print}{kee_td}(x, ...)
 }
 \arguments{
-\item{formula}{A two-sided formula, \code{y ~ x1 + x2}. The left-hand side is
-evaluated in \code{data_y}, the right-hand side in \code{data_x}.}
-
-\item{data_y}{Data frame of response occasions: one row per time the response
-was recorded.}
+\item{data_y}{Data frame of response occasions: one row per time the
+response was recorded. First argument, so the function pipes.}
 
 \item{data_x}{Data frame of covariate occasions: one row per time the
 covariates were recorded. Its time grid need not overlap \code{data_y}'s at all.}
 
-\item{id}{Subject identifier, unquoted or as a string. Must name a column
-present in \strong{both} tables. Non-numeric identifiers are allowed.}
+\item{formula}{A two-sided formula, \code{y ~ x1 + x2}. \strong{The left-hand side is
+looked up in \code{data_y} and the right-hand side in \code{data_x}}, which is the
+one unusual thing about this interface and follows from the data being in
+two tables: there is no single frame holding both.}
 
-\item{time}{Observation time, unquoted or as a string. Must name a column
-present in \strong{both} tables.}
+\item{id}{Subject identifier naming a column present in \strong{both} tables.
+Give it unquoted (\code{id = subject}), as a string (\code{id = "subject"}), or
+embraced (\code{id = {{ col }}}) when calling from inside another function.
+Non-numeric identifiers are allowed.}
+
+\item{time}{Observation time, naming a column present in \strong{both} tables.
+Accepts the same three forms as \code{id}.}
 
 \item{times}{Numeric vector of target times at which to estimate
 \eqn{\beta(t)}. Keep them inside the range of the observed times.}
@@ -134,11 +138,13 @@ the previous solution when the link is nonlinear.
 \examples{
 set.seed(1)
 d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-fit <- kee_async_td(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
-  times = seq(0.2, 0.8, by = 0.1), h = 0.3
-)
+fit <- d$y |>
+  kee_async_td(d$x, y ~ x,
+    id = id, time = time,
+    times = seq(0.2, 0.8, by = 0.1), h = 0.3
+  )
 coef(fit)
+tidy(fit)
 }
 \references{
 Cao, H., Zeng, D. and Fine, J. P. (2015). Regression analysis of sparse

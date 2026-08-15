@@ -22,6 +22,8 @@ Description: Estimation and inference when a longitudinal covariate is
     numerical routines use 'Rcpp', 'RcppArmadillo' and the 'nloptr' C API.
 URL: https://www.sundayu.me/skmle/, https://github.com/dayusun/skmle
 BugReports: https://github.com/dayusun/skmle/issues
+Depends:
+    R (>= 4.1)
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -33,12 +35,14 @@ LinkingTo:
 Imports:
     dplyr,
     gaussquad,
+    generics,
     graphics,
     ggplot2,
     MASS,
     nleqslv,
     nloptr,
     Rcpp,
+    rlang,
     splines,
     stats,
     survival,

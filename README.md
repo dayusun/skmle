@@ -52,6 +52,11 @@ mismatched time grids, with the heavy numerical work in C++ via `Rcpp` and
 - `sim_async_data()` — simulate a response and a covariate on independent
   observation-time streams.
 
+Fitted objects support `coef()`, `vcov()`, `confint()`, `nobs()`, `summary()`
+and the broom generics `tidy()`, `glance()` and `augment()`, all returning
+tibbles. The two data frames come first in the asynchronous estimators so they
+compose with the native pipe.
+
 Every estimator takes `one_sided`, choosing between a half kernel (only
 measurements *before* the modelled time contribute, the causal reading and the
 risk-set restriction of a hazard model) and a full, two-sided kernel.
@@ -142,18 +147,22 @@ d <- sim_async_data(n = 300, beta = c(0.5, 1.5))
 head(d$y)   # id, time, y   -- response occasions
 head(d$x)   # id, time, x   -- covariate occasions, on a different grid
 
-# The formula spans both tables: y from data_y, x from data_x.
-fit_a <- kee_async(y ~ x, data_y = d$y, data_x = d$x,
-                   id = id, time = time, h = 0.25)
+# Data comes first, so it pipes. The formula spans both tables:
+# `y` is looked up in the first, `x` in the second.
+fit_a <- d$y |>
+  kee_async(d$x, y ~ x, id = id, time = time, h = 0.25)
+
 summary(fit_a)
+tidy(fit_a, conf.int = TRUE)   # a tibble, ready for ggplot2 or dplyr
 ```
 
 `h` is the one consequential choice; `kee_async_cv()` makes it by
 cross-validation over subjects:
 
 ```r
-cv <- kee_async_cv(y ~ x, data_y = d$y, data_x = d$x,
-                   id = id, time = time, K = 5, seed = 1)
+cv <- d$y |>
+  kee_async_cv(d$x, y ~ x, id = id, time = time, K = 5, seed = 1)
+
 cv$h_cv
 ```
 
@@ -166,11 +175,13 @@ pointwise. Both time arguments are smoothed there, so it converges at the
 bivariate rate `(n h1 h2)^(1/2)` and the bands are correspondingly wide:
 
 ```r
-fit_td <- kee_async_td(y ~ x, data_y = d$y, data_x = d$x,
-                       id = id, time = time,
-                       times = seq(0.2, 0.8, by = 0.05), h = 0.25)
+fit_td <- d$y |>
+  kee_async_td(d$x, y ~ x,
+               id = id, time = time,
+               times = seq(0.2, 0.8, by = 0.05), h = 0.25)
 
-plot(fit_td)   # beta_j(t) with pointwise 95% bands
+plot(fit_td)          # beta_j(t) with pointwise 95% bands
+tidy(fit_td)          # one row per (time, term)
 ```
 
 There is a full article on this setting — why last-value-carried-forward and

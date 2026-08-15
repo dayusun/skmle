@@ -306,10 +306,12 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span><span class="va">cv_fit</span><span class="op">$</span><span class="va">h_cv</span></span>
 <span><span class="co">#&gt; [1] 0.3</span></span>
 <span><span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span>
-<span><span class="co">#&gt;     h    cvloss</span></span>
-<span><span class="co">#&gt; 1 0.3 0.5513460</span></span>
-<span><span class="co">#&gt; 2 0.4 0.5858840</span></span>
-<span><span class="co">#&gt; 3 0.5 0.6024361</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
+<span><span class="co">#&gt;       h cvloss</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.3  0.551</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   0.4  0.586</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>   0.5  0.602</span></span></code></pre></div>
 <p>The returned object contains:</p>
 <ul>
 <li>the selected bandwidth</li>
@@ -371,28 +373,32 @@ separation.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">202</span><span class="op">)</span></span>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">300</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   id      time         y</span></span>
-<span><span class="co">#&gt; 1  1 0.2037272 0.3064489</span></span>
-<span><span class="co">#&gt; 2  1 0.3297899 0.4304008</span></span>
-<span><span class="co">#&gt; 3  1 0.3682846 0.2979238</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
+<span><span class="co">#&gt;      id  time     y</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 0.204 0.306</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1 0.330 0.430</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     1 0.368 0.298</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   id       time          x</span></span>
-<span><span class="co">#&gt; 1  1 0.07627971 -0.4664268</span></span>
-<span><span class="co">#&gt; 2  1 0.19848389 -0.8345285</span></span>
-<span><span class="co">#&gt; 3  1 0.21907798 -0.6879458</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
+<span><span class="co">#&gt;      id   time      x</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 0.076<span style="text-decoration: underline;">3</span> -<span style="color: #BB0000;">0.466</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     1 0.198  -<span style="color: #BB0000;">0.835</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     1 0.219  -<span style="color: #BB0000;">0.688</span></span></span></code></pre></div>
 <p>The two tables are deliberately separate — they are on different
 grids, so there is no single data frame that holds both without
 inventing rows. The formula spans both: its left-hand side is looked up
 in <code>data_y</code>, its right-hand side in <code>data_x</code>, and
 <code>id</code> and <code>time</code> name columns present in each.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async.html">kee_async</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span>
-<span>  data_y <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span>, data_x <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span>,</span>
+<code class="sourceCode R"><span><span class="va">fit_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async.html">kee_async</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span>,</span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span>
 <span>  id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>, h <span class="op">=</span> <span class="fl">0.25</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_a</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; kee_async(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, </span></span>
+<span><span class="co">#&gt; kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span></span>
 <span><span class="co">#&gt;     time = time, h = 0.25)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   n= 300</span></span>
@@ -413,25 +419,27 @@ in <code>data_y</code>, its right-hand side in <code>data_x</code>, and
 subjects, scoring each candidate by the kernel-weighted squared error on
 the held-out subjects:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async_cv.html">kee_async_cv</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span>
-<span>  data_y <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span>, data_x <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>,</span>
+<code class="sourceCode R"><span><span class="va">cv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async_cv.html">kee_async_cv</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span>,</span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>,</span>
 <span>  h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="fl">0.15</span>, <span class="fl">0.25</span>, <span class="fl">0.40</span><span class="op">)</span>, K <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid</span></span>
 <span><span class="co">#&gt; to check that the minimum is interior</span></span>
 <span><span class="va">cv</span></span>
 <span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; kee_async_cv(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, </span></span>
+<span><span class="co">#&gt; kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span></span>
 <span><span class="co">#&gt;     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), K = 5, seed = 1, </span></span>
 <span><span class="co">#&gt;     quiet = TRUE)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; 5-fold subject-level cross-validation</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     h cvloss nfold_used</span></span>
-<span><span class="co">#&gt;  0.10 1.0892          5</span></span>
-<span><span class="co">#&gt;  0.15 1.1565          5</span></span>
-<span><span class="co">#&gt;  0.25 1.2665          5</span></span>
-<span><span class="co">#&gt;  0.40 1.4166          5</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">#&gt;       h cvloss nfold_used</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.1    1.09          5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.15   1.16          5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.25   1.27          5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.4    1.42          5</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Selected h = 0.1</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -449,8 +457,8 @@ wide.</p>
 <span>  lambda_y <span class="op">=</span> <span class="fl">8</span>, lambda_x <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>  x_cov <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">s</span>, <span class="va">t</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">4</span> <span class="op">*</span> <span class="op">(</span><span class="va">s</span> <span class="op">-</span> <span class="va">t</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">fit_td</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async_td.html">kee_async_td</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span>
-<span>  data_y <span class="op">=</span> <span class="va">dt</span><span class="op">$</span><span class="va">y</span>, data_x <span class="op">=</span> <span class="va">dt</span><span class="op">$</span><span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>,</span>
+<span><span class="va">fit_td</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async_td.html">kee_async_td</a></span><span class="op">(</span><span class="va">dt</span><span class="op">$</span><span class="va">y</span>, <span class="va">dt</span><span class="op">$</span><span class="va">x</span>,</span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>,</span>
 <span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.8</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span>, h <span class="op">=</span> <span class="fl">0.2</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span></span></code></pre></div>

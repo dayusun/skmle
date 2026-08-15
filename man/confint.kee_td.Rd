@@ -31,8 +31,8 @@ works once \code{\link[=vcov]{vcov()}} is available.
 \examples{
 set.seed(1)
 d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-fit <- kee_async_td(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
+fit <- kee_async_td(d$y, d$x,
+  y ~ x, id = id, time = time,
   times = c(0.3, 0.5, 0.7), h = 0.3
 )
 confint(fit)

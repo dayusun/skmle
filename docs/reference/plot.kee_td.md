@@ -48,9 +48,10 @@ the band to say so.
 ``` r
 set.seed(1)
 d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-fit <- kee_async_td(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
-  times = seq(0.2, 0.8, by = 0.05), h = 0.3
-)
+fit <- d$y |>
+  kee_async_td(d$x, y ~ x,
+    id = id, time = time,
+    times = seq(0.2, 0.8, by = 0.05), h = 0.3
+  )
 plot(fit)
 ```

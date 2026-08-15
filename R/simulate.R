@@ -238,7 +238,7 @@ sim_skmle_data <- function(n,
 #' @param x_cov,e_cov Covariance functions of two times, vectorised, for the
 #'   covariate and error processes.
 #'
-#' @return A list with two data frames on different time grids:
+#' @return A list of two tibbles on different time grids:
 #' \describe{
 #'   \item{y}{`id`, `time`, `y` -- one row per response occasion.}
 #'   \item{x}{`id`, `time`, and one column per covariate coordinate -- named
@@ -326,8 +326,8 @@ sim_async_data <- function(n, beta = c(0.5, 1.5), lambda_y = 5, lambda_x = 5,
         xl[[i]] <- data.frame(id = rep(i, nS), time = Ss, Xs)
     }
 
-    y <- do.call(rbind, yl)
-    x <- do.call(rbind, xl)
-    rownames(y) <- rownames(x) <- NULL
-    list(y = y, x = x)
+    list(
+        y = tibble::as_tibble(do.call(rbind, yl)),
+        x = tibble::as_tibble(do.call(rbind, xl))
+    )
 }

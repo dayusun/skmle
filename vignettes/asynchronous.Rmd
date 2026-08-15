@@ -20,6 +20,9 @@ knitr::opts_chunk$set(
 library(skmle)
 ```
 
+The two data frames come first in every call, so the estimators compose with
+the native pipe. Examples below use it where it reads better.
+
 ## The problem
 
 Suppose you want to know how a biomarker relates to a symptom score. The
@@ -122,10 +125,9 @@ The formula spans both tables — left-hand side from `data_y`, right-hand side
 from `data_x` — and `id` and `time` name columns present in each:
 
 ```{r fit}
-fit <- kee_async(y ~ x,
-  data_y = d$y, data_x = d$x,
-  id = id, time = time, h = 0.25
-)
+fit <- d$y |>
+  kee_async(d$x, y ~ x, id = id, time = time, h = 0.25)
+
 summary(fit)
 ```
 
@@ -144,6 +146,31 @@ confint(fit)
 sqrt(diag(vcov(fit)))
 ```
 
+## Tidy output
+
+`tidy()`, `glance()` and `augment()` return tibbles, so a fit goes straight into
+the rest of a tidy workflow without reshaping.
+
+```{r tidy}
+tidy(fit, conf.int = TRUE)
+
+glance(fit)
+```
+
+`augment()` attaches the fitted mean to the **covariate** table, because that is
+where a fitted value lives here: the estimating equation evaluates the link at
+each observed covariate vector, and it is the kernel weight, not the fitted
+value, that connects it to a response occasion.
+
+```{r augment}
+augment(fit, d$x)
+```
+
+There is deliberately no `.resid` column. A residual needs a response value at
+$S_{ik}$, which is exactly what asynchronous data does not have; reporting one
+would mean inventing it. The fit does not retain its data, so `augment()` needs
+`data_x` handed back to it.
+
 ## Choosing the bandwidth
 
 Because the rate is $(nh)^{1/2}$, `h` trades variance against bias directly:
@@ -153,12 +180,19 @@ so pulls in a bias. `kee_async_cv()` chooses it by cross-validation over
 held-out subjects.
 
 ```{r cv}
-cv <- kee_async_cv(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
-  h_grid = c(0.05, 0.10, 0.15, 0.25, 0.40, 0.60),
-  K = 5, seed = 1, quiet = TRUE
-)
+cv <- d$y |>
+  kee_async_cv(d$x, y ~ x,
+    id = id, time = time,
+    h_grid = c(0.05, 0.10, 0.15, 0.25, 0.40, 0.60),
+    K = 5, seed = 1, quiet = TRUE
+  )
 cv
+```
+
+`cv_results` is a tibble, so it filters and plots directly:
+
+```{r cv-results}
+cv$cv_results
 ```
 
 Two details of that criterion are worth knowing, because they determine whether
@@ -195,7 +229,7 @@ nothing to look:
 ```{r sweep, fig.height = 3.5}
 hs <- c(0.05, 0.10, 0.15, 0.25, 0.40, 0.60)
 sweep <- t(sapply(hs, function(h) {
-  f <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = h)
+  f <- d$y |> kee_async(d$x, y ~ x, id = id, time = time, h = h)
   c(h = h, est = coef(f)[2], se = sqrt(vcov(f)[2, 2]))
 }))
 round(sweep, 3)
@@ -227,9 +261,9 @@ covariate values could not have influenced the response — set
 `one_sided = TRUE`.
 
 ```{r half}
-full <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.25)
-half <- kee_async(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
+full <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25)
+half <- kee_async(d$y, d$x,
+  y ~ x, id = id, time = time,
   h = 0.25, one_sided = TRUE
 )
 
@@ -267,8 +301,8 @@ dt <- sim_async_data(
   x_cov = function(s, t) exp(-4 * (s - t)^2)
 )
 
-fit_td <- kee_async_td(y ~ x,
-  data_y = dt$y, data_x = dt$x, id = id, time = time,
+fit_td <- kee_async_td(dt$y, dt$x,
+  y ~ x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.05), h = 0.2
 )
 plot(fit_td)
@@ -277,7 +311,9 @@ plot(fit_td)
 The truth is $\beta_1(t) = 1 + t$. Compare the fitted curve against it:
 
 ```{r td-truth}
-head(confint(fit_td, parm = "x"), 4)
+tidy(fit_td, conf.int = TRUE) |>
+  subset(term == "x", select = c(time, estimate, conf.low, conf.high)) |>
+  head(4)
 ```
 
 Three cautions when reading such a plot:
@@ -304,8 +340,8 @@ applies unchanged; the cross-validation loss stays on the response scale.
 ```{r logistic}
 set.seed(11)
 db <- sim_async_data(n = 400, beta = c(0.3, 1.0), link = "logistic")
-fit_b <- kee_async(y ~ x,
-  data_y = db$y, data_x = db$x,
+fit_b <- kee_async(db$y, db$x,
+  y ~ x,
   id = id, time = time, h = 0.3, link = "logistic"
 )
 summary(fit_b)
@@ -324,8 +360,8 @@ d_days <- d
 d_days$y$time <- d$y$time * 365
 d_days$x$time <- d$x$time * 365
 
-fit_days <- kee_async(y ~ x,
-  data_y = d_days$y, data_x = d_days$x,
+fit_days <- kee_async(d_days$y, d_days$x,
+  y ~ x,
   id = id, time = time, h = 1
 )
 ```
@@ -334,8 +370,8 @@ Rescaling `h` by the same factor recovers the original fit exactly, which is the
 scale-equivariance of the estimating equation:
 
 ```{r units-fixed}
-fit_ok <- kee_async(y ~ x,
-  data_y = d_days$y, data_x = d_days$x,
+fit_ok <- kee_async(d_days$y, d_days$x,
+  y ~ x,
   id = id, time = time, h = 0.25 * 365
 )
 all.equal(coef(fit_ok), coef(fit))

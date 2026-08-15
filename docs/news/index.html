@@ -50,6 +50,17 @@
 <p>The package covers two settings, not one. Alongside the transformed hazards models for survival outcomes it now fits generalised linear models for asynchronous longitudinal outcomes, where the response and the covariate are recorded on different time grids. The <code>Title</code> drops its “for Survival Models” restriction, and the <code>Description</code>, README, package help page and tutorial have been rewritten to present the two settings on equal footing rather than treating the second as an extra.</p>
 </div>
 <div class="section level3">
+<h3 id="interface-0-1-0">Interface<a class="anchor" aria-label="anchor" href="#interface-0-1-0"></a></h3>
+<ul><li>The asynchronous estimators take the two data frames <strong>first</strong>, so they compose with the native pipe: <code>data_y |&gt; kee_async(data_x, y ~ x, id = id, time = time, h = 0.25)</code>. The formula still spans both tables – its left-hand side is looked up in <code>data_y</code>, its right-hand side in <code>data_x</code> – which is unavoidable when the data genuinely lives in two frames, and is now stated in the argument docs rather than left to be discovered.</li>
+<li>
+<code>id</code> and <code>time</code> accept a bare name, a string, or <code>{{ col }}</code>, so the estimators can be wrapped in other functions. They previously used <code><a href="https://rdrr.io/r/base/substitute.html" class="external-link">substitute()</a></code>, which deparsed <code>{{ col }}</code> literally.</li>
+<li>
+<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code>, <code><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance()</a></code> and <code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">augment()</a></code> methods. <code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">augment()</a></code> attaches <code>.fitted</code> to the covariate table, which is where a fitted value lives here; there is no <code>.resid</code>, because a residual would need a response value at the covariate time and that is exactly what asynchronous data lacks.</li>
+<li>
+<code><a href="../reference/sim_async_data.html">sim_async_data()</a></code>, <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>, and both <code>cv_results</code> tables return tibbles.</li>
+<li>Requires R (&gt;= 4.1) for the native pipe used throughout the examples.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="usability-0-1-0">Usability<a class="anchor" aria-label="anchor" href="#usability-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/kee_async.html">kee_async()</a></code> and <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> take a formula spanning the two tables – <code>kee_async(y ~ x, data_y, data_x, id, time, h)</code> – instead of seven positional vectors. Swapping the response and covariate tables used to return plausible numbers with no complaint.</li>

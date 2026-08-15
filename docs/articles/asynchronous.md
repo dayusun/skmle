@@ -5,6 +5,9 @@
 library(skmle)
 ```
 
+The two data frames come first in every call, so the estimators compose
+with the native pipe. Examples below use it where it reads better.
+
 ## The problem
 
 Suppose you want to know how a biomarker relates to a symptom score. The
@@ -97,15 +100,15 @@ set.seed(2024)
 d <- sim_async_data(n = 400, beta = c(0.5, 1.5))
 
 str(d$y)
-#> 'data.frame':    1985 obs. of  3 variables:
-#>  $ id  : int  1 1 1 1 1 1 1 2 2 2 ...
-#>  $ time: num  0.303 0.416 0.457 0.68 0.698 ...
-#>  $ y   : num  1.03 2.36 2.85 2.65 2.24 ...
+#> tibble [1,985 × 3] (S3: tbl_df/tbl/data.frame)
+#>  $ id  : int [1:1985] 1 1 1 1 1 1 1 2 2 2 ...
+#>  $ time: num [1:1985] 0.303 0.416 0.457 0.68 0.698 ...
+#>  $ y   : num [1:1985] 1.03 2.36 2.85 2.65 2.24 ...
 str(d$x)
-#> 'data.frame':    1987 obs. of  3 variables:
-#>  $ id  : int  1 1 1 1 2 2 3 3 4 4 ...
-#>  $ time: num  0.119 0.704 0.902 0.953 0.192 ...
-#>  $ x   : num  0.5317 0.0115 -0.292 0.3258 -0.9327 ...
+#> tibble [1,987 × 3] (S3: tbl_df/tbl/data.frame)
+#>  $ id  : int [1:1987] 1 1 1 1 2 2 3 3 4 4 ...
+#>  $ time: num [1:1987] 0.119 0.704 0.902 0.953 0.192 ...
+#>  $ x   : num [1:1987] 0.5317 0.0115 -0.292 0.3258 -0.9327 ...
 ```
 
 Two tables, sharing only `id`. There is no way to merge them without
@@ -131,13 +134,12 @@ side from `data_x` — and `id` and `time` name columns present in each:
 
 ``` r
 
-fit <- kee_async(y ~ x,
-  data_y = d$y, data_x = d$x,
-  id = id, time = time, h = 0.25
-)
+fit <- d$y |>
+  kee_async(d$x, y ~ x, id = id, time = time, h = 0.25)
+
 summary(fit)
 #> Call:
-#> kee_async(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.25)
 #> 
 #>   n= 400
@@ -177,6 +179,62 @@ sqrt(diag(vcov(fit)))
 #>  0.05794320  0.04445101
 ```
 
+## Tidy output
+
+[`tidy()`](https://generics.r-lib.org/reference/tidy.html),
+[`glance()`](https://generics.r-lib.org/reference/glance.html) and
+[`augment()`](https://generics.r-lib.org/reference/augment.html) return
+tibbles, so a fit goes straight into the rest of a tidy workflow without
+reshaping.
+
+``` r
+
+tidy(fit, conf.int = TRUE)
+#> # A tibble: 2 × 7
+#>   term        estimate std.error statistic   p.value conf.low conf.high
+#>   <chr>          <dbl>     <dbl>     <dbl>     <dbl>    <dbl>     <dbl>
+#> 1 (Intercept)    0.442    0.0579      7.63 2.39e- 14    0.328     0.556
+#> 2 x              1.41     0.0445     31.7  2.16e-220    1.32      1.50
+
+glance(fit)
+#> # A tibble: 1 × 7
+#>    nobs nterms     h npair link     one_sided convergence
+#>   <int>  <int> <dbl> <int> <chr>    <lgl>           <int>
+#> 1   400      2  0.25  4324 identity FALSE               0
+```
+
+[`augment()`](https://generics.r-lib.org/reference/augment.html)
+attaches the fitted mean to the **covariate** table, because that is
+where a fitted value lives here: the estimating equation evaluates the
+link at each observed covariate vector, and it is the kernel weight, not
+the fitted value, that connects it to a response occasion.
+
+``` r
+
+augment(fit, d$x)
+#> # A tibble: 1,987 × 4
+#>       id   time       x .fitted
+#>    <int>  <dbl>   <dbl>   <dbl>
+#>  1     1 0.119   0.532   1.19  
+#>  2     1 0.704   0.0115  0.458 
+#>  3     1 0.902  -0.292   0.0307
+#>  4     1 0.953   0.326   0.901 
+#>  5     2 0.192  -0.933  -0.872 
+#>  6     2 0.456  -0.523  -0.294 
+#>  7     3 0.0395 -0.480  -0.234 
+#>  8     3 0.748  -0.366  -0.0731
+#>  9     4 0.0143 -1.84   -2.15  
+#> 10     4 0.0156 -1.86   -2.18  
+#> # ℹ 1,977 more rows
+```
+
+There is deliberately no `.resid` column. A residual needs a response
+value at \\S\_{ik}\\, which is exactly what asynchronous data does not
+have; reporting one would mean inventing it. The fit does not retain its
+data, so
+[`augment()`](https://generics.r-lib.org/reference/augment.html) needs
+`data_x` handed back to it.
+
 ## Choosing the bandwidth
 
 Because the rate is \\(nh)^{1/2}\\, `h` trades variance against bias
@@ -188,34 +246,53 @@ by the kernel-weighted squared error on the held-out subjects.
 
 ``` r
 
-cv <- kee_async_cv(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
-  h_grid = c(0.05, 0.10, 0.15, 0.25, 0.40, 0.60),
-  K = 5, seed = 1, quiet = TRUE
-)
+cv <- d$y |>
+  kee_async_cv(d$x, y ~ x,
+    id = id, time = time,
+    h_grid = c(0.05, 0.10, 0.15, 0.25, 0.40, 0.60),
+    K = 5, seed = 1, quiet = TRUE
+  )
 #> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid
 #> to check that the minimum is interior
 cv
 #> Call:
-#> kee_async_cv(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#> kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h_grid = c(0.05, 0.1, 0.15, 0.25, 0.4, 0.6), 
 #>     K = 5, seed = 1, quiet = TRUE)
 #> 
 #> 5-fold subject-level cross-validation
 #> 
-#>     h cvloss nfold_used
-#>  0.05 1.1174          5
-#>  0.10 1.1604          5
-#>  0.15 1.2233          5
-#>  0.25 1.3470          5
-#>  0.40 1.5263          5
-#>  0.60 1.6944          5
+#> # A tibble: 6 × 3
+#>       h cvloss nfold_used
+#>   <dbl>  <dbl>      <dbl>
+#> 1  0.05   1.12          5
+#> 2  0.1    1.16          5
+#> 3  0.15   1.22          5
+#> 4  0.25   1.35          5
+#> 5  0.4    1.53          5
+#> 6  0.6    1.69          5
 #> 
 #> Selected h = 0.05
 #> 
 #> Coefficients at the refit:
 #> (Intercept)           x 
 #>   0.4667178   1.5235152
+```
+
+`cv_results` is a tibble, so it filters and plots directly:
+
+``` r
+
+cv$cv_results
+#> # A tibble: 6 × 3
+#>       h cvloss nfold_used
+#>   <dbl>  <dbl>      <dbl>
+#> 1  0.05   1.12          5
+#> 2  0.1    1.16          5
+#> 3  0.15   1.22          5
+#> 4  0.25   1.35          5
+#> 5  0.4    1.53          5
+#> 6  0.6    1.69          5
 ```
 
 Two details of that criterion are worth knowing, because they determine
@@ -257,7 +334,7 @@ It costs nothing to look:
 
 hs <- c(0.05, 0.10, 0.15, 0.25, 0.40, 0.60)
 sweep <- t(sapply(hs, function(h) {
-  f <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = h)
+  f <- d$y |> kee_async(d$x, y ~ x, id = id, time = time, h = h)
   c(h = h, est = coef(f)[2], se = sqrt(vcov(f)[2, 2]))
 }))
 round(sweep, 3)
@@ -299,9 +376,9 @@ influenced the response — set `one_sided = TRUE`.
 
 ``` r
 
-full <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.25)
-half <- kee_async(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
+full <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25)
+half <- kee_async(d$y, d$x,
+  y ~ x, id = id, time = time,
   h = 0.25, one_sided = TRUE
 )
 
@@ -345,8 +422,8 @@ dt <- sim_async_data(
   x_cov = function(s, t) exp(-4 * (s - t)^2)
 )
 
-fit_td <- kee_async_td(y ~ x,
-  data_y = dt$y, data_x = dt$x, id = id, time = time,
+fit_td <- kee_async_td(dt$y, dt$x,
+  y ~ x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.05), h = 0.2
 )
 plot(fit_td)
@@ -359,12 +436,16 @@ it:
 
 ``` r
 
-head(confint(fit_td, parm = "x"), 4)
-#>   time term estimate         se    2.5 %   97.5 %
-#> 1 0.20    x 1.124880 0.05067687 1.025555 1.224205
-#> 2 0.25    x 1.159234 0.04867552 1.063832 1.254637
-#> 3 0.30    x 1.185791 0.04495767 1.097676 1.273907
-#> 4 0.35    x 1.200626 0.04156301 1.119164 1.282088
+tidy(fit_td, conf.int = TRUE) |>
+  subset(term == "x", select = c(time, estimate, conf.low, conf.high)) |>
+  head(4)
+#> # A tibble: 4 × 4
+#>    time estimate conf.low conf.high
+#>   <dbl>    <dbl>    <dbl>     <dbl>
+#> 1  0.2      1.12     1.03      1.22
+#> 2  0.25     1.16     1.06      1.25
+#> 3  0.3      1.19     1.10      1.27
+#> 4  0.35     1.20     1.12      1.28
 ```
 
 Three cautions when reading such a plot:
@@ -394,13 +475,13 @@ the response scale.
 
 set.seed(11)
 db <- sim_async_data(n = 400, beta = c(0.3, 1.0), link = "logistic")
-fit_b <- kee_async(y ~ x,
-  data_y = db$y, data_x = db$x,
+fit_b <- kee_async(db$y, db$x,
+  y ~ x,
   id = id, time = time, h = 0.3, link = "logistic"
 )
 summary(fit_b)
 #> Call:
-#> kee_async(formula = y ~ x, data_y = db$y, data_x = db$x, id = id, 
+#> kee_async(data_y = db$y, data_x = db$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.3, link = "logistic")
 #> 
 #>   n= 400
@@ -428,8 +509,8 @@ d_days <- d
 d_days$y$time <- d$y$time * 365
 d_days$x$time <- d$x$time * 365
 
-fit_days <- kee_async(y ~ x,
-  data_y = d_days$y, data_x = d_days$x,
+fit_days <- kee_async(d_days$y, d_days$x,
+  y ~ x,
   id = id, time = time, h = 1
 )
 #> Warning: only 62 of 1985 response occasions have a covariate observation within
@@ -441,8 +522,8 @@ which is the scale-equivariance of the estimating equation:
 
 ``` r
 
-fit_ok <- kee_async(y ~ x,
-  data_y = d_days$y, data_x = d_days$x,
+fit_ok <- kee_async(d_days$y, d_days$x,
+  y ~ x,
   id = id, time = time, h = 0.25 * 365
 )
 all.equal(coef(fit_ok), coef(fit))

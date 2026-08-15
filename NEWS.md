@@ -10,6 +10,25 @@ restriction, and the `Description`, README, package help page and tutorial have
 been rewritten to present the two settings on equal footing rather than
 treating the second as an extra.
 
+## Interface
+
+* The asynchronous estimators take the two data frames **first**, so they
+  compose with the native pipe:
+  `data_y |> kee_async(data_x, y ~ x, id = id, time = time, h = 0.25)`.
+  The formula still spans both tables -- its left-hand side is looked up in
+  `data_y`, its right-hand side in `data_x` -- which is unavoidable when the
+  data genuinely lives in two frames, and is now stated in the argument docs
+  rather than left to be discovered.
+* `id` and `time` accept a bare name, a string, or `{{ col }}`, so the
+  estimators can be wrapped in other functions. They previously used
+  `substitute()`, which deparsed `{{ col }}` literally.
+* `tidy()`, `glance()` and `augment()` methods. `augment()` attaches `.fitted`
+  to the covariate table, which is where a fitted value lives here; there is no
+  `.resid`, because a residual would need a response value at the covariate
+  time and that is exactly what asynchronous data lacks.
+* `sim_async_data()`, `confint()`, and both `cv_results` tables return tibbles.
+* Requires R (>= 4.1) for the native pipe used throughout the examples.
+
 ## Usability
 
 * `kee_async()` and `kee_async_td()` take a formula spanning the two tables --

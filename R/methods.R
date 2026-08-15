@@ -15,7 +15,7 @@
 #' @examples
 #' set.seed(1)
 #' d <- sim_async_data(n = 120)
-#' fit <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.3)
+#' fit <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.3)
 #' vcov(fit)
 #' @name vcov.skmle
 #' @export
@@ -55,7 +55,7 @@ vcov.kee_td <- function(object, time = NULL, ...) {
 #' @examples
 #' set.seed(1)
 #' d <- sim_async_data(n = 120)
-#' fit <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.3)
+#' fit <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.3)
 #' nobs(fit)
 #' @name nobs.skmle
 #' @export
@@ -88,8 +88,8 @@ nobs.kee_td <- function(object, ...) as.integer(object$n)
 #' @examples
 #' set.seed(1)
 #' d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-#' fit <- kee_async_td(y ~ x,
-#'   data_y = d$y, data_x = d$x, id = id, time = time,
+#' fit <- kee_async_td(d$y, d$x,
+#'   y ~ x, id = id, time = time,
 #'   times = c(0.3, 0.5, 0.7), h = 0.3
 #' )
 #' confint(fit)

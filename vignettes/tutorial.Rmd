@@ -241,8 +241,8 @@ spans both: its left-hand side is looked up in `data_y`, its right-hand side in
 `data_x`, and `id` and `time` name columns present in each.
 
 ```{r async-ti}
-fit_a <- kee_async(y ~ x,
-  data_y = d$y, data_x = d$x,
+fit_a <- kee_async(d$y, d$x,
+  y ~ x,
   id = id, time = time, h = 0.25
 )
 summary(fit_a)
@@ -254,8 +254,8 @@ cross-validation over subjects, scoring each candidate by the kernel-weighted
 squared error on the held-out subjects:
 
 ```{r async-cv}
-cv <- kee_async_cv(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
+cv <- kee_async_cv(d$y, d$x,
+  y ~ x, id = id, time = time,
   h_grid = c(0.10, 0.15, 0.25, 0.40), K = 5, seed = 1, quiet = TRUE
 )
 cv
@@ -272,8 +272,8 @@ dt <- sim_async_data(
   lambda_y = 8, lambda_x = 8,
   x_cov = function(s, t) exp(-4 * (s - t)^2)
 )
-fit_td <- kee_async_td(y ~ x,
-  data_y = dt$y, data_x = dt$x, id = id, time = time,
+fit_td <- kee_async_td(dt$y, dt$x,
+  y ~ x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.05), h = 0.2
 )
 plot(fit_td)

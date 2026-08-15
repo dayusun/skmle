@@ -33,7 +33,7 @@ process is added; under \code{"log"} the response is Poisson.}
 covariate and error processes.}
 }
 \value{
-A list with two data frames on different time grids:
+A list of two tibbles on different time grids:
 \describe{
 \item{y}{\code{id}, \code{time}, \code{y} -- one row per response occasion.}
 \item{x}{\code{id}, \code{time}, and one column per covariate coordinate -- named

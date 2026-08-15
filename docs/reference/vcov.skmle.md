@@ -41,7 +41,7 @@ coefficients. For `kee_td`, see `time`.
 ``` r
 set.seed(1)
 d <- sim_async_data(n = 120)
-fit <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.3)
+fit <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.3)
 vcov(fit)
 #>               (Intercept)             x
 #> (Intercept)  0.0099252555 -0.0002930651

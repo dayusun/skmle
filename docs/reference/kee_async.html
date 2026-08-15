@@ -81,9 +81,9 @@ with \(W_h(u) = W(u/h)/h\) and \(W\) the Epanechnikov kernel.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">kee_async</span><span class="op">(</span></span>
-<span>  <span class="va">formula</span>,</span>
 <span>  <span class="va">data_y</span>,</span>
 <span>  <span class="va">data_x</span>,</span>
+<span>  <span class="va">formula</span>,</span>
 <span>  <span class="va">id</span>,</span>
 <span>  <span class="va">time</span>,</span>
 <span>  <span class="va">h</span>,</span>
@@ -99,14 +99,9 @@ with \(W_h(u) = W(u/h)/h\) and \(W\) the Epanechnikov kernel.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
-<dd><p>A two-sided formula, <code>y ~ x1 + x2</code>. The left-hand side is
-evaluated in <code>data_y</code>, the right-hand side in <code>data_x</code>.</p></dd>
-
-
-<dt id="arg-data-y">data_y<a class="anchor" aria-label="anchor" href="#arg-data-y"></a></dt>
-<dd><p>Data frame of response occasions: one row per time the response
-was recorded.</p></dd>
+<dl><dt id="arg-data-y">data_y<a class="anchor" aria-label="anchor" href="#arg-data-y"></a></dt>
+<dd><p>Data frame of response occasions: one row per time the
+response was recorded. First argument, so the function pipes.</p></dd>
 
 
 <dt id="arg-data-x">data_x<a class="anchor" aria-label="anchor" href="#arg-data-x"></a></dt>
@@ -114,14 +109,23 @@ was recorded.</p></dd>
 covariates were recorded. Its time grid need not overlap <code>data_y</code>'s at all.</p></dd>
 
 
+<dt id="arg-formula">formula<a class="anchor" aria-label="anchor" href="#arg-formula"></a></dt>
+<dd><p>A two-sided formula, <code>y ~ x1 + x2</code>. <strong>The left-hand side is
+looked up in <code>data_y</code> and the right-hand side in <code>data_x</code></strong>, which is the
+one unusual thing about this interface and follows from the data being in
+two tables: there is no single frame holding both.</p></dd>
+
+
 <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
-<dd><p>Subject identifier, unquoted or as a string. Must name a column
-present in <strong>both</strong> tables. Non-numeric identifiers are allowed.</p></dd>
+<dd><p>Subject identifier naming a column present in <strong>both</strong> tables.
+Give it unquoted (<code>id = subject</code>), as a string (<code>id = "subject"</code>), or
+embraced (<code>id = {{ col }}</code>) when calling from inside another function.
+Non-numeric identifiers are allowed.</p></dd>
 
 
 <dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
-<dd><p>Observation time, unquoted or as a string. Must name a column
-present in <strong>both</strong> tables.</p></dd>
+<dd><p>Observation time, naming a column present in <strong>both</strong> tables.
+Accepts the same three forms as <code>id</code>.</p></dd>
 
 
 <dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
@@ -246,23 +250,24 @@ curve \(\beta(t)\), <code><a href="sim_async_data.html">sim_async_data()</a></co
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The two tables are on different time grids and share only `id`.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   id      time          y</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1 0.2016819 -2.9454025</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  1 0.5728534 -0.8186868</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  1 0.8983897  0.2109702</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      id  time      y</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     1 0.202 -<span style="color: #BB0000;">2.95</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     1 0.573 -<span style="color: #BB0000;">0.819</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>     1 0.898  0.211</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   id       time          x</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  1 0.06178627 -0.8642242</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  1 0.62911404  0.3452775</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  1 0.66079779  0.4373871</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      id   time      x</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     1 0.061<span style="text-decoration: underline;">8</span> -<span style="color: #BB0000;">0.864</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     1 0.629   0.345</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>     1 0.661   0.437</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">kee_async</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span></span>
-<span class="r-in"><span>  data_y <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span>, data_x <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span>,</span></span>
-<span class="r-in"><span>  id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>, h <span class="op">=</span> <span class="fl">0.25</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">kee_async</span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>, h <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> kee_async(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     time = time, h = 0.25)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 150</span>
@@ -278,14 +283,26 @@ curve \(\beta(t)\), <code><a href="sim_async_data.html">sim_async_data()</a></co
 <span class="r-out co"><span class="r-pr">#&gt;</span>                 2.5 %   97.5 %</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) 0.4366094 0.820915</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> x           1.2432022 1.634478</span>
+<span class="r-in"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   term        estimate std.error statistic  p.value conf.low conf.high</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> (Intercept)    0.629    0.098<span style="text-decoration: underline;">0</span>      6.41 1.42<span style="color: #949494;">e</span><span style="color: #BB0000;">-10</span>    0.437     0.821</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> x              1.44     0.099<span style="text-decoration: underline;">8</span>     14.4  4.18<span style="color: #949494;">e</span><span style="color: #BB0000;">-47</span>    1.24      1.63 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Data comes first, so it pipes.</span></span></span>
+<span class="r-in"><span><span class="va">d</span><span class="op">$</span><span class="va">y</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">kee_async</span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>, h <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://generics.r-lib.org/reference/glance.html" class="external-link">glance</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    nobs nterms     h npair link     one_sided convergence</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>   150      2  0.25  <span style="text-decoration: underline;">1</span>569 identity FALSE               0</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Half kernel: only covariate observations preceding the response.</span></span></span>
-<span class="r-in"><span><span class="fu">kee_async</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span></span>
-<span class="r-in"><span>  data_y <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span>, data_x <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span>,</span></span>
-<span class="r-in"><span>  id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>, h <span class="op">=</span> <span class="fl">0.25</span>, one_sided <span class="op">=</span> <span class="cn">TRUE</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">kee_async</span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>, h <span class="op">=</span> <span class="fl">0.25</span>, one_sided <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> kee_async(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     time = time, h = 0.25, one_sided = TRUE)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients:</span>

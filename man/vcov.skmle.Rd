@@ -31,6 +31,6 @@ Extract the covariance matrix of a fitted model
 \examples{
 set.seed(1)
 d <- sim_async_data(n = 120)
-fit <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.3)
+fit <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.3)
 vcov(fit)
 }

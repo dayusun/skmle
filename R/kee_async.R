@@ -5,13 +5,23 @@
 # cannot be one data frame without inventing rows.  The formula spans both:
 # its left-hand side is resolved in `data_y`, its right-hand side in `data_x`.
 
-# `id` and `time` may be given unquoted (id = subject) or as strings
-# (id = "subject"); both reach here as a language object.
-.async_name <- function(e) {
-    if (is.character(e)) {
-        return(e)
+# `id` and `time` may be given unquoted (id = subject), as a string
+# (id = "subject"), or embraced from an enclosing function (id = {{ col }}).
+# Capturing with enquo() rather than substitute() is what makes the third work:
+# substitute() would see the literal `{{ col }}` and deparse it.
+.async_name <- function(q) {
+    if (rlang::quo_is_symbol(q)) {
+        return(rlang::as_name(q))
     }
-    gsub('^"|"$', "", paste(deparse(e), collapse = ""))
+    v <- try(rlang::eval_tidy(q), silent = TRUE)
+    if (is.character(v) && length(v) == 1L && !is.na(v)) {
+        return(v)
+    }
+    stop(
+        "column arguments must be a column name, given unquoted, as a string, ",
+        "or embraced with {{ }}",
+        call. = FALSE
+    )
 }
 
 .async_col <- function(data, nm, what, side) {
@@ -287,16 +297,20 @@
 #' Observation times are assumed independent of the response and covariate
 #' processes. Informative observation times need a different estimator.
 #'
-#' @param formula A two-sided formula, `y ~ x1 + x2`. The left-hand side is
-#'   evaluated in `data_y`, the right-hand side in `data_x`.
-#' @param data_y Data frame of response occasions: one row per time the response
-#'   was recorded.
+#' @param data_y Data frame of response occasions: one row per time the
+#'   response was recorded. First argument, so the function pipes.
 #' @param data_x Data frame of covariate occasions: one row per time the
 #'   covariates were recorded. Its time grid need not overlap `data_y`'s at all.
-#' @param id Subject identifier, unquoted or as a string. Must name a column
-#'   present in **both** tables. Non-numeric identifiers are allowed.
-#' @param time Observation time, unquoted or as a string. Must name a column
-#'   present in **both** tables.
+#' @param formula A two-sided formula, `y ~ x1 + x2`. **The left-hand side is
+#'   looked up in `data_y` and the right-hand side in `data_x`**, which is the
+#'   one unusual thing about this interface and follows from the data being in
+#'   two tables: there is no single frame holding both.
+#' @param id Subject identifier naming a column present in **both** tables.
+#'   Give it unquoted (`id = subject`), as a string (`id = "subject"`), or
+#'   embraced (`id = {{ col }}`) when calling from inside another function.
+#'   Non-numeric identifiers are allowed.
+#' @param time Observation time, naming a column present in **both** tables.
+#'   Accepts the same three forms as `id`.
 #' @param h Positive bandwidth, on the same scale as `time`.
 #' @param one_sided Logical. `FALSE` (default) is the full two-sided kernel of
 #'   the paper; `TRUE` is the half kernel, admitting only covariate observations
@@ -336,20 +350,20 @@
 #' head(d$y, 3)
 #' head(d$x, 3)
 #'
-#' fit <- kee_async(y ~ x,
-#'   data_y = d$y, data_x = d$x,
-#'   id = id, time = time, h = 0.25
-#' )
+#' fit <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25)
 #' summary(fit)
 #' confint(fit)
+#' tidy(fit, conf.int = TRUE)
+#'
+#' # Data comes first, so it pipes.
+#' d$y |>
+#'   kee_async(d$x, y ~ x, id = id, time = time, h = 0.25) |>
+#'   glance()
 #'
 #' # Half kernel: only covariate observations preceding the response.
-#' kee_async(y ~ x,
-#'   data_y = d$y, data_x = d$x,
-#'   id = id, time = time, h = 0.25, one_sided = TRUE
-#' )
+#' kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25, one_sided = TRUE)
 #' @export
-kee_async <- function(formula, data_y, data_x, id, time, h, one_sided = FALSE,
+kee_async <- function(data_y, data_x, formula, id, time, h, one_sided = FALSE,
                       link = c("identity", "log", "logistic"),
                       intercept = TRUE, maxit = 50L, tol = 1e-8) {
     link <- match.arg(link)
@@ -357,7 +371,7 @@ kee_async <- function(formula, data_y, data_x, id, time, h, one_sided = FALSE,
     .async_check_one_sided(one_sided)
     d <- .async_parse(
         formula, data_y, data_x,
-        .async_name(substitute(id)), .async_name(substitute(time)), intercept
+        .async_name(rlang::enquo(id)), .async_name(rlang::enquo(time)), intercept
     )
 
     fit <- .async_fit_ti(d, h, one_sided, .async_link_code(link), maxit, tol)
@@ -397,7 +411,9 @@ kee_async <- function(formula, data_y, data_x, id, time, h, one_sided = FALSE,
         link = link,
         call = match.call()
     )
-    class(out) <- "kee"
+    # Tagged ahead of "kee" so augment() can dispatch on it: a fitted mean per
+    # covariate occasion is well defined here and is not for a hazard fit.
+    class(out) <- c("kee_async", "kee")
     out
 }
 
@@ -474,13 +490,15 @@ kee_async <- function(formula, data_y, data_x, id, time, h, one_sided = FALSE,
 #' @examples
 #' set.seed(1)
 #' d <- sim_async_data(n = 150, beta = c(0.5, 1.5))
-#' cv <- kee_async_cv(y ~ x,
-#'   data_y = d$y, data_x = d$x, id = id, time = time,
-#'   h_grid = c(0.15, 0.25, 0.40), K = 3, seed = 1, quiet = TRUE
-#' )
+#' cv <- d$y |>
+#'   kee_async_cv(d$x, y ~ x,
+#'     id = id, time = time,
+#'     h_grid = c(0.15, 0.25, 0.40), K = 3, seed = 1, quiet = TRUE
+#'   )
 #' cv
+#' cv$cv_results
 #' @export
-kee_async_cv <- function(formula, data_y, data_x, id, time, h_grid = NULL,
+kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
                          n_h = 10L, K = 5L, one_sided = FALSE,
                          link = c("identity", "log", "logistic"),
                          intercept = TRUE, maxit = 50L, tol = 1e-8,
@@ -490,7 +508,7 @@ kee_async_cv <- function(formula, data_y, data_x, id, time, h_grid = NULL,
     call <- match.call()
     d <- .async_parse(
         formula, data_y, data_x,
-        .async_name(substitute(id)), .async_name(substitute(time)), intercept
+        .async_name(rlang::enquo(id)), .async_name(rlang::enquo(time)), intercept
     )
     lk <- .async_link_code(link)
 
@@ -578,7 +596,7 @@ kee_async_cv <- function(formula, data_y, data_x, id, time, h_grid = NULL,
     out <- list(
         h_cv = best_h,
         fit = fit,
-        cv_results = data.frame(
+        cv_results = tibble::tibble(
             h = h_grid, cvloss = cvloss, nfold_used = nfold_used
         ),
         h_grid = h_grid,
@@ -700,13 +718,15 @@ print.cv.kee_async <- function(x, ...) {
 #' @examples
 #' set.seed(1)
 #' d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-#' fit <- kee_async_td(y ~ x,
-#'   data_y = d$y, data_x = d$x, id = id, time = time,
-#'   times = seq(0.2, 0.8, by = 0.1), h = 0.3
-#' )
+#' fit <- d$y |>
+#'   kee_async_td(d$x, y ~ x,
+#'     id = id, time = time,
+#'     times = seq(0.2, 0.8, by = 0.1), h = 0.3
+#'   )
 #' coef(fit)
+#' tidy(fit)
 #' @export
-kee_async_td <- function(formula, data_y, data_x, id, time, times, h, h2 = h,
+kee_async_td <- function(data_y, data_x, formula, id, time, times, h, h2 = h,
                          one_sided = FALSE,
                          link = c("identity", "log", "logistic"),
                          intercept = TRUE, maxit = 50L, tol = 1e-8) {
@@ -719,7 +739,7 @@ kee_async_td <- function(formula, data_y, data_x, id, time, times, h, h2 = h,
     }
     d <- .async_parse(
         formula, data_y, data_x,
-        .async_name(substitute(id)), .async_name(substitute(time)), intercept
+        .async_name(rlang::enquo(id)), .async_name(rlang::enquo(time)), intercept
     )
 
     lk <- .async_link_code(link)
@@ -853,10 +873,11 @@ print.kee_td <- function(x, ...) {
 #' @examples
 #' set.seed(1)
 #' d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-#' fit <- kee_async_td(y ~ x,
-#'   data_y = d$y, data_x = d$x, id = id, time = time,
-#'   times = seq(0.2, 0.8, by = 0.05), h = 0.3
-#' )
+#' fit <- d$y |>
+#'   kee_async_td(d$x, y ~ x,
+#'     id = id, time = time,
+#'     times = seq(0.2, 0.8, by = 0.05), h = 0.3
+#'   )
 #' plot(fit)
 #' @importFrom graphics abline lines par polygon
 #' @importFrom stats qnorm pnorm

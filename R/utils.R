@@ -1,3 +1,5 @@
+`%||%` <- function(a, b) if (is.null(a)) b else a
+
 #' Validate that event and observation times are on the unit interval
 #'
 #' The sieve approximation of the baseline hazard uses a natural cubic

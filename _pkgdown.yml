@@ -85,6 +85,15 @@ reference:
   - vcov.skmle
   - nobs.skmle
   - confint.kee_td
+
+- title: Tidy output
+  desc: >
+    broom generics returning tibbles, so fits compose with the rest of a tidy
+    workflow.
+  contents:
+  - tidy.skmle
+  - glance.skmle
+  - augment.kee_async
   - summary.skmle
   - summary.kee
   - print.skmle

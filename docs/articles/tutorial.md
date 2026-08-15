@@ -246,10 +246,12 @@ cv_fit <- skmle_cv(
 cv_fit$h_cv
 #> [1] 0.3
 cv_fit$cv_results
-#>     h    cvloss
-#> 1 0.3 0.5513460
-#> 2 0.4 0.5858840
-#> 3 0.5 0.6024361
+#> # A tibble: 3 × 2
+#>       h cvloss
+#>   <dbl>  <dbl>
+#> 1   0.3  0.551
+#> 2   0.4  0.586
+#> 3   0.5  0.602
 ```
 
 The returned object contains:
@@ -320,15 +322,19 @@ covariate) pair contributes in proportion to its time separation.
 set.seed(202)
 d <- sim_async_data(n = 300, beta = c(0.5, 1.5))
 head(d$y, 3)
-#>   id      time         y
-#> 1  1 0.2037272 0.3064489
-#> 2  1 0.3297899 0.4304008
-#> 3  1 0.3682846 0.2979238
+#> # A tibble: 3 × 3
+#>      id  time     y
+#>   <int> <dbl> <dbl>
+#> 1     1 0.204 0.306
+#> 2     1 0.330 0.430
+#> 3     1 0.368 0.298
 head(d$x, 3)
-#>   id       time          x
-#> 1  1 0.07627971 -0.4664268
-#> 2  1 0.19848389 -0.8345285
-#> 3  1 0.21907798 -0.6879458
+#> # A tibble: 3 × 3
+#>      id   time      x
+#>   <int>  <dbl>  <dbl>
+#> 1     1 0.0763 -0.466
+#> 2     1 0.198  -0.835
+#> 3     1 0.219  -0.688
 ```
 
 The two tables are deliberately separate — they are on different grids,
@@ -339,13 +345,13 @@ each.
 
 ``` r
 
-fit_a <- kee_async(y ~ x,
-  data_y = d$y, data_x = d$x,
+fit_a <- kee_async(d$y, d$x,
+  y ~ x,
   id = id, time = time, h = 0.25
 )
 summary(fit_a)
 #> Call:
-#> kee_async(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#> kee_async(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h = 0.25)
 #> 
 #>   n= 300
@@ -370,25 +376,27 @@ the kernel-weighted squared error on the held-out subjects:
 
 ``` r
 
-cv <- kee_async_cv(y ~ x,
-  data_y = d$y, data_x = d$x, id = id, time = time,
+cv <- kee_async_cv(d$y, d$x,
+  y ~ x, id = id, time = time,
   h_grid = c(0.10, 0.15, 0.25, 0.40), K = 5, seed = 1, quiet = TRUE
 )
 #> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid
 #> to check that the minimum is interior
 cv
 #> Call:
-#> kee_async_cv(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#> kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), K = 5, seed = 1, 
 #>     quiet = TRUE)
 #> 
 #> 5-fold subject-level cross-validation
 #> 
-#>     h cvloss nfold_used
-#>  0.10 1.0892          5
-#>  0.15 1.1565          5
-#>  0.25 1.2665          5
-#>  0.40 1.4166          5
+#> # A tibble: 4 × 3
+#>       h cvloss nfold_used
+#>   <dbl>  <dbl>      <dbl>
+#> 1  0.1    1.09          5
+#> 2  0.15   1.16          5
+#> 3  0.25   1.27          5
+#> 4  0.4    1.42          5
 #> 
 #> Selected h = 0.1
 #> 
@@ -411,8 +419,8 @@ dt <- sim_async_data(
   lambda_y = 8, lambda_x = 8,
   x_cov = function(s, t) exp(-4 * (s - t)^2)
 )
-fit_td <- kee_async_td(y ~ x,
-  data_y = dt$y, data_x = dt$x, id = id, time = time,
+fit_td <- kee_async_td(dt$y, dt$x,
+  y ~ x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.05), h = 0.2
 )
 plot(fit_td)

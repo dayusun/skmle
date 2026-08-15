@@ -5,9 +5,9 @@
 \title{Asynchronous longitudinal regression with time-invariant coefficients}
 \usage{
 kee_async(
-  formula,
   data_y,
   data_x,
+  formula,
   id,
   time,
   h,
@@ -19,20 +19,24 @@ kee_async(
 )
 }
 \arguments{
-\item{formula}{A two-sided formula, \code{y ~ x1 + x2}. The left-hand side is
-evaluated in \code{data_y}, the right-hand side in \code{data_x}.}
-
-\item{data_y}{Data frame of response occasions: one row per time the response
-was recorded.}
+\item{data_y}{Data frame of response occasions: one row per time the
+response was recorded. First argument, so the function pipes.}
 
 \item{data_x}{Data frame of covariate occasions: one row per time the
 covariates were recorded. Its time grid need not overlap \code{data_y}'s at all.}
 
-\item{id}{Subject identifier, unquoted or as a string. Must name a column
-present in \strong{both} tables. Non-numeric identifiers are allowed.}
+\item{formula}{A two-sided formula, \code{y ~ x1 + x2}. \strong{The left-hand side is
+looked up in \code{data_y} and the right-hand side in \code{data_x}}, which is the
+one unusual thing about this interface and follows from the data being in
+two tables: there is no single frame holding both.}
 
-\item{time}{Observation time, unquoted or as a string. Must name a column
-present in \strong{both} tables.}
+\item{id}{Subject identifier naming a column present in \strong{both} tables.
+Give it unquoted (\code{id = subject}), as a string (\code{id = "subject"}), or
+embraced (\code{id = {{ col }}}) when calling from inside another function.
+Non-numeric identifiers are allowed.}
+
+\item{time}{Observation time, naming a column present in \strong{both} tables.
+Accepts the same three forms as \code{id}.}
 
 \item{h}{Positive bandwidth, on the same scale as \code{time}.}
 
@@ -139,18 +143,18 @@ d <- sim_async_data(n = 150, beta = c(0.5, 1.5))
 head(d$y, 3)
 head(d$x, 3)
 
-fit <- kee_async(y ~ x,
-  data_y = d$y, data_x = d$x,
-  id = id, time = time, h = 0.25
-)
+fit <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25)
 summary(fit)
 confint(fit)
+tidy(fit, conf.int = TRUE)
+
+# Data comes first, so it pipes.
+d$y |>
+  kee_async(d$x, y ~ x, id = id, time = time, h = 0.25) |>
+  glance()
 
 # Half kernel: only covariate observations preceding the response.
-kee_async(y ~ x,
-  data_y = d$y, data_x = d$x,
-  id = id, time = time, h = 0.25, one_sided = TRUE
-)
+kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25, one_sided = TRUE)
 }
 \references{
 Cao, H., Zeng, D. and Fine, J. P. (2015). Regression analysis of sparse

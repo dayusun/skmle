@@ -181,7 +181,7 @@ skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL,
     one_sided = as.logical(one_sided)
   )
 
-  cv_results <- data.frame(h = h_grid, cvloss = as.numeric(cv_losses))
+  cv_results <- tibble::tibble(h = h_grid, cvloss = as.numeric(cv_losses))
   best_h <- cv_results$h[which.min(cv_results$cvloss)]
 
   if (!quiet) cat(sprintf("Selected optimal h = %f\n", best_h))
