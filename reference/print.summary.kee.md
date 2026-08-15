@@ -52,8 +52,8 @@ print(summary(fit))
 #>   n= 60 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  0.76656    0.33898  2.2613  0.02374 *
-#> covariates2 -0.30130    0.41342 -0.7288  0.46612  
+#> covariates1  0.98227    0.39352  2.4961  0.01256 *
+#> covariates2 -0.43265    0.44736 -0.9671  0.33348  
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 # }

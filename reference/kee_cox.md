@@ -104,8 +104,8 @@ summary(fit_cox)
 #>   n= 80 subjects   bandwidth h = 0.5
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  0.85832    0.29253  2.9341 0.003345 **
-#> covariates2 -0.49833    0.34661 -1.4377 0.150516   
+#> covariates1  1.01867    0.33405  3.0495 0.002292 **
+#> covariates2 -0.57047    0.36633 -1.5572 0.119414   
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 # }

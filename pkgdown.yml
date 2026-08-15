@@ -1,11 +1,11 @@
-pandoc: 3.9.0.2
+pandoc: 3.8.3
 pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   asynchronous: asynchronous.html
   benchmark_survsparse: benchmark_survsparse.html
   tutorial: tutorial.html
-last_built: 2026-08-15T16:02Z
+last_built: 2026-08-15T16:04Z
 urls:
   reference: https://www.sundayu.me/skmle/reference
   article: https://www.sundayu.me/skmle/articles
