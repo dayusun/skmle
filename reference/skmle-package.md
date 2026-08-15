@@ -1,4 +1,4 @@
-# skmle: Survival and Longitudinal Models with Asynchronous Covariates
+# skmle: Sieve Kernel Maximum Likelihood Estimation
 
 Estimation and inference when a longitudinal covariate is observed
 sparsely and intermittently, at times that do not line up with the times

@@ -7,13 +7,13 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/dayusun/skmle/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/dayusun/skmle/blob/HEAD/DESCRIPTION)
 
-Sun D (2026). *skmle: Survival and Longitudinal Models with Asynchronous
-Covariates*. R package version 0.1.0, <https://www.sundayu.me/skmle/>.
+Sun D (2026). *skmle: Sieve Kernel Maximum Likelihood Estimation*. R
+package version 0.1.0, <https://www.sundayu.me/skmle/>.
 
     @Manual{,
-      title = {skmle: Survival and Longitudinal Models with Asynchronous Covariates},
+      title = {skmle: Sieve Kernel Maximum Likelihood Estimation},
       author = {Dayu Sun},
       year = {2026},
       note = {R package version 0.1.0},
