@@ -42,7 +42,10 @@ skmle(
 
 - obs_times:
 
-  Longitudinal observation times aligned row-wise with `data`.
+  Longitudinal observation times aligned row-wise with `data`. Times may
+  be on any scale; the sieve basis and the cumulative-hazard quadrature
+  are built on the observed follow-up, so there is no need to rescale to
+  the unit interval first. `h` must be on the same scale.
 
 - s:
 
@@ -165,12 +168,12 @@ summary(fit)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  0.92156    0.31342  2.9403 0.003279 **
-#> covariates2 -0.54635    0.34045 -1.6048 0.108543   
+#>             Estimate Std. Error z value Pr(>|z|)  
+#> covariates1  1.02973    0.41714  2.4686  0.01357 *
+#> covariates2 -0.41579    0.28015 -1.4842  0.13776  
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 
-#> Log-likelihood: -0.0753 
+#> Log-likelihood: -0.1331 
 # }
 ```

@@ -48,7 +48,10 @@ print(x, ...)
 
 - obs_times:
 
-  Longitudinal observation times aligned row-wise with `data`.
+  Longitudinal observation times aligned row-wise with `data`. Times may
+  be on any scale; the sieve basis and the cumulative-hazard quadrature
+  are built on the observed follow-up, so there is no need to rescale to
+  the unit interval first. `h` must be on the same scale.
 
 - s:
 
@@ -186,27 +189,27 @@ cv_fit <- skmle_cv(
 )
 
 cv_fit$h_cv
-#> [1] 0.5
+#> [1] 0.3
 cv_fit$cv_results
 #> # A tibble: 3 × 2
 #>       h cvloss
 #>   <dbl>  <dbl>
-#> 1   0.3  0.817
-#> 2   0.4  0.701
-#> 3   0.5  0.608
+#> 1   0.3  0.475
+#> 2   0.4  0.517
+#> 3   0.5  0.530
 summary(cv_fit$fit)
 #> Call:
 #> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 
-#>     id = id, obs_times = obs_times, s = 0, h = 0.5)
+#>     id = id, obs_times = obs_times, s = 0, h = 0.3)
 #> 
 #>   n= 60
 #> 
 #>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  0.84088    0.35747  2.3523  0.01866 *
-#> covariates2 -0.34645    0.41266 -0.8396  0.40115  
+#> covariates1  1.15277    0.48689  2.3676   0.0179 *
+#> covariates2 -0.23009    0.36932 -0.6230   0.5333  
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 
-#> Log-likelihood: -0.1247 
+#> Log-likelihood: 0.213 
 # }
 ```

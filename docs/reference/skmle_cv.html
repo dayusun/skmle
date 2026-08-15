@@ -92,7 +92,10 @@ converted to integer subject codes.</p></dd>
 
 
 <dt id="arg-obs-times">obs_times<a class="anchor" aria-label="anchor" href="#arg-obs-times"></a></dt>
-<dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.</p></dd>
+<dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.
+Times may be on any scale; the sieve basis and the cumulative-hazard
+quadrature are built on the observed follow-up, so there is no need to
+rescale to the unit interval first. <code>h</code> must be on the same scale.</p></dd>
 
 
 <dt id="arg-s">s<a class="anchor" aria-label="anchor" href="#arg-s"></a></dt>
@@ -220,28 +223,28 @@ uses.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cv_fit</span><span class="op">$</span><span class="va">h_cv</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3</span>
 <span class="r-in"><span><span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       h cvloss</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>   0.3  0.817</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>   0.4  0.701</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>   0.5  0.608</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>   0.3  0.475</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>   0.4  0.517</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>   0.5  0.530</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     id = id, obs_times = obs_times, s = 0, h = 0.5)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     id = id, obs_times = obs_times, s = 0, h = 0.3)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 60</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  0.84088    0.35747  2.3523  0.01866 *</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.34645    0.41266 -0.8396  0.40115  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.15277    0.48689  2.3676   0.0179 *</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.23009    0.36932 -0.6230   0.5333  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.1247 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: 0.213 </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

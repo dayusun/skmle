@@ -91,7 +91,10 @@ converted to integer subject codes.</p></dd>
 
 
 <dt id="arg-obs-times">obs_times<a class="anchor" aria-label="anchor" href="#arg-obs-times"></a></dt>
-<dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.</p></dd>
+<dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.
+Times may be on any scale; the sieve basis and the cumulative-hazard
+quadrature are built on the observed follow-up, so there is no need to
+rescale to the unit interval first. <code>h</code> must be on the same scale.</p></dd>
 
 
 <dt id="arg-s">s<a class="anchor" aria-label="anchor" href="#arg-s"></a></dt>
@@ -195,13 +198,13 @@ estimated baseline component with <code><a href="https://rdrr.io/r/graphics/plot
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 80</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  0.92156    0.31342  2.9403 0.003279 **</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.54635    0.34045 -1.6048 0.108543   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.02973    0.41714  2.4686  0.01357 *</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.41579    0.28015 -1.4842  0.13776  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.0753 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: -0.1331 </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

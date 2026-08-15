@@ -6,7 +6,7 @@ Plot the estimated baseline function for skmle model
 
 ``` r
 # S3 method for class 'skmle'
-plot(x, t_seq = seq(0, 1, length.out = 100), ...)
+plot(x, t_seq = NULL, ...)
 ```
 
 ## Arguments
@@ -17,8 +17,8 @@ plot(x, t_seq = seq(0, 1, length.out = 100), ...)
 
 - t_seq:
 
-  A numeric vector of time points to evaluate the baseline function.
-  Default is `seq(0, 1, length.out = 100)`.
+  Time points at which to evaluate the baseline. Defaults to 100 points
+  spanning the follow-up the model was fitted on.
 
 - ...:
 

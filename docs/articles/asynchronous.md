@@ -79,10 +79,9 @@ regression problem’s clothes, so standard errors shrink more slowly than
 you are used to and the bandwidth becomes something you have to think
 about.
 
-Time does not have to lie on \\\[0,1\]\\ here. The equation sees times
-only through \\(T - S)/h\\, so any units work as long as `h` is in the
-same ones. That is the one thing to get right, and the package warns
-when it looks wrong.
+The equation sees times only through \\(T - S)/h\\, so any units work as
+long as `h` is in the same ones. That is the one thing to get right, and
+the package warns when it looks wrong.
 
 ## A worked example
 
@@ -502,9 +501,9 @@ summary(fit_b)
 
 The single most common mistake is a bandwidth on a different scale from
 the observation times: times in days, with `h` chosen as though they
-were on the unit interval. Nothing about the estimator requires
-\\\[0,1\]\\, so the package cannot simply reject the data; instead it
-tells you when almost nothing is contributing.
+were on the unit interval. Times can be on any scale, so the package
+cannot simply reject the data; instead it tells you when almost nothing
+is contributing.
 
 ``` r
 
@@ -533,9 +532,10 @@ all.equal(coef(fit_ok), coef(fit))
 #> [1] TRUE
 ```
 
-Note that this differs from the survival estimators in the package,
-which *do* require times on \\\[0,1\]\\ because their spline basis and
-quadrature are built there, and which stop with an error otherwise.
+The survival estimators behave the same way. Their spline basis and
+cumulative-hazard quadrature are built on the observed follow-up rather
+than a fixed interval, so rescaling time and the bandwidth together
+leaves the coefficients unchanged.
 
 ## Reference
 

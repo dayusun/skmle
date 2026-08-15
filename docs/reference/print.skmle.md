@@ -50,6 +50,6 @@ print(fit)
 #> 
 #> Coefficients:
 #> covariates1 covariates2 
-#>   0.8408829  -0.3464538 
+#>   0.9492099  -0.2982722 
 # }
 ```
