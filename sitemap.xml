@@ -2,18 +2,22 @@
 <url><loc>https://dayusun.github.io/skmle/404.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/CLAUDE.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/LICENSE-text.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/articles/asynchronous.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/articles/benchmark_survsparse.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/articles/index.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/articles/tutorial.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/authors.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/index.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/news/index.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/reference/confint.kee_td.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/epan_kernel.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/index.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/kee_additive.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/kee_async.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/reference/kee_async_cv.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/kee_async_td.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/kee_cox.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/reference/nobs.skmle.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/plot.kee_td.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/plot.skmle.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/print.kee.html</loc></url>
@@ -27,5 +31,6 @@
 <url><loc>https://dayusun.github.io/skmle/reference/skmle_cv.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/summary.kee.html</loc></url>
 <url><loc>https://dayusun.github.io/skmle/reference/summary.skmle.html</loc></url>
+<url><loc>https://dayusun.github.io/skmle/reference/vcov.skmle.html</loc></url>
 </urlset>
 

@@ -26,6 +26,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
+    <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -39,7 +40,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Select the Bandwidth by Cross-Validation</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/R/skmle_cv.R" class="external-link"><code>R/skmle_cv.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/R/skmle_cv.R" class="external-link"><code>R/skmle_cv.R</code></a></small>
       <div class="d-none name"><code>skmle_cv.Rd</code></div>
     </div>
 
@@ -59,7 +60,6 @@
 <span>  h_grid <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_h <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  nknots <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  norder <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  lq_nodes <span class="op">=</span> <span class="fl">64</span>,</span>
 <span>  maxeval <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  xtol_rel <span class="op">=</span> <span class="fl">1e-06</span>,</span>
@@ -115,12 +115,9 @@ a grid is generated automatically from the observed time gaps.</p></dd>
 
 <dt id="arg-nknots">nknots<a class="anchor" aria-label="anchor" href="#arg-nknots"></a></dt>
 <dd><p>Number of interior knots used in the sieve approximation of the
-baseline component.</p></dd>
-
-
-<dt id="arg-norder">norder<a class="anchor" aria-label="anchor" href="#arg-norder"></a></dt>
-<dd><p>Order parameter supplied to the high-level interface for the spline
-approximation.</p></dd>
+baseline component. Knots are placed at <code>(1:nknots)/(nknots + 1)</code>. The
+basis is a natural cubic spline (<code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns</a></code>); its order is fixed, which
+is why there is no <code>norder</code> argument.</p></dd>
 
 
 <dt id="arg-lq-nodes">lq_nodes<a class="anchor" aria-label="anchor" href="#arg-lq-nodes"></a></dt>

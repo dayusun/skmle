@@ -4,5 +4,7 @@
 
 - [Getting Started with
   skmle](https://dayusun.github.io/skmle/articles/tutorial.md):
+- [Asynchronous Longitudinal
+  Regression](https://dayusun.github.io/skmle/articles/asynchronous.md):
 - [Benchmarking skmle Against
   SurvSparse](https://dayusun.github.io/skmle/articles/benchmark_survsparse.md):

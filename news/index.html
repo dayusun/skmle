@@ -26,6 +26,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
+    <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -39,7 +40,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/dayusun/skmle/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
@@ -48,6 +49,24 @@
 <h3 id="scope-0-1-0">Scope<a class="anchor" aria-label="anchor" href="#scope-0-1-0"></a></h3>
 <p>The package covers two settings, not one. Alongside the transformed hazards models for survival outcomes it now fits generalised linear models for asynchronous longitudinal outcomes, where the response and the covariate are recorded on different time grids. The <code>Title</code> drops its “for Survival Models” restriction, and the <code>Description</code>, README, package help page and tutorial have been rewritten to present the two settings on equal footing rather than treating the second as an extra.</p>
 </div>
+<div class="section level3">
+<h3 id="usability-0-1-0">Usability<a class="anchor" aria-label="anchor" href="#usability-0-1-0"></a></h3>
+<ul><li>
+<code><a href="../reference/kee_async.html">kee_async()</a></code> and <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> take a formula spanning the two tables – <code>kee_async(y ~ x, data_y, data_x, id, time, h)</code> – instead of seven positional vectors. Swapping the response and covariate tables used to return plausible numbers with no complaint.</li>
+<li>
+<code><a href="../reference/kee_async_cv.html">kee_async_cv()</a></code> selects the bandwidth by subject-level cross-validation, scoring candidates by kernel-weighted squared error on held-out subjects. The asynchronous estimators previously offered no guidance on <code>h</code> at all.</li>
+<li>
+<code><a href="../reference/kee_cox.html">kee_cox()</a></code> and <code><a href="../reference/kee_additive.html">kee_additive()</a></code> now check that times lie on <code>[0, 1]</code>, which <code><a href="../reference/skmle.html">skmle()</a></code> already did. <code><a href="../reference/kee_additive.html">kee_additive()</a></code> genuinely requires it – its quadrature is built on <code>[0, 1]</code> – so times in other units were silently wrong rather than merely unusual.</li>
+<li>
+<code><a href="../reference/kee_async.html">kee_async()</a></code> warns when fewer than 5% of response occasions have a covariate observation in their window, which is the signature of a bandwidth on the wrong scale. The asynchronous estimators are scale-free, so this cannot be checked by a range test.</li>
+<li>
+<code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>, <code><a href="https://rdrr.io/r/stats/nobs.html" class="external-link">nobs()</a></code> and (for <code>kee_td</code>) <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> methods. <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> previously failed on every fitted object in the package, because there was no <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code> for the default method to call.</li>
+<li>
+<code><a href="../reference/skmle.html">skmle()</a></code> and <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code> no longer take <code>norder</code>. It was validated and documented but never used: the sieve basis is a natural cubic spline, whose order is fixed. Existing calls that pass it will now error, and should drop the argument.</li>
+<li>
+<code><a href="../reference/sim_async_data.html">sim_async_data()</a></code> returns the covariates as plain columns (<code>x</code>, or <code>x1</code>, <code>x2</code>, …) rather than a matrix column, so they can be named in a formula.</li>
+<li>New article, <code><a href="../articles/asynchronous.html">vignette("asynchronous")</a></code>: why last-value-carried-forward and regression calibration are inconsistent here, how to read the bandwidth sensitivity plot, what the half kernel changes, and how to get the units right.</li>
+</ul></div>
 <div class="section level3">
 <h3 id="asynchronous-longitudinal-data-0-1-0">Asynchronous longitudinal data<a class="anchor" aria-label="anchor" href="#asynchronous-longitudinal-data-0-1-0"></a></h3>
 <ul><li>

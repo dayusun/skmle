@@ -5,11 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Plot estimated coefficient curves — plot.kee_td"><meta name="description" content="Draws \(\hat\beta_j(t)\) against t with pointwise 95% Wald bands, one
-panel per coefficient. The bands are pointwise and are not corrected for
-smoothing bias, so they cover \(E\hat\beta(t)\), not \(\beta(t)\)."><meta property="og:description" content="Draws \(\hat\beta_j(t)\) against t with pointwise 95% Wald bands, one
-panel per coefficient. The bands are pointwise and are not corrected for
-smoothing bias, so they cover \(E\hat\beta(t)\), not \(\beta(t)\)."></head><body>
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Plot estimated coefficient curves — plot.kee_td"><meta name="description" content="Draws \(\hat\beta_j(t)\) against t with pointwise Wald bands, one panel
+per coefficient."><meta property="og:description" content="Draws \(\hat\beta_j(t)\) against t with pointwise Wald bands, one panel
+per coefficient."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -30,6 +28,7 @@ smoothing bias, so they cover \(E\hat\beta(t)\), not \(\beta(t)\)."></head><body
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
+    <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -43,14 +42,13 @@ smoothing bias, so they cover \(E\hat\beta(t)\), not \(\beta(t)\)."></head><body
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Plot estimated coefficient curves</h1>
-      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/master/R/kee_async.R" class="external-link"><code>R/kee_async.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/dayusun/skmle/blob/HEAD/R/kee_async.R" class="external-link"><code>R/kee_async.R</code></a></small>
       <div class="d-none name"><code>plot.kee_td.Rd</code></div>
     </div>
 
     <div class="ref-description section level2">
-    <p>Draws \(\hat\beta_j(t)\) against <code>t</code> with pointwise 95% Wald bands, one
-panel per coefficient. The bands are pointwise and are not corrected for
-smoothing bias, so they cover \(E\hat\beta(t)\), not \(\beta(t)\).</p>
+    <p>Draws \(\hat\beta_j(t)\) against <code>t</code> with pointwise Wald bands, one panel
+per coefficient.</p>
     </div>
 
     <div class="section level2">
@@ -84,12 +82,21 @@ Defaults to all.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>x</code>, invisibly. Called for the plot.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The bands are pointwise, not simultaneous: reading them as a confidence
+region for the whole curve overstates the evidence. They are also not
+corrected for smoothing bias, so they cover \(E\hat\beta(t)\) rather than
+\(\beta(t)\); a large bandwidth flattens the curve without widening the
+band to say so.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_async_data.html">sim_async_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">200</span>, beta <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">tt</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span> <span class="op">+</span> <span class="va">tt</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="kee_async_td.html">kee_async_td</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">x</span>,</span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="kee_async_td.html">kee_async_td</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span></span>
+<span class="r-in"><span>  data_y <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span>, data_x <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>,</span></span>
 <span class="r-in"><span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.8</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span>, h <span class="op">=</span> <span class="fl">0.3</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></span>

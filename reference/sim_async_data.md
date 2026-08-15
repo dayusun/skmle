@@ -61,8 +61,9 @@ A list with two data frames on different time grids:
 
 - x:
 
-  `id`, `time`, `x` – one row per covariate occasion, `x` being a matrix
-  column with `p` columns.
+  `id`, `time`, and one column per covariate coordinate – named `x` when
+  there is a single covariate, `x1`, `x2`, ... otherwise. One row per
+  covariate occasion, on a time grid independent of `y`'s.
 
 ## Details
 
@@ -102,10 +103,20 @@ str(d)
 #>  $ x:'data.frame':   258 obs. of  3 variables:
 #>   ..$ id  : int [1:258] 1 1 1 1 2 2 2 2 2 2 ...
 #>   ..$ time: num [1:258] 0.0618 0.6291 0.6608 0.9447 0.0233 ...
-#>   ..$ x   : num [1:258, 1] -0.864 0.345 0.437 0.253 0.292 ...
-#>   .. ..- attr(*, "dimnames")=List of 2
-#>   .. .. ..$ : NULL
-#>   .. .. ..$ : chr "x"
+#>   ..$ x   : num [1:258] -0.864 0.345 0.437 0.253 0.292 ...
+
+# The two tables share `id` and nothing else; their `time` grids are
+# independent draws, which is what makes the data asynchronous.
+head(d$y, 3)
+#>   id      time          y
+#> 1  1 0.2016819 -2.9454025
+#> 2  1 0.5728534 -0.8186868
+#> 3  1 0.8983897  0.2109702
+head(d$x, 3)
+#>   id       time          x
+#> 1  1 0.06178627 -0.8642242
+#> 2  1 0.62911404  0.3452775
+#> 3  1 0.66079779  0.4373871
 
 # A coefficient curve, for kee_async_td().
 d2 <- sim_async_data(n = 50, beta = function(tt) cbind(0.5, 1 + tt))

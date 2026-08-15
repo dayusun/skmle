@@ -26,6 +26,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
+    <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -109,14 +110,21 @@
           <code><a href="kee_async.html">kee_async()</a></code>
 
         </dt>
-        <dd>Asynchronous longitudinal regression, time-invariant coefficients</dd>
+        <dd>Asynchronous longitudinal regression with time-invariant coefficients</dd>
+
+        <dt>
+
+          <code><a href="kee_async_cv.html">kee_async_cv()</a></code> <code><a href="kee_async_cv.html">print(<i>&lt;cv.kee_async&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Choose the bandwidth for an asynchronous longitudinal fit</dd>
 
         <dt>
 
           <code><a href="kee_async_td.html">kee_async_td()</a></code> <code><a href="kee_async_td.html">print(<i>&lt;kee_td&gt;</i>)</a></code>
 
         </dt>
-        <dd>Asynchronous longitudinal regression, time-dependent coefficients</dd>
+        <dd>Asynchronous longitudinal regression with time-dependent coefficients</dd>
       </dl></div><div class="section level2">
       <h2 id="simulation">Simulation<a class="anchor" aria-label="anchor" href="#simulation"></a></h2>
 
@@ -163,6 +171,27 @@
 
         </dt>
         <dd>Plot estimated coefficient curves</dd>
+
+        <dt>
+
+          <code><a href="vcov.skmle.html">vcov(<i>&lt;skmle&gt;</i>)</a></code> <code><a href="vcov.skmle.html">vcov(<i>&lt;kee&gt;</i>)</a></code> <code><a href="vcov.skmle.html">vcov(<i>&lt;kee_td&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Extract the covariance matrix of a fitted model</dd>
+
+        <dt>
+
+          <code><a href="nobs.skmle.html">nobs(<i>&lt;skmle&gt;</i>)</a></code> <code><a href="nobs.skmle.html">nobs(<i>&lt;kee&gt;</i>)</a></code> <code><a href="nobs.skmle.html">nobs(<i>&lt;kee_td&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Number of subjects contributing to a fit</dd>
+
+        <dt>
+
+          <code><a href="confint.kee_td.html">confint(<i>&lt;kee_td&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Wald confidence intervals for a coefficient curve</dd>
 
         <dt>
 
