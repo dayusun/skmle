@@ -2,6 +2,12 @@ url: https://dayusun.github.io/skmle/
 
 template:
   bootstrap: 5
+  # pkgdown >= 2.0 defaults to math-rendering: mathml, which needs the 'katex'
+  # R package (and so V8) at BUILD time.  Without it pkgdown silently emits the
+  # raw $$...$$ into the page and loads no renderer, so every formula shows as
+  # LaTeX source.  MathJax renders in the browser and needs nothing installed
+  # wherever the site happens to be built.
+  math-rendering: mathjax
   bslib:
     primary: "#1f5aa6"
     secondary: "#5b6b7a"

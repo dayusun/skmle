@@ -6,7 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Getting Started with skmle • skmle</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -92,8 +98,7 @@ that does not line up with the covariate’s:</p>
 <li>
 <code><a href="../reference/kee_async.html">kee_async()</a></code> for time-invariant coefficients.</li>
 <li>
-<code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> for a coefficient curve
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta(t)</annotation></semantics></math>.</li>
+<code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> for a coefficient curve <span class="math inline">\(\beta(t)\)</span>.</li>
 </ol>
 <p>This vignette walks through both: simulate data, fit a model, inspect
 the summary output, plot the estimated baseline component, select a
@@ -1013,9 +1018,8 @@ inventing rows.</p>
 <p>The default covariate process in <code><a href="../reference/sim_async_data.html">sim_async_data()</a></code> is
 Ornstein-Uhlenbeck, whose covariance has a kink on the diagonal. That is
 the case Cao, Zeng and Fine’s Section 6 leaves open, and it leaves an
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false" form="prefix">(</mo><mi>h</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">O(h)</annotation></semantics></math>
-bias that a symmetric kernel cannot remove, so the estimate drifts as
-the bandwidth grows.</p>
+<span class="math inline">\(O(h)\)</span> bias that a symmetric kernel
+cannot remove, so the estimate drifts as the bandwidth grows.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.15</span>, <span class="fl">0.30</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">h</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="fu"><a href="../reference/kee_async.html">kee_async</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">id</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">time</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span><span class="op">$</span><span class="va">x</span>, h <span class="op">=</span> <span class="va">h</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
@@ -1023,12 +1027,9 @@ the bandwidth grows.</p>
 <span><span class="co">#&gt;        x        x </span></span>
 <span><span class="co">#&gt; 1.355546 1.321226</span></span></code></pre></div>
 <p>If the coefficients themselves vary with time,
-<code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta(t)</annotation></semantics></math>
-pointwise. Both time arguments are smoothed, so it converges at the
-bivariate rate
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>n</mi><msub><mi>h</mi><mn>1</mn></msub><msub><mi>h</mi><mn>2</mn></msub><msup><mo stretchy="false" form="postfix">)</mo><mrow><mn>1</mn><mi>/</mi><mn>2</mn></mrow></msup></mrow><annotation encoding="application/x-tex">(n h_1 h_2)^{1/2}</annotation></semantics></math>
-and the bands are wide.</p>
+<code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve <span class="math inline">\(\beta(t)\)</span> pointwise. Both time arguments
+are smoothed, so it converges at the bivariate rate <span class="math inline">\((n h_1 h_2)^{1/2}\)</span> and the bands are
+wide.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">203</span><span class="op">)</span></span>
 <span><span class="va">dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span></span>

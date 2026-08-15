@@ -27,7 +27,7 @@ with the covariate’s:
 4.  [`kee_async()`](https://dayusun.github.io/skmle/reference/kee_async.md)
     for time-invariant coefficients.
 5.  [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
-    for a coefficient curve $`\beta(t)`$.
+    for a coefficient curve \\\beta(t)\\.
 
 This vignette walks through both: simulate data, fit a model, inspect
 the summary output, plot the estimated baseline component, select a
@@ -974,7 +974,7 @@ The default covariate process in
 [`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
 is Ornstein-Uhlenbeck, whose covariance has a kink on the diagonal. That
 is the case Cao, Zeng and Fine’s Section 6 leaves open, and it leaves an
-$`O(h)`$ bias that a symmetric kernel cannot remove, so the estimate
+\\O(h)\\ bias that a symmetric kernel cannot remove, so the estimate
 drifts as the bandwidth grows.
 
 ``` r
@@ -988,8 +988,8 @@ sapply(c(0.15, 0.30), function(h) {
 
 If the coefficients themselves vary with time,
 [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
-estimates the curve $`\beta(t)`$ pointwise. Both time arguments are
-smoothed, so it converges at the bivariate rate $`(n h_1 h_2)^{1/2}`$
+estimates the curve \\\beta(t)\\ pointwise. Both time arguments are
+smoothed, so it converges at the bivariate rate \\(n h_1 h_2)^{1/2}\\
 and the bands are wide.
 
 ``` r
