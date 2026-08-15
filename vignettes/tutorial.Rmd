@@ -89,8 +89,7 @@ fit_skmle <- skmle(
   obs_times = obs_times,
   s = 0,
   h = 0.5,
-  nknots = 3,
-  norder = 3
+  nknots = 3
 )
 
 fit_skmle
@@ -179,7 +178,6 @@ cv_fit <- skmle_cv(
   K = 3,
   h_grid = c(0.3, 0.4, 0.5),
   nknots = 3,
-  norder = 3,
   quiet = TRUE
 )
 
@@ -238,27 +236,34 @@ head(d$x, 3)
 ```
 
 The two tables are deliberately separate — they are on different grids, so there
-is no single data frame that holds both without inventing rows.
+is no single data frame that holds both without inventing rows. The formula
+spans both: its left-hand side is looked up in `data_y`, its right-hand side in
+`data_x`, and `id` and `time` name columns present in each.
 
 ```{r async-ti}
-fit_a <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = 0.25)
+fit_a <- kee_async(y ~ x,
+  data_y = d$y, data_x = d$x,
+  id = id, time = time, h = 0.25
+)
 summary(fit_a)
+confint(fit_a)
 ```
 
-The default covariate process in `sim_async_data()` is Ornstein-Uhlenbeck, whose
-covariance has a kink on the diagonal. That is the case Cao, Zeng and Fine's
-Section 6 leaves open, and it leaves an $O(h)$ bias that a symmetric kernel
-cannot remove, so the estimate drifts as the bandwidth grows.
+The bandwidth is the one consequential choice. `kee_async_cv()` selects it by
+cross-validation over subjects, scoring each candidate by the kernel-weighted
+squared error on the held-out subjects:
 
-```{r async-bias}
-sapply(c(0.15, 0.30), function(h) {
-  coef(kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = h))[2]
-})
+```{r async-cv}
+cv <- kee_async_cv(y ~ x,
+  data_y = d$y, data_x = d$x, id = id, time = time,
+  h_grid = c(0.10, 0.15, 0.25, 0.40), K = 5, seed = 1, quiet = TRUE
+)
+cv
 ```
 
 If the coefficients themselves vary with time, `kee_async_td()` estimates the
-curve $\beta(t)$ pointwise. Both time arguments are smoothed, so it converges at
-the bivariate rate $(n h_1 h_2)^{1/2}$ and the bands are wide.
+curve $\beta(t)$ pointwise. Both time arguments are smoothed there, so it
+converges at the bivariate rate $(n h_1 h_2)^{1/2}$ and the bands are wide.
 
 ```{r async-td, fig.width = 7, fig.height = 4}
 set.seed(203)
@@ -267,11 +272,16 @@ dt <- sim_async_data(
   lambda_y = 8, lambda_x = 8,
   x_cov = function(s, t) exp(-4 * (s - t)^2)
 )
-fit_td <- kee_async_td(dt$y$id, dt$y$time, dt$y$y, dt$x$id, dt$x$time, dt$x$x,
+fit_td <- kee_async_td(y ~ x,
+  data_y = dt$y, data_x = dt$x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.05), h = 0.2
 )
 plot(fit_td)
 ```
+
+For a fuller treatment — why last-value-carried-forward and regression
+calibration fail here, how to read the bandwidth diagnostics, and what the
+half kernel changes — see `vignette("asynchronous", package = "skmle")`.
 
 ## Typical Workflow
 

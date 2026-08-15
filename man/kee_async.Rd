@@ -2,15 +2,14 @@
 % Please edit documentation in R/kee_async.R
 \name{kee_async}
 \alias{kee_async}
-\title{Asynchronous longitudinal regression, time-invariant coefficients}
+\title{Asynchronous longitudinal regression with time-invariant coefficients}
 \usage{
 kee_async(
-  y_id,
-  y_time,
-  y,
-  x_id,
-  x_time,
-  X,
+  formula,
+  data_y,
+  data_x,
+  id,
+  time,
   h,
   one_sided = FALSE,
   link = c("identity", "log", "logistic"),
@@ -20,81 +19,137 @@ kee_async(
 )
 }
 \arguments{
-\item{y_id, y_time, y}{Subject identifier, observation time and value for each
-response occasion. Vectors of equal length.}
+\item{formula}{A two-sided formula, \code{y ~ x1 + x2}. The left-hand side is
+evaluated in \code{data_y}, the right-hand side in \code{data_x}.}
 
-\item{x_id, x_time}{Subject identifier and observation time for each covariate
-occasion. Vectors of equal length, matching the rows of \code{X}.}
+\item{data_y}{Data frame of response occasions: one row per time the response
+was recorded.}
 
-\item{X}{Covariate matrix, one row per covariate occasion.}
+\item{data_x}{Data frame of covariate occasions: one row per time the
+covariates were recorded. Its time grid need not overlap \code{data_y}'s at all.}
 
-\item{h}{Positive bandwidth.}
+\item{id}{Subject identifier, unquoted or as a string. Must name a column
+present in \strong{both} tables. Non-numeric identifiers are allowed.}
 
-\item{one_sided}{Logical. \code{FALSE} (the default) is the full two-sided
-Epanechnikov kernel of the paper. \code{TRUE} is the half kernel: only covariate
-observations strictly before the response contribute.}
+\item{time}{Observation time, unquoted or as a string. Must name a column
+present in \strong{both} tables.}
+
+\item{h}{Positive bandwidth, on the same scale as \code{time}.}
+
+\item{one_sided}{Logical. \code{FALSE} (default) is the full two-sided kernel of
+the paper; \code{TRUE} is the half kernel, admitting only covariate observations
+strictly before the response.}
 
 \item{link}{One of \code{"identity"} (closed form), \code{"log"} or \code{"logistic"}
 (Newton-Raphson).}
 
-\item{intercept}{Logical, prepend a column of ones to \code{X}.}
+\item{intercept}{Logical, include an intercept.}
 
 \item{maxit, tol}{Newton-Raphson controls, ignored when \code{link = "identity"}.}
 }
 \value{
-An object of class \code{kee} with \code{coefficients}, the sandwich \code{var},
-the bread \code{A}, the meat \code{Sigma}, \code{n} (subjects), \code{npair} (weighted pairs
-contributing) and the call.
+An object of class \code{kee} with components
+\describe{
+\item{coefficients}{Named coefficient vector.}
+\item{var}{Sandwich covariance matrix \eqn{A^{-1} B A^{-1}}.}
+\item{A, Sigma}{The bread and the meat of the sandwich.}
+\item{n}{Number of subjects, the unit the asymptotics are in.}
+\item{npair}{Number of weighted (response, covariate) pairs contributing.}
+\item{h, one_sided, link}{Fit settings.}
+\item{convergence}{\code{0} converged, \code{1} singular, \code{2} hit \code{maxit}.}
+\item{call}{The matched call.}
+}
+\code{coef()}, \code{vcov()}, \code{confint()}, \code{nobs()}, \code{print()} and \code{summary()} methods
+are available.
 }
 \description{
-Fit a regression of a sparsely observed longitudinal response on a sparsely
-observed longitudinal covariate when the two are measured on \strong{different}
-time grids. Responses at \eqn{T_{ij}} are paired with the same subject's
-covariate observations at \eqn{S_{ik}}, and each pair is weighted by its time
-separation, so no pair has to be discarded and no value has to be carried
-forward.
+Regress a sparsely observed longitudinal response on a sparsely observed
+longitudinal covariate when the two are measured on \strong{different} time grids
+and are never seen together.
 
-This is the time-invariant coefficient estimator of Cao, Zeng and Fine
-(2015), which solves
+Each response occasion \eqn{T_{ij}} is paired with every covariate occasion
+\eqn{S_{ik}} of the same subject, and each pair contributes in proportion to
+its time separation, so no pair is discarded and no value is carried forward.
+The estimator solves the kernel-weighted estimating equation of Cao, Zeng and
+Fine (2015),
 \deqn{U_n(\beta) = n^{-1} \sum_i \sum_j \sum_k W_h(T_{ij} - S_{ik})
       X_i(S_{ik}) [ Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \beta\} ] = 0,}
-with \eqn{W_h(t) = W(t/h)/h}. See \code{\link[=kee_async_td]{kee_async_td()}} for the companion
-estimator with time-dependent coefficients \eqn{\beta(t)}.
+with \eqn{W_h(u) = W(u/h)/h} and \eqn{W} the Epanechnikov kernel.
 }
-\details{
-The link is evaluated at each \strong{observed} covariate vector and the weight
-multiplies the resulting contribution. The covariate is never smoothed and
-then substituted, which would be regression calibration and is not consistent
-under sparse sampling. The estimator converges at the univariate smoothing
-rate \eqn{(nh)^{1/2}}, not at \eqn{\sqrt n}.
+\section{Why not something simpler}{
+Two obvious shortcuts are inconsistent here, which is the reason this
+function exists.
 
-\strong{Half kernel or full kernel.} \code{one_sided = FALSE}, the default, is the full
-two-sided Epanechnikov kernel of the paper: a response is paired with
-covariate observations on either side of it. \code{one_sided = TRUE} admits only
-covariate observations that strictly precede the response, which is what a
-causal reading of the covariate path requires and what the survival
-estimators in this package do by default.
+\emph{Last value carried forward} replaces \eqn{X_i(T_{ij})} by the most recent
+observed value. Under sparse sampling the gap back to that value does not
+shrink as \eqn{n} grows, so the substituted covariate keeps a non-vanishing
+error and the coefficient is attenuated toward zero.
 
-Cao, Zeng and Fine assume the covariance of the covariate process is twice
-differentiable and obtain a bias of order \eqn{h^2}. Their Section 6 notes
-that relaxing this to one-sided differentiability, which admits processes
-with independent increments such as the Ornstein-Uhlenbeck process, leaves a
-bias of order \eqn{h} instead. Watch for an estimate that drifts as \code{h}
-grows.
+\emph{Regression calibration} smooths the covariate path first and substitutes the
+smoothed value. Under sparse sampling the smoothing window never empties, so
+the same attenuation appears; for a nonlinear link there is a Jensen bias as
+well, because the estimating equation needs the average of \eqn{g(\cdot)}
+rather than \eqn{g} of the average.
 
-Pairs are enumerated in C++ and then collapsed onto covariate rows before the
-coefficients are touched, so the full pair design is never materialised and
-the Newton iterations cost \eqn{O(n_x p^2)} rather than \eqn{O(n_{pair} p^2)}.
+The kernel-weighted equation instead evaluates the link at each \strong{observed}
+covariate vector, and lets the weight express how much that observation says
+about the response occasion.
 }
+
+\section{Rate and bandwidth}{
+The estimator is consistent and asymptotically normal at the smoothing rate
+\eqn{(nh)^{1/2}}, not at \eqn{\sqrt n}. The bandwidth therefore matters: too
+small and few pairs contribute, too large and the bias grows. Use
+\code{\link[=kee_async_cv]{kee_async_cv()}} rather than guessing.
+
+\code{h} is on the \strong{same scale as the observation times}. Unlike the survival
+estimators there is no requirement that times lie on \eqn{[0, 1]}, but \code{h}
+must match whatever scale is used. A warning is issued when fewer than 5\% of
+response occasions have any covariate observation in their window, which is
+the signature of a units mistake.
+}
+
+\section{Half kernel or full kernel}{
+\code{one_sided = FALSE}, the default, is the full two-sided kernel of the paper.
+\code{one_sided = TRUE} admits only covariate observations strictly \strong{before} the
+response, which is what a causal reading of the covariate path requires and
+what the survival estimators in this package do by default. It roughly halves
+the number of contributing pairs, so it needs a larger \code{h} to reach the same
+effective sample size.
+}
+
+\section{Assumptions worth checking}{
+Cao, Zeng and Fine assume the covariance function of the covariate process is
+twice differentiable, which gives a bias of order \eqn{h^2}. Their Section 6
+notes that relaxing this to one-sided differentiability, which admits
+processes with independent increments such as the Ornstein-Uhlenbeck process,
+leaves a bias of order \eqn{h} instead. The practical symptom is an estimate
+that drifts steadily as \code{h} grows, so fit at several bandwidths and look
+before trusting one number.
+
+Observation times are assumed independent of the response and covariate
+processes. Informative observation times need a different estimator.
+}
+
 \examples{
 set.seed(1)
-d <- sim_async_data(n = 100, beta = c(0.5, 1.5))
-fit <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = 0.25)
-summary(fit)
+d <- sim_async_data(n = 150, beta = c(0.5, 1.5))
 
-# Half kernel: only covariate observations that precede the response.
-kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
-  h = 0.25, one_sided = TRUE
+# The two tables are on different time grids and share only `id`.
+head(d$y, 3)
+head(d$x, 3)
+
+fit <- kee_async(y ~ x,
+  data_y = d$y, data_x = d$x,
+  id = id, time = time, h = 0.25
+)
+summary(fit)
+confint(fit)
+
+# Half kernel: only covariate observations preceding the response.
+kee_async(y ~ x,
+  data_y = d$y, data_x = d$x,
+  id = id, time = time, h = 0.25, one_sided = TRUE
 )
 }
 \references{
@@ -103,5 +158,6 @@ asynchronous longitudinal data. \emph{Journal of the Royal Statistical
 Society, Series B} 77, 755-776.
 }
 \seealso{
-\code{\link[=kee_async_td]{kee_async_td()}} for time-dependent coefficients.
+\code{\link[=kee_async_cv]{kee_async_cv()}} to choose \code{h}, \code{\link[=kee_async_td]{kee_async_td()}} for a coefficient
+curve \eqn{\beta(t)}, \code{\link[=sim_async_data]{sim_async_data()}} to simulate.
 }

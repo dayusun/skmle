@@ -18,7 +18,7 @@ test_that("kee_async matches an independent transcription of the estimating equa
     h <- 0.25
     W <- function(z) pmax(0.75 * (1 - z^2), 0)
 
-    fit <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = h)
+    fit <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = h)
 
     # Accumulate A and b over (response, covariate) pairs within subject,
     # exactly as the estimating equation is written.
@@ -31,7 +31,7 @@ test_that("kee_async matches an independent transcription of the estimating equa
         s <- abs(z) <= 1
         if (!any(s)) next
         w <- W(z[s]) / h
-        xv <- cbind(1, d$x$x[k, 1][s])
+        xv <- cbind(1, d$x$x[k][s])
         A <- A + crossprod(xv, xv * w)
         b <- b + as.numeric((w * d$y$y[j]) %*% xv)
     }
@@ -43,8 +43,8 @@ test_that("the half kernel drops every pair with the covariate after the respons
     d <- sim_async_data(n = 60)
     h <- 0.25
 
-    full <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = h)
-    half <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
+    full <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = h)
+    half <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time,
         h = h, one_sided = TRUE
     )
 
@@ -70,7 +70,7 @@ test_that("kee_async recovers the truth, with a bias that grows in h", {
     hs <- c(0.05, 0.20, 0.45)
 
     bhat <- function(h) {
-        coef(kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = h))[2]
+        coef(kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = h))[2]
     }
     b <- vapply(hs, bhat, numeric(1))
 
@@ -87,7 +87,7 @@ test_that("kee_async handles nonlinear links and rejects malformed input", {
     set.seed(5)
     d <- sim_async_data(n = 250, beta = c(0.3, 1.0), link = "logistic")
 
-    fit <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
+    fit <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time,
         h = 0.4, link = "logistic"
     )
     expect_true(all(is.finite(coef(fit))))
@@ -105,20 +105,26 @@ test_that("kee_async handles nonlinear links and rejects malformed input", {
         s <- abs(z) <= 1
         if (!any(s)) next
         w <- W(z[s]) / h
-        xv <- cbind(1, d$x$x[k, 1][s])
+        xv <- cbind(1, d$x$x[k][s])
         U <- U + as.numeric((w * (d$y$y[j] - plogis(as.numeric(xv %*% bb)))) %*% xv)
     }
     expect_lt(max(abs(U)), 1e-6)
 
-    yi <- d$y$id
-    expect_error(kee_async(yi, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = -1), "positive")
     expect_error(
-        kee_async(yi, d$y$time, d$y$y, d$x$id[-1], d$x$time, d$x$x, h = 0.4),
-        "one entry per row"
+        kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = -1),
+        "positive"
     )
     expect_error(
-        kee_async(yi, d$y$time, d$y$y[-1], d$x$id, d$x$time, d$x$x, h = 0.4),
-        "equal length"
+        kee_async(y ~ x, data_y = d$y, data_x = d$x, id = nope, time = time, h = 0.4),
+        "not found in data_y"
+    )
+    expect_error(
+        kee_async(y ~ nope, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.4),
+        "not found"
+    )
+    expect_error(
+        kee_async(y ~ x, data_y = as.list(d$y), data_x = d$x, id = id, time = time, h = 0.4),
+        "data.frame"
     )
 })
 
@@ -131,7 +137,7 @@ test_that("kee_async_td matches an independent transcription at each target time
     h <- 0.3
     W <- function(z) pmax(0.75 * (1 - z^2), 0)
 
-    fit <- kee_async_td(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
+    fit <- kee_async_td(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time,
         times = times, h = h
     )
 
@@ -147,7 +153,7 @@ test_that("kee_async_td matches an independent transcription at each target time
             # measured as "how far in the past", the package-wide convention.
             ww <- (W((t0 - d$y$time[j]) / h) / h) * (W((t0 - d$x$time[k]) / h) / h)
             if (all(ww == 0)) next
-            xv <- cbind(1, d$x$x[k, 1])
+            xv <- cbind(1, d$x$x[k])
             A <- A + crossprod(xv, xv * ww)
             b <- b + as.numeric((ww * d$y$y[j]) %*% xv)
         }
@@ -168,7 +174,7 @@ test_that("kee_async_td tracks a coefficient curve", {
         x_cov = function(s, t) exp(-4 * (s - t)^2)
     )
     times <- seq(0.25, 0.75, by = 0.25)
-    fit <- kee_async_td(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
+    fit <- kee_async_td(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time,
         times = times, h = 0.2
     )
 
@@ -183,7 +189,7 @@ test_that("kee_async_td tracks a coefficient curve", {
 test_that("kee_async_td validates input and reports empty windows", {
     set.seed(23)
     d <- sim_async_data(n = 40)
-    a <- list(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x)
+    a <- list(y ~ x, data_y = d$y, data_x = d$x, id = "id", time = "time")
 
     expect_error(do.call(kee_async_td, c(a, list(times = 0.5, h = 0))), "positive")
     expect_error(do.call(kee_async_td, c(a, list(times = 0.5, h = 0.2, h2 = -1))), "positive")
@@ -195,7 +201,10 @@ test_that("kee_async_td validates input and reports empty windows", {
         "no target time has data"
     )
 
-    fit <- do.call(kee_async_td, c(a, list(times = c(0.5, 50), h = 0.05)))
+    expect_warning(
+        fit <- do.call(kee_async_td, c(a, list(times = c(0.5, 50), h = 0.05))),
+        "no data in their window"
+    )
     expect_identical(fit$convergence, c(0L, 3L))
     expect_true(all(is.na(fit$coefficients[2, ])))
 })
@@ -203,7 +212,7 @@ test_that("kee_async_td validates input and reports empty windows", {
 test_that("print and plot methods work on a kee_td fit", {
     set.seed(29)
     d <- sim_async_data(n = 60)
-    fit <- kee_async_td(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
+    fit <- kee_async_td(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time,
         times = c(0.4, 0.6), h = 0.3
     )
     expect_output(print(fit), "Time-dependent coefficients")
@@ -216,7 +225,7 @@ test_that("print and plot methods work on a kee_td fit", {
 test_that("one_sided restricts the covariate side of the time-dependent fit", {
     set.seed(31)
     d <- sim_async_data(n = 150)
-    a <- list(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x)
+    a <- list(y ~ x, data_y = d$y, data_x = d$x, id = "id", time = "time")
 
     full <- do.call(kee_async_td, c(a, list(times = c(0.4, 0.6), h = 0.3)))
     half <- do.call(kee_async_td, c(a, list(
@@ -240,7 +249,7 @@ test_that("one_sided restricts the covariate side of the time-dependent fit", {
         vx[lag_x <= 0] <- 0
         ww <- (W((t0 - d$y$time[j]) / h) / h) * vx
         if (all(ww == 0)) next
-        xv <- cbind(1, d$x$x[k, 1])
+        xv <- cbind(1, d$x$x[k])
         A <- A + crossprod(xv, xv * ww)
         b <- b + as.numeric((ww * d$y$y[j]) %*% xv)
     }
@@ -250,10 +259,182 @@ test_that("one_sided restricts the covariate side of the time-dependent fit", {
 test_that("one_sided is validated", {
     set.seed(3)
     d <- sim_async_data(n = 30)
-    a <- list(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x)
+    a <- list(y ~ x, data_y = d$y, data_x = d$x, id = "id", time = "time")
     expect_error(do.call(kee_async, c(a, list(h = 0.3, one_sided = "yes"))), "TRUE or FALSE")
     expect_error(
         do.call(kee_async_td, c(a, list(times = 0.5, h = 0.3, one_sided = NA))),
         "TRUE or FALSE"
     )
+})
+
+## ------------------------------------------------------- bandwidth selection
+
+test_that("kee_async_cv selects a bandwidth and refits there", {
+    skip_on_cran()
+    set.seed(41)
+    d <- sim_async_data(n = 200)
+    # The minimum may land on a grid endpoint here; that is exactly what the
+    # endpoint warning is for, so accept it rather than letting it leak.
+    cv <- suppressWarnings(kee_async_cv(y ~ x,
+        data_y = d$y, data_x = d$x, id = id, time = time,
+        h_grid = c(0.10, 0.20, 0.35), K = 4, seed = 1, quiet = TRUE
+    ))
+    expect_s3_class(cv, "cv.kee_async")
+    expect_true(cv$h_cv %in% cv$h_grid)
+    expect_equal(cv$fit$h, cv$h_cv)
+    expect_s3_class(cv$fit, "kee")
+    expect_true(all(cv$cv_results$nfold_used > 0))
+
+    # The loss is a weighted MEAN of squared residuals, so it sits on the scale
+    # of the error variance (1 in this generator) whatever the bandwidth.  An
+    # unnormalised loss would instead grow with the number of pairs a wider
+    # bandwidth admits, and would always select the smallest candidate.
+    expect_true(all(cv$cv_results$cvloss > 0.1 & cv$cv_results$cvloss < 20))
+    expect_lt(max(cv$cv_results$cvloss) / min(cv$cv_results$cvloss), 3)
+
+    # The refit call must be readable, not the whole data frame.
+    expect_lt(nchar(paste(deparse(cv$fit$call), collapse = " ")), 300)
+    expect_lt(length(capture.output(print(cv))), 20)
+})
+
+test_that("kee_async_cv reproduces a hand-computed held-out loss", {
+    skip_on_cran()
+    set.seed(43)
+    d <- sim_async_data(n = 60)
+    h <- 0.3
+    K <- 2
+    cv <- kee_async_cv(y ~ x,
+        data_y = d$y, data_x = d$x, id = id, time = time,
+        h_grid = h, K = K, seed = 7, quiet = TRUE
+    )
+
+    # Rebuild fold 1's contribution from scratch.
+    set.seed(7)
+    subj <- sort(unique(c(as.character(d$y$id), as.character(d$x$id))))
+    fold <- sample(rep_len(seq_len(K), length(subj)))
+    W <- function(z) pmax(0.75 * (1 - z^2), 0)
+    loss_f <- function(f) {
+        te <- subj[fold == f]
+        tr <- subj[fold != f]
+        b <- coef(kee_async(y ~ x,
+            data_y = d$y[as.character(d$y$id) %in% tr, ],
+            data_x = d$x[as.character(d$x$id) %in% tr, ],
+            id = id, time = time, h = h
+        ))
+        num <- 0
+        den <- 0
+        yt <- d$y[as.character(d$y$id) %in% te, ]
+        xt <- d$x[as.character(d$x$id) %in% te, ]
+        for (j in seq_len(nrow(yt))) {
+            k <- which(xt$id == yt$id[j])
+            if (!length(k)) next
+            w <- W((yt$time[j] - xt$time[k]) / h) / h
+            mu <- b[1] + b[2] * xt$x[k]
+            num <- num + sum(w * (yt$y[j] - mu)^2)
+            den <- den + sum(w)
+        }
+        c(num, den)
+    }
+    hand <- vapply(seq_len(K), loss_f, numeric(2))
+    expect_equal(cv$cv_results$cvloss, mean(hand[1, ] / hand[2, ]), tolerance = 1e-8)
+})
+
+test_that("kee_async_cv builds a default grid and flags endpoint minima", {
+    skip_on_cran()
+    set.seed(47)
+    d <- sim_async_data(n = 120)
+    cv <- suppressWarnings(kee_async_cv(y ~ x,
+        data_y = d$y, data_x = d$x, id = id, time = time,
+        n_h = 6, K = 3, seed = 2, quiet = TRUE
+    ))
+    expect_length(cv$h_grid, 6L)
+    expect_true(all(diff(cv$h_grid) > 0))
+    expect_true(all(cv$h_grid > 0))
+
+    # A grid with a single sensible value plus an absurd one must pick the
+    # sensible one and warn that the minimum is on the boundary.
+    expect_warning(
+        kee_async_cv(y ~ x,
+            data_y = d$y, data_x = d$x, id = id, time = time,
+            h_grid = c(0.25, 5), K = 3, seed = 2, quiet = TRUE
+        ),
+        "endpoint"
+    )
+})
+
+test_that("a bandwidth on the wrong scale is flagged rather than fitted quietly", {
+    set.seed(53)
+    d <- sim_async_data(n = 80)
+    d$y$time <- d$y$time * 365
+    d$x$time <- d$x$time * 365
+    expect_error(
+        kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.001),
+        "same scale"
+    )
+    expect_warning(
+        kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 1),
+        "same scale as the observation times"
+    )
+})
+
+test_that("the formula interface handles several covariates and missing values", {
+    skip_on_cran()
+    set.seed(59)
+    d <- sim_async_data(n = 150, beta = c(0.5, 1.5, -0.8))
+    fit <- kee_async(y ~ x1 + x2,
+        data_y = d$y, data_x = d$x,
+        id = id, time = time, h = 0.3
+    )
+    expect_named(coef(fit), c("(Intercept)", "x1", "x2"))
+    expect_equal(unname(coef(fit)), c(0.5, 1.5, -0.8), tolerance = 0.25)
+
+    # Rows with NA are dropped on the side they occur, keeping id/time aligned.
+    dy <- d$y
+    dx <- d$x
+    dy$y[1:5] <- NA
+    dx$x1[1:5] <- NA
+    fit2 <- kee_async(y ~ x1 + x2,
+        data_y = dy, data_x = dx,
+        id = id, time = time, h = 0.3
+    )
+    expect_true(all(is.finite(coef(fit2))))
+    expect_lt(fit2$npair, fit$npair)
+
+    # id and time may also be given as strings.
+    fit3 <- kee_async(y ~ x1 + x2,
+        data_y = d$y, data_x = d$x,
+        id = "id", time = "time", h = 0.3
+    )
+    expect_equal(coef(fit), coef(fit3))
+})
+
+## ------------------------------------------------------------------ methods
+
+test_that("the standard model generics work on every fitted class", {
+    skip_on_cran()
+    set.seed(61)
+    d <- sim_async_data(n = 150, beta = function(tt) cbind(0.5, 1 + tt))
+    ti <- kee_async(y ~ x, data_y = d$y, data_x = d$x, id = id, time = time, h = 0.3)
+    td <- kee_async_td(y ~ x,
+        data_y = d$y, data_x = d$x, id = id, time = time,
+        times = c(0.3, 0.5, 0.7), h = 0.3
+    )
+
+    expect_equal(dim(vcov(ti)), c(2L, 2L))
+    expect_equal(vcov(ti), ti$var)
+    expect_identical(nobs(ti), 150L)
+
+    ci <- confint(ti)
+    expect_equal(dim(ci), c(2L, 2L))
+    expect_true(all(ci[, 1] < coef(ti) & coef(ti) < ci[, 2]))
+
+    expect_length(vcov(td), 3L)
+    expect_equal(dim(vcov(td, time = 0.5)), c(2L, 2L))
+    expect_equal(vcov(td, time = 0.49), vcov(td, time = 0.5))
+    expect_identical(nobs(td), 150L)
+
+    cid <- confint(td)
+    expect_equal(nrow(cid), 6L)
+    expect_true(all(cid$lower < cid$estimate | is.na(cid$lower)))
+    expect_error(confint(td, parm = "nope"), "selects no coefficient")
 })

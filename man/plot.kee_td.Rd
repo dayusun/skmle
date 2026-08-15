@@ -20,14 +20,21 @@ Defaults to all.}
 \code{x}, invisibly. Called for the plot.
 }
 \description{
-Draws \eqn{\hat\beta_j(t)} against \code{t} with pointwise 95\% Wald bands, one
-panel per coefficient. The bands are pointwise and are not corrected for
-smoothing bias, so they cover \eqn{E\hat\beta(t)}, not \eqn{\beta(t)}.
+Draws \eqn{\hat\beta_j(t)} against \code{t} with pointwise Wald bands, one panel
+per coefficient.
+}
+\details{
+The bands are pointwise, not simultaneous: reading them as a confidence
+region for the whole curve overstates the evidence. They are also not
+corrected for smoothing bias, so they cover \eqn{E\hat\beta(t)} rather than
+\eqn{\beta(t)}; a large bandwidth flattens the curve without widening the
+band to say so.
 }
 \examples{
 set.seed(1)
 d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-fit <- kee_async_td(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
+fit <- kee_async_td(y ~ x,
+  data_y = d$y, data_x = d$x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.05), h = 0.3
 )
 plot(fit)

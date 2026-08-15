@@ -15,7 +15,6 @@ skmle_cv(
   h_grid = NULL,
   n_h = 10,
   nknots = 3,
-  norder = 3,
   lq_nodes = 64,
   maxeval = 10000,
   xtol_rel = 1e-06,
@@ -49,10 +48,9 @@ a grid is generated automatically from the observed time gaps.}
 \item{n_h}{Number of candidate bandwidths to generate when \code{h_grid} is \code{NULL}.}
 
 \item{nknots}{Number of interior knots used in the sieve approximation of the
-baseline component.}
-
-\item{norder}{Order parameter supplied to the high-level interface for the spline
-approximation.}
+baseline component. Knots are placed at \code{(1:nknots)/(nknots + 1)}. The
+basis is a natural cubic spline (\code{splines::ns}); its order is fixed, which
+is why there is no \code{norder} argument.}
 
 \item{lq_nodes}{Number of Legendre-Gauss quadrature nodes used in numerical
 integration.}

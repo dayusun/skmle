@@ -40,6 +40,8 @@ navbar:
       menu:
       - text: Getting Started with skmle
         href: articles/tutorial.html
+      - text: Asynchronous Longitudinal Regression
+        href: articles/asynchronous.html
       - text: Benchmarking skmle Against SurvSparse
         href: articles/benchmark_survsparse.html
     news:
@@ -68,6 +70,7 @@ reference:
     response and a covariate observed on different time grids.
   contents:
   - kee_async
+  - kee_async_cv
   - kee_async_td
 
 - title: Simulation
@@ -79,6 +82,9 @@ reference:
   contents:
   - plot.skmle
   - plot.kee_td
+  - vcov.skmle
+  - nobs.skmle
+  - confint.kee_td
   - summary.skmle
   - summary.kee
   - print.skmle
@@ -91,4 +97,5 @@ articles:
   navbar: Articles
   contents:
   - tutorial
+  - asynchronous
   - benchmark_survsparse

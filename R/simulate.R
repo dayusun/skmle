@@ -241,8 +241,9 @@ sim_skmle_data <- function(n,
 #' @return A list with two data frames on different time grids:
 #' \describe{
 #'   \item{y}{`id`, `time`, `y` -- one row per response occasion.}
-#'   \item{x}{`id`, `time`, `x` -- one row per covariate occasion, `x` being a
-#'     matrix column with `p` columns.}
+#'   \item{x}{`id`, `time`, and one column per covariate coordinate -- named
+#'     `x` when there is a single covariate, `x1`, `x2`, ... otherwise. One row
+#'     per covariate occasion, on a time grid independent of `y`'s.}
 #' }
 #'
 #' @references
@@ -254,6 +255,11 @@ sim_skmle_data <- function(n,
 #' set.seed(1)
 #' d <- sim_async_data(n = 50)
 #' str(d)
+#'
+#' # The two tables share `id` and nothing else; their `time` grids are
+#' # independent draws, which is what makes the data asynchronous.
+#' head(d$y, 3)
+#' head(d$x, 3)
 #'
 #' # A coefficient curve, for kee_async_td().
 #' d2 <- sim_async_data(n = 50, beta = function(tt) cbind(0.5, 1 + tt))
@@ -314,10 +320,10 @@ sim_async_data <- function(n, beta = c(0.5, 1.5), lambda_y = 5, lambda_x = 5,
             logistic = rbinom(nT, 1L, 1 / (1 + exp(-eta)))
         )
 
+        # Plain numeric columns, not a matrix column: the covariate names have
+        # to be usable on the right-hand side of a formula.
         yl[[i]] <- data.frame(id = i, time = Tt, y = as.numeric(yv))
-        xi <- data.frame(id = rep(i, nS), time = Ss)
-        xi$x <- Xs
-        xl[[i]] <- xi
+        xl[[i]] <- data.frame(id = rep(i, nS), time = Ss, Xs)
     }
 
     y <- do.call(rbind, yl)

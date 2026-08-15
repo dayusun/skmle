@@ -32,7 +32,6 @@ estres_ori <- estproc_ori_d_mul(
   simdata,
   nn,
   nknots = 3,
-  norder = 3,
   s = s_val,
   h = hh
 )
@@ -57,8 +56,7 @@ estres_pkg <- skmle(
   obs_times = obs_times,
   s = s_val,
   h = hh,
-  nknots = 3,
-  norder = 3
+  nknots = 3
 )
 pkg_time <- proc.time() - ptm
 cat("skmle Package time:\n")

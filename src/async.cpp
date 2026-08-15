@@ -93,18 +93,21 @@ List async_pairs_cpp(const IntegerVector &y_sub, const NumericVector &y_time,
 List async_pair_accum_cpp(const IntegerVector &pj, const IntegerVector &pk,
                           const arma::vec &w, const arma::vec &yv, int n_x) {
   vec omega(n_x, fill::zeros), cc(n_x, fill::zeros);
+  double sy2 = 0.0;
   const R_xlen_t np = pj.size();
 
   for (R_xlen_t m = 0; m < np; ++m) {
     if (m % 100000 == 0) Rcpp::checkUserInterrupt();
     const int k = pk[m];
-    // Weights are signed for order-p ladders, so no `> 0` guard here: dropping
-    // negative pairs would silently change the estimating equation.
     omega[k] += w[m];
     cc[k] += w[m] * yv[pj[m]];
+    // sum_m w_m Y_m^2.  With omega and c this is enough to evaluate the
+    // weighted squared error at any beta without revisiting the pairs:
+    //   sum_m w_m (Y_m - mu_k)^2 = sy2 - 2 sum_k c_k mu_k + sum_k omega_k mu_k^2.
+    sy2 += w[m] * yv[pj[m]] * yv[pj[m]];
   }
 
-  return List::create(_["omega"] = omega, _["c"] = cc);
+  return List::create(_["omega"] = omega, _["c"] = cc, _["sy2"] = sy2);
 }
 
 //' Build the collapsed weights at one target time (time-dependent coefficients)
@@ -115,7 +118,7 @@ List async_pair_accum_cpp(const IntegerVector &pj, const IntegerVector &pk,
 List async_td_accum_cpp(const IntegerVector &y_sub, const arma::vec &wy,
                         const arma::vec &yv, const IntegerVector &x_sub,
                         const arma::vec &vx, int n) {
-  vec Sw(n, fill::zeros), Sy(n, fill::zeros);
+  vec Sw(n, fill::zeros), Sy(n, fill::zeros), Sy2(n, fill::zeros);
 
   const R_xlen_t ny = y_sub.size();
   for (R_xlen_t j = 0; j < ny; ++j) {
@@ -124,19 +127,22 @@ List async_td_accum_cpp(const IntegerVector &y_sub, const arma::vec &wy,
     if (i == NA_INTEGER || i < 0 || i >= n) continue;
     Sw[i] += wy[j];
     Sy[i] += wy[j] * yv[j];
+    Sy2[i] += wy[j] * yv[j] * yv[j];
   }
 
   const R_xlen_t nx = x_sub.size();
   vec omega(nx, fill::zeros), cc(nx, fill::zeros);
+  double sy2 = 0.0;
   for (R_xlen_t k = 0; k < nx; ++k) {
     if (vx[k] == 0.0) continue;
     const int i = x_sub[k];
     if (i == NA_INTEGER || i < 0 || i >= n) continue;
     omega[k] = Sw[i] * vx[k];
     cc[k] = Sy[i] * vx[k];
+    sy2 += Sy2[i] * vx[k];
   }
 
-  return List::create(_["omega"] = omega, _["c"] = cc);
+  return List::create(_["omega"] = omega, _["c"] = cc, _["sy2"] = sy2);
 }
 
 //' Solve the collapsed kernel-weighted estimating equation

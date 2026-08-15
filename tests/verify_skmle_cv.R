@@ -63,7 +63,6 @@ cv_res <- skmle_cv(
   K = 3,
   h_grid = h_grid_test,
   nknots = 3,
-  norder = 3,
   quiet = FALSE
 )
 

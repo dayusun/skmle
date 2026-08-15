@@ -36,8 +36,9 @@ covariate and error processes.}
 A list with two data frames on different time grids:
 \describe{
 \item{y}{\code{id}, \code{time}, \code{y} -- one row per response occasion.}
-\item{x}{\code{id}, \code{time}, \code{x} -- one row per covariate occasion, \code{x} being a
-matrix column with \code{p} columns.}
+\item{x}{\code{id}, \code{time}, and one column per covariate coordinate -- named
+\code{x} when there is a single covariate, \code{x1}, \code{x2}, ... otherwise. One row
+per covariate occasion, on a time grid independent of \code{y}'s.}
 }
 }
 \description{
@@ -66,6 +67,11 @@ covariate coordinates.
 set.seed(1)
 d <- sim_async_data(n = 50)
 str(d)
+
+# The two tables share `id` and nothing else; their `time` grids are
+# independent draws, which is what makes the data asynchronous.
+head(d$y, 3)
+head(d$x, 3)
 
 # A coefficient curve, for kee_async_td().
 d2 <- sim_async_data(n = 50, beta = function(tt) cbind(0.5, 1 + tt))

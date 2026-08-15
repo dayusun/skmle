@@ -23,9 +23,9 @@
 #'   averages inside the C++ backend as well as to the row weights, so the two
 #'   are always consistent.
 #' @param nknots Number of interior knots used in the sieve approximation of the
-#'   baseline component.
-#' @param norder Order parameter supplied to the high-level interface for the spline
-#'   approximation.
+#'   baseline component. Knots are placed at `(1:nknots)/(nknots + 1)`. The
+#'   basis is a natural cubic spline (`splines::ns`); its order is fixed, which
+#'   is why there is no `norder` argument.
 #' @param lq_nodes Number of Legendre-Gauss quadrature nodes used in numerical
 #'   integration.
 #' @param maxeval Maximum number of optimizer evaluations.
@@ -90,7 +90,7 @@
 #' @importFrom splines ns
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
-skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE) {
+skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE) {
   # validate inputs --------------------------------------------------------
   if (missing(formula) || missing(data) || missing(id) ||
     missing(obs_times) || missing(s) || missing(h)) {
@@ -99,7 +99,6 @@ skmle <- function(formula, data, id, obs_times, s, h, nknots = 3, norder = 3, lq
   if (!is.numeric(h) || length(h) != 1 || h <= 0) stop("'h' must be a positive number")
   if (!is.numeric(s) || length(s) != 1) stop("'s' must be a numeric scalar")
   if (!is.numeric(nknots) || length(nknots) != 1 || nknots < 1) stop("'nknots' must be >= 1")
-  if (!is.numeric(norder) || length(norder) != 1 || norder < 1) stop("'norder' must be >= 1")
   if (!is.numeric(lq_nodes) || length(lq_nodes) != 1 || lq_nodes < 1) stop("'lq_nodes' must be >= 1")
   if (!is.data.frame(data)) stop("'data' must be a data.frame")
 

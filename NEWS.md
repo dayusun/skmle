@@ -10,6 +10,37 @@ restriction, and the `Description`, README, package help page and tutorial have
 been rewritten to present the two settings on equal footing rather than
 treating the second as an extra.
 
+## Usability
+
+* `kee_async()` and `kee_async_td()` take a formula spanning the two tables --
+  `kee_async(y ~ x, data_y, data_x, id, time, h)` -- instead of seven
+  positional vectors. Swapping the response and covariate tables used to return
+  plausible numbers with no complaint.
+* `kee_async_cv()` selects the bandwidth by subject-level cross-validation,
+  scoring candidates by kernel-weighted squared error on held-out subjects. The
+  asynchronous estimators previously offered no guidance on `h` at all.
+* `kee_cox()` and `kee_additive()` now check that times lie on `[0, 1]`, which
+  `skmle()` already did. `kee_additive()` genuinely requires it -- its
+  quadrature is built on `[0, 1]` -- so times in other units were silently
+  wrong rather than merely unusual.
+* `kee_async()` warns when fewer than 5% of response occasions have a covariate
+  observation in their window, which is the signature of a bandwidth on the
+  wrong scale. The asynchronous estimators are scale-free, so this cannot be
+  checked by a range test.
+* `vcov()`, `nobs()` and (for `kee_td`) `confint()` methods. `confint()`
+  previously failed on every fitted object in the package, because there was no
+  `vcov()` for the default method to call.
+* `skmle()` and `skmle_cv()` no longer take `norder`. It was validated and
+  documented but never used: the sieve basis is a natural cubic spline, whose
+  order is fixed. Existing calls that pass it will now error, and should drop
+  the argument.
+* `sim_async_data()` returns the covariates as plain columns (`x`, or `x1`,
+  `x2`, ...) rather than a matrix column, so they can be named in a formula.
+* New article, `vignette("asynchronous")`: why last-value-carried-forward and
+  regression calibration are inconsistent here, how to read the bandwidth
+  sensitivity plot, what the half kernel changes, and how to get the units
+  right.
+
 ## Asynchronous longitudinal data
 
 * `kee_async()` and `kee_async_td()` implement the kernel-weighted estimating

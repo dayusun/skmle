@@ -47,6 +47,7 @@ mismatched time grids, with the heavy numerical work in C++ via `Rcpp` and
 **Asynchronous longitudinal outcomes**
 
 - `kee_async()` — time-invariant coefficients.
+- `kee_async_cv()` — bandwidth selection by subject-level cross-validation.
 - `kee_async_td()` — a coefficient curve `β(t)`, estimated pointwise.
 - `sim_async_data()` — simulate a response and a covariate on independent
   observation-time streams.
@@ -141,8 +142,19 @@ d <- sim_async_data(n = 300, beta = c(0.5, 1.5))
 head(d$y)   # id, time, y   -- response occasions
 head(d$x)   # id, time, x   -- covariate occasions, on a different grid
 
-fit_a <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = 0.25)
+# The formula spans both tables: y from data_y, x from data_x.
+fit_a <- kee_async(y ~ x, data_y = d$y, data_x = d$x,
+                   id = id, time = time, h = 0.25)
 summary(fit_a)
+```
+
+`h` is the one consequential choice; `kee_async_cv()` makes it by
+cross-validation over subjects:
+
+```r
+cv <- kee_async_cv(y ~ x, data_y = d$y, data_x = d$x,
+                   id = id, time = time, K = 5, seed = 1)
+cv$h_cv
 ```
 
 Each (response, covariate) pair within a subject contributes in proportion to
@@ -154,12 +166,19 @@ pointwise. Both time arguments are smoothed there, so it converges at the
 bivariate rate `(n h1 h2)^(1/2)` and the bands are correspondingly wide:
 
 ```r
-fit_td <- kee_async_td(
-  d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
-  times = seq(0.2, 0.8, by = 0.05), h = 0.25
-)
+fit_td <- kee_async_td(y ~ x, data_y = d$y, data_x = d$x,
+                       id = id, time = time,
+                       times = seq(0.2, 0.8, by = 0.05), h = 0.25)
 
 plot(fit_td)   # beta_j(t) with pointwise 95% bands
+```
+
+There is a full article on this setting — why last-value-carried-forward and
+regression calibration fail, how to read the bandwidth diagnostics, what the
+half kernel changes:
+
+```r
+vignette("asynchronous", package = "skmle")
 ```
 
 Identity, log and logistic links are supported in both.

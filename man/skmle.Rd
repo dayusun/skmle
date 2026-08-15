@@ -12,7 +12,6 @@ skmle(
   s,
   h,
   nknots = 3,
-  norder = 3,
   lq_nodes = 64,
   maxeval = 10000,
   xtol_rel = 1e-06,
@@ -37,10 +36,9 @@ model and \code{s = 1} gives the additive hazards model.}
 \item{h}{Positive kernel bandwidth.}
 
 \item{nknots}{Number of interior knots used in the sieve approximation of the
-baseline component.}
-
-\item{norder}{Order parameter supplied to the high-level interface for the spline
-approximation.}
+baseline component. Knots are placed at \code{(1:nknots)/(nknots + 1)}. The
+basis is a natural cubic spline (\code{splines::ns}); its order is fixed, which
+is why there is no \code{norder} argument.}
 
 \item{lq_nodes}{Number of Legendre-Gauss quadrature nodes used in numerical
 integration.}

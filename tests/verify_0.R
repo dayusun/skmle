@@ -8,7 +8,6 @@ estres_pkg_0 <- skmle(
   s = s_val,
   h = hh,
   nknots = 3,
-  norder = 3,
   maxeval = 1
 )
 cat('C++ nll(0):', -estres_pkg_0$loglik, '\n')

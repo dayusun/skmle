@@ -108,3 +108,53 @@ test_that("the shared kernel helper matches the definition it replaced", {
     m <- matrix(lag[1:20], 4, 5)
     expect_equal(dim(kernel_weights(m, h)), c(4L, 5L))
 })
+
+test_that("every survival estimator rejects times off the unit interval", {
+  skip_on_cran()
+  dat <- make_onesided_sim(60)
+  bad <- dat
+  bad$X <- dat$X * 365
+  bad$obs_times <- dat$obs_times * 365
+
+  # kee_additive integrates over [0, 1] (tt = 0.5*lq_x + 0.5) and skmle builds
+  # its spline basis on [0, 1], so times off that scale are silently wrong
+  # rather than merely unusual.  All three must say so, not just skmle().
+  for (f in list(
+    function(d) skmle(survival::Surv(X, delta) ~ covariates,
+      data = d, id = id, obs_times = obs_times, s = 0, h = 0.5
+    ),
+    function(d) kee_cox(survival::Surv(X, delta) ~ covariates,
+      data = d, id = id, obs_times = obs_times, h = 0.5
+    ),
+    function(d) kee_additive(survival::Surv(X, delta) ~ covariates,
+      data = d, id = id, obs_times = obs_times, h = 0.5
+    )
+  )) {
+    expect_error(f(bad), "must lie in \\[0, 1\\]")
+    expect_no_error(f(dat))
+  }
+})
+
+test_that("skmle no longer advertises an argument it ignores", {
+  expect_false("norder" %in% names(formals(skmle)))
+  expect_false("norder" %in% names(formals(skmle_cv)))
+})
+
+test_that("vcov and confint work on the survival fits", {
+  skip_on_cran()
+  dat <- make_onesided_sim(60)
+  f <- kee_cox(survival::Surv(X, delta) ~ covariates,
+    data = dat, id = id, obs_times = obs_times, h = 0.5
+  )
+  expect_equal(vcov(f), f$var)
+  ci <- confint(f)
+  expect_equal(dim(ci), c(2L, 2L))
+  expect_identical(nobs(f), 60L)
+
+  s <- skmle(survival::Surv(X, delta) ~ covariates,
+    data = dat, id = id, obs_times = obs_times, s = 0, h = 0.5, nknots = 3
+  )
+  expect_equal(vcov(s), s$var)
+  expect_equal(dim(confint(s)), c(2L, 2L))
+  expect_identical(nobs(s), 60L)
+})

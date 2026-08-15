@@ -72,7 +72,7 @@
 #'
 #' @export
 skmle_cv <- function(formula, data, id, obs_times, s, K = 5, h_grid = NULL,
-                     n_h = 10, nknots = 3, norder = 3, lq_nodes = 64,
+                     n_h = 10, nknots = 3, lq_nodes = 64,
                      maxeval = 10000, xtol_rel = 1e-6, seed = NULL,
                      quiet = FALSE, one_sided = TRUE) {
   if (missing(formula) || missing(data) || missing(id) || missing(obs_times) || missing(s)) {

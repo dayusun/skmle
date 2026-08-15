@@ -97,14 +97,13 @@ fit_skmle <- skmle(
   obs_times = obs_times,
   s = 0,
   h = 0.5,
-  nknots = 3,
-  norder = 3
+  nknots = 3
 )
 
 fit_skmle
 #> Call:
 #> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
-#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3, norder = 3)
+#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
 #> 
 #> Coefficients:
 #> covariates1 covariates2 
@@ -120,7 +119,7 @@ objects, the formatted inferential output is produced by
 summary(fit_skmle)
 #> Call:
 #> skmle(formula = Surv(X, delta) ~ covariates, data = dat, id = id, 
-#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3, norder = 3)
+#>     obs_times = obs_times, s = 0, h = 0.5, nknots = 3)
 #> 
 #>   n= 80
 #> 
@@ -241,7 +240,6 @@ cv_fit <- skmle_cv(
   K = 3,
   h_grid = c(0.3, 0.4, 0.5),
   nknots = 3,
-  norder = 3,
   quiet = TRUE
 )
 
@@ -267,8 +265,7 @@ You can then inspect the final refit in the usual way.
 summary(cv_fit$fit)
 #> Call:
 #> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 
-#>     id = id, obs_times = obs_times, s = 0, nknots = 3, norder = 3, 
-#>     h = 0.3)
+#>     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.3)
 #> 
 #>   n= 80
 #> 
@@ -336,14 +333,20 @@ head(d$x, 3)
 
 The two tables are deliberately separate — they are on different grids,
 so there is no single data frame that holds both without inventing rows.
+The formula spans both: its left-hand side is looked up in `data_y`, its
+right-hand side in `data_x`, and `id` and `time` name columns present in
+each.
 
 ``` r
 
-fit_a <- kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = 0.25)
+fit_a <- kee_async(y ~ x,
+  data_y = d$y, data_x = d$x,
+  id = id, time = time, h = 0.25
+)
 summary(fit_a)
 #> Call:
-#> kee_async(y_id = d$y$id, y_time = d$y$time, y = d$y$y, x_id = d$x$id, 
-#>     x_time = d$x$time, X = d$x$x, h = 0.25)
+#> kee_async(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#>     time = time, h = 0.25)
 #> 
 #>   n= 300
 #> 
@@ -354,29 +357,51 @@ summary(fit_a)
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Optimization status: 0
+confint(fit_a)
+#>                 2.5 %    97.5 %
+#> (Intercept) 0.4818555 0.7382607
+#> x           1.2230761 1.4500656
 ```
 
-The default covariate process in
-[`sim_async_data()`](https://dayusun.github.io/skmle/reference/sim_async_data.md)
-is Ornstein-Uhlenbeck, whose covariance has a kink on the diagonal. That
-is the case Cao, Zeng and Fine’s Section 6 leaves open, and it leaves an
-\\O(h)\\ bias that a symmetric kernel cannot remove, so the estimate
-drifts as the bandwidth grows.
+The bandwidth is the one consequential choice.
+[`kee_async_cv()`](https://dayusun.github.io/skmle/reference/kee_async_cv.md)
+selects it by cross-validation over subjects, scoring each candidate by
+the kernel-weighted squared error on the held-out subjects:
 
 ``` r
 
-sapply(c(0.15, 0.30), function(h) {
-  coef(kee_async(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x, h = h))[2]
-})
-#>        x        x 
-#> 1.355546 1.321226
+cv <- kee_async_cv(y ~ x,
+  data_y = d$y, data_x = d$x, id = id, time = time,
+  h_grid = c(0.10, 0.15, 0.25, 0.40), K = 5, seed = 1, quiet = TRUE
+)
+#> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid
+#> to check that the minimum is interior
+cv
+#> Call:
+#> kee_async_cv(formula = y ~ x, data_y = d$y, data_x = d$x, id = id, 
+#>     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), K = 5, seed = 1, 
+#>     quiet = TRUE)
+#> 
+#> 5-fold subject-level cross-validation
+#> 
+#>     h cvloss nfold_used
+#>  0.10 1.0892          5
+#>  0.15 1.1565          5
+#>  0.25 1.2665          5
+#>  0.40 1.4166          5
+#> 
+#> Selected h = 0.1
+#> 
+#> Coefficients at the refit:
+#> (Intercept)           x 
+#>   0.6264998   1.3661731
 ```
 
 If the coefficients themselves vary with time,
 [`kee_async_td()`](https://dayusun.github.io/skmle/reference/kee_async_td.md)
 estimates the curve \\\beta(t)\\ pointwise. Both time arguments are
-smoothed, so it converges at the bivariate rate \\(n h_1 h_2)^{1/2}\\
-and the bands are wide.
+smoothed there, so it converges at the bivariate rate \\(n h_1
+h_2)^{1/2}\\ and the bands are wide.
 
 ``` r
 
@@ -386,13 +411,19 @@ dt <- sim_async_data(
   lambda_y = 8, lambda_x = 8,
   x_cov = function(s, t) exp(-4 * (s - t)^2)
 )
-fit_td <- kee_async_td(dt$y$id, dt$y$time, dt$y$y, dt$x$id, dt$x$time, dt$x$x,
+fit_td <- kee_async_td(y ~ x,
+  data_y = dt$y, data_x = dt$x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.05), h = 0.2
 )
 plot(fit_td)
 ```
 
 ![](tutorial_files/figure-html/async-td-1.png)
+
+For a fuller treatment — why last-value-carried-forward and regression
+calibration fail here, how to read the bandwidth diagnostics, and what
+the half kernel changes — see
+[`vignette("asynchronous", package = "skmle")`](https://dayusun.github.io/skmle/articles/asynchronous.md).
 
 ## Typical Workflow
 

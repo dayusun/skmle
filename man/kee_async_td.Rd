@@ -3,15 +3,14 @@
 \name{kee_async_td}
 \alias{kee_async_td}
 \alias{print.kee_td}
-\title{Asynchronous longitudinal regression, time-dependent coefficients}
+\title{Asynchronous longitudinal regression with time-dependent coefficients}
 \usage{
 kee_async_td(
-  y_id,
-  y_time,
-  y,
-  x_id,
-  x_time,
-  X,
+  formula,
+  data_y,
+  data_x,
+  id,
+  time,
   times,
   h,
   h2 = h,
@@ -25,33 +24,39 @@ kee_async_td(
 \method{print}{kee_td}(x, ...)
 }
 \arguments{
-\item{y_id, y_time, y}{Subject identifier, observation time and value for each
-response occasion. Vectors of equal length.}
+\item{formula}{A two-sided formula, \code{y ~ x1 + x2}. The left-hand side is
+evaluated in \code{data_y}, the right-hand side in \code{data_x}.}
 
-\item{x_id, x_time}{Subject identifier and observation time for each covariate
-occasion. Vectors of equal length, matching the rows of \code{X}.}
+\item{data_y}{Data frame of response occasions: one row per time the response
+was recorded.}
 
-\item{X}{Covariate matrix, one row per covariate occasion.}
+\item{data_x}{Data frame of covariate occasions: one row per time the
+covariates were recorded. Its time grid need not overlap \code{data_y}'s at all.}
+
+\item{id}{Subject identifier, unquoted or as a string. Must name a column
+present in \strong{both} tables. Non-numeric identifiers are allowed.}
+
+\item{time}{Observation time, unquoted or as a string. Must name a column
+present in \strong{both} tables.}
 
 \item{times}{Numeric vector of target times at which to estimate
-\eqn{\beta(t)}.}
+\eqn{\beta(t)}. Keep them inside the range of the observed times.}
 
 \item{h}{Bandwidth for the response side, \eqn{h_1}.}
 
 \item{h2}{Bandwidth for the covariate side, \eqn{h_2}. Defaults to \code{h}.}
 
-\item{one_sided}{Logical. \code{FALSE} (the default) is the full two-sided kernel.
+\item{one_sided}{Logical. \code{FALSE} (default) is the full two-sided kernel.
 \code{TRUE} restricts the \strong{covariate} side to observations strictly before the
-target time, so \eqn{\beta(t)} is estimated from covariate values that were
-already available at \code{t}. The response side is always two-sided: it is a
-local average around \code{t}, not a filtering step. Both lags are measured as
-"how far in the past", matching \code{\link[=kee_async]{kee_async()}} and the survival
-estimators.}
+target time, so \eqn{\beta(t)} uses only covariate values already available
+at \code{t}. The response side stays two-sided: it is a local average around
+\code{t}, not a filtering step. Both lags are measured as "how far in the past",
+matching \code{\link[=kee_async]{kee_async()}} and the survival estimators.}
 
 \item{link}{One of \code{"identity"} (closed form), \code{"log"} or \code{"logistic"}
 (Newton-Raphson).}
 
-\item{intercept}{Logical, prepend a column of ones to \code{X}.}
+\item{intercept}{Logical, include an intercept.}
 
 \item{maxit, tol}{Newton-Raphson controls, ignored when \code{link = "identity"}.}
 
@@ -63,15 +68,16 @@ estimators.}
 An object of class \code{kee_td}:
 \describe{
 \item{coefficients}{\code{length(times)} by \code{p} matrix of \eqn{\hat\beta(t)}.}
-\item{se, z, p.value}{Pointwise standard errors and Wald statistics, same
-shape as \code{coefficients}.}
+\item{se, z, p.value}{Pointwise standard errors and Wald statistics, the
+same shape as \code{coefficients}.}
 \item{var}{List of \eqn{p \times p} sandwich matrices, one per target time.}
-\item{times, h, h2, link, n, call}{Fit metadata.}
-\item{convergence}{Integer per target time: 0 converged, 1 singular,
-2 hit \code{maxit}, 3 no data in the window.}
+\item{times, h, h2, one_sided, link, n}{Fit settings.}
+\item{nactive}{Covariate rows carrying nonzero weight at each target time.}
+\item{convergence}{Per target time: \code{0} converged, \code{1} singular, \code{2} hit
+\code{maxit}, \code{3} no data in the window.}
 }
-
-\code{x}, invisibly.
+\code{coef()}, \code{vcov()}, \code{confint()}, \code{nobs()}, \code{print()} and \code{plot()} methods are
+available.
 }
 \description{
 Fit \eqn{E\{Y(t) \mid X(t)\} = g\{X(t)^\top \beta(t)\}} from asynchronous
@@ -79,33 +85,57 @@ sparse longitudinal data, estimating the coefficient curve \eqn{\beta(t)}
 pointwise. This is the time-dependent coefficient estimator of Cao, Zeng and
 Fine (2015), the companion to \code{\link[=kee_async]{kee_async()}}.
 
-At a target time \eqn{t} the estimating equation weights a response occasion
-and a covariate occasion by their separate distances to \eqn{t},
-\deqn{U_n\{\beta(t)\} = n^{-1} \sum_i \sum_j \sum_k W_{h_1}(T_{ij} - t)
-      W_{h_2}(S_{ik} - t) X_i(S_{ik})
+At a target time \eqn{t} a response occasion and a covariate occasion are
+weighted by their \strong{separate} distances to \eqn{t},
+\deqn{U_n\{\beta(t)\} = n^{-1} \sum_i \sum_j \sum_k W_{h_1}(t - T_{ij})
+      W_{h_2}(t - S_{ik}) X_i(S_{ik})
       [ Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \beta(t)\} ] = 0.}
+The lag between the two occasions never enters, only their distances to
+\eqn{t}. That is the difference from \code{\link[=kee_async]{kee_async()}}, where the lag is
+everything.
 }
-\details{
+\section{A slower rate than you may expect}{
 Because both time arguments are smoothed, the estimator converges at the
-\strong{bivariate} smoothing rate \eqn{(n h_1 h_2)^{1/2}}, slower than the
-\eqn{(nh)^{1/2}} of the time-invariant fit and much slower than the usual
-varying-coefficient rate available under synchronous sampling. Expect wide
-bands and choose bandwidths accordingly.
+\strong{bivariate} rate \eqn{(n h_1 h_2)^{1/2}}. That is slower than the
+\eqn{(nh)^{1/2}} of the time-invariant fit, and much slower than the usual
+varying-coefficient rate available when response and covariate are observed
+together. Expect wide bands. Do not read a wiggle in the curve as structure
+without checking it against them.
 
+A practical consequence: a sample that gives a comfortable time-invariant fit
+can be far too small for a credible curve. If the bands cover a horizontal
+line across the whole range, the honest reading is that the data do not
+resolve time variation, not that \eqn{\beta(t)} is flat.
+}
+
+\section{Reading the output}{
+\code{se} holds pointwise sandwich standard errors at each target time. They are
+pointwise, not simultaneous, so a curve leaving the band at one or two target
+times is not evidence of anything on its own.
+
+No undersmoothing correction is applied, so the intervals are centred on the
+smoothed curve \eqn{E\hat\beta(t)} rather than on \eqn{\beta(t)}. With a large
+bandwidth the curve is flattened toward a constant and the bands do not widen
+to say so. Refit at a smaller \code{h} to see how much of the shape is smoothing.
+
+Target times within a bandwidth of the edge of the observed time range draw on
+a one-sided window and are the least reliable part of the curve. Keep \code{times}
+inside the data.
+}
+
+\section{Cost}{
 The product weight factorises over the two occasion indices, so no pair is
 ever enumerated: the response side collapses to two per-subject scalars and
-the covariate side to one weight per row. Each target time then costs
-\eqn{O((n_y + n_x p^2))}. Fits at successive target times are warm-started
-from the previous solution when the link is nonlinear.
-
-Standard errors are the pointwise sandwich at each target time; they are not
-simultaneous bands, and no undersmoothing correction is applied, so the
-intervals are centred on the smoothed curve rather than on \eqn{\beta(t)}.
+the covariate side to one weight per row. Each target time costs
+\eqn{O(n_y + n_x p^2)}. Fits at successive target times are warm-started from
+the previous solution when the link is nonlinear.
 }
+
 \examples{
 set.seed(1)
 d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))
-fit <- kee_async_td(d$y$id, d$y$time, d$y$y, d$x$id, d$x$time, d$x$x,
+fit <- kee_async_td(y ~ x,
+  data_y = d$y, data_x = d$x, id = id, time = time,
   times = seq(0.2, 0.8, by = 0.1), h = 0.3
 )
 coef(fit)
@@ -116,5 +146,5 @@ asynchronous longitudinal data. \emph{Journal of the Royal Statistical
 Society, Series B} 77, 755-776.
 }
 \seealso{
-\code{\link[=kee_async]{kee_async()}} for time-invariant coefficients, \code{\link[=plot.kee_td]{plot.kee_td()}}.
+\code{\link[=kee_async]{kee_async()}}, \code{\link[=plot.kee_td]{plot.kee_td()}}
 }

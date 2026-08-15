@@ -35,8 +35,7 @@ estres_pkg <- skmle(
   obs_times = obs_times,
   s = s_val,
   h = hh,
-  nknots = 3,
-  norder = 3
+  nknots = 3
 )
 
 p <- plot(estres_pkg)

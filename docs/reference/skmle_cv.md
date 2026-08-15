@@ -16,7 +16,6 @@ skmle_cv(
   h_grid = NULL,
   n_h = 10,
   nknots = 3,
-  norder = 3,
   lq_nodes = 64,
   maxeval = 10000,
   xtol_rel = 1e-06,
@@ -72,12 +71,10 @@ print(x, ...)
 - nknots:
 
   Number of interior knots used in the sieve approximation of the
-  baseline component.
-
-- norder:
-
-  Order parameter supplied to the high-level interface for the spline
-  approximation.
+  baseline component. Knots are placed at `(1:nknots)/(nknots + 1)`. The
+  basis is a natural cubic spline
+  ([`splines::ns`](https://rdrr.io/r/splines/ns.html)); its order is
+  fixed, which is why there is no `norder` argument.
 
 - lq_nodes:
 

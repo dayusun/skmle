@@ -113,6 +113,7 @@ kee_cox <- function(formula, data, id, obs_times, h, one_sided = TRUE) {
         stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
     }
     # convert identifier to integer codes for safe use in C++
+    check_time_scale(X_time, obs_times_vec)
     id_vec <- as.integer(factor(id_raw))
 
     n <- length(unique(id_vec))
@@ -283,6 +284,7 @@ kee_additive <- function(formula, data, id, obs_times, h, lq_nodes = 64,
     if (length(id_raw) != length(X_time) || length(obs_times_vec) != length(X_time)) {
         stop("Length of 'id' and 'obs_times' must match number of rows in data/formula")
     }
+    check_time_scale(X_time, obs_times_vec)
     id_vec <- as.integer(factor(id_raw))
 
     n <- length(unique(id_vec))
