@@ -41,27 +41,27 @@ kee_cox_var <- function(beta, covariates, X, obs_times, delta, kerval, h, one_si
     .Call(`_skmle_kee_cox_var`, beta, covariates, X, obs_times, delta, kerval, h, one_sided, id, n_subj)
 }
 
-kee_additive_est <- function(covariates, X, obs_times, delta, kerval, h, one_sided, id, lq_x, lq_w, n_subj) {
-    .Call(`_skmle_kee_additive_est`, covariates, X, obs_times, delta, kerval, h, one_sided, id, lq_x, lq_w, n_subj)
+kee_additive_est <- function(covariates, X, obs_times, delta, kerval, h, tau, one_sided, id, lq_x, lq_w, n_subj) {
+    .Call(`_skmle_kee_additive_est`, covariates, X, obs_times, delta, kerval, h, tau, one_sided, id, lq_x, lq_w, n_subj)
 }
 
-skmle_cpp_fit <- function(n, p, gammap, s, h, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, ineqmat, maxeval, xtol_rel) {
-    .Call(`_skmle_skmle_cpp_fit`, n, p, gammap, s, h, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, ineqmat, maxeval, xtol_rel)
+skmle_cpp_fit <- function(n, p, gammap, s, h, tau, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, ineqmat, maxeval, xtol_rel) {
+    .Call(`_skmle_skmle_cpp_fit`, n, p, gammap, s, h, tau, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, ineqmat, maxeval, xtol_rel)
 }
 
 calc_A <- function(beta, gamma, s, h, one_sided, covariates, bsmat, X, obs_times, delta, kerval, bsmat_XX, n_subj) {
     .Call(`_skmle_calc_A`, beta, gamma, s, h, one_sided, covariates, bsmat, X, obs_times, delta, kerval, bsmat_XX, n_subj)
 }
 
-calc_B <- function(beta, gamma, s, h, one_sided, covariates, bsmat, X, obs_times, delta, kerval, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj) {
-    .Call(`_skmle_calc_B`, beta, gamma, s, h, one_sided, covariates, bsmat, X, obs_times, delta, kerval, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj)
+calc_B <- function(beta, gamma, s, h, tau, one_sided, covariates, bsmat, X, obs_times, delta, kerval, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj) {
+    .Call(`_skmle_calc_B`, beta, gamma, s, h, tau, one_sided, covariates, bsmat, X, obs_times, delta, kerval, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj)
 }
 
-skmle_eval_nll_cpp <- function(n, p, gammap, s, h, beta, gamma, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all) {
-    .Call(`_skmle_skmle_eval_nll_cpp`, n, p, gammap, s, h, beta, gamma, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all)
+skmle_eval_nll_cpp <- function(n, p, gammap, s, h, tau, beta, gamma, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all) {
+    .Call(`_skmle_skmle_eval_nll_cpp`, n, p, gammap, s, h, tau, beta, gamma, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all)
 }
 
-skmle_cv_cpp <- function(n, p, gammap, s, h_grid, K, fold_id, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, maxeval, xtol_rel, quiet, one_sided) {
-    .Call(`_skmle_skmle_cv_cpp`, n, p, gammap, s, h_grid, K, fold_id, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, maxeval, xtol_rel, quiet, one_sided)
+skmle_cv_cpp <- function(n, p, gammap, s, tau, h_grid, K, fold_id, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, maxeval, xtol_rel, quiet, one_sided) {
+    .Call(`_skmle_skmle_cv_cpp`, n, p, gammap, s, tau, h_grid, K, fold_id, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, maxeval, xtol_rel, quiet, one_sided)
 }
 

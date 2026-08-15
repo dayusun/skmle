@@ -127,8 +127,8 @@ List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
 // [[Rcpp::export]]
 List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
                       const arma::vec &obs_times, const arma::vec &delta,
-                      const arma::vec &kerval, double h, bool one_sided,
-                      const arma::vec &id,
+                      const arma::vec &kerval, double h, double tau,
+                      bool one_sided, const arma::vec &id,
                       const arma::vec &lq_x, const arma::vec &lq_w,
                       int n_subj) {
 
@@ -146,8 +146,10 @@ List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
   for (int q = 0; q < n_quad; ++q) {
     Rcpp::checkUserInterrupt();
 
-    double tt = 0.5 * lq_x[q] + 0.5;
-    double weight = 0.5 * lq_w[q];
+    // Legendre nodes mapped to [0, tau], the observed follow-up, not to a
+    // hardcoded unit interval.
+    double tt = 0.5 * tau * (lq_x[q] + 1.0);
+    double weight = 0.5 * tau * lq_w[q];
 
     double S0_tt_sum = 0.0;
     arma::vec S1_tt_sum = arma::zeros<arma::vec>(p);

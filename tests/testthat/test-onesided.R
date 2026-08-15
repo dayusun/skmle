@@ -109,30 +109,58 @@ test_that("the shared kernel helper matches the definition it replaced", {
     expect_equal(dim(kernel_weights(m, h)), c(4L, 5L))
 })
 
-test_that("every survival estimator rejects times off the unit interval", {
+test_that("the fit does not depend on the units time is measured in", {
   skip_on_cran()
-  dat <- make_onesided_sim(60)
-  bad <- dat
-  bad$X <- dat$X * 365
-  bad$obs_times <- dat$obs_times * 365
+  dat <- make_onesided_sim(120)
+  cc <- 365
+  days <- dat
+  days$X <- dat$X * cc
+  days$obs_times <- dat$obs_times * cc
 
-  # kee_additive integrates over [0, 1] (tt = 0.5*lq_x + 0.5) and skmle builds
-  # its spline basis on [0, 1], so times off that scale are silently wrong
-  # rather than merely unusual.  All three must say so, not just skmle().
-  for (f in list(
-    function(d) skmle(survival::Surv(X, delta) ~ covariates,
-      data = d, id = id, obs_times = obs_times, s = 0, h = 0.5
-    ),
-    function(d) kee_cox(survival::Surv(X, delta) ~ covariates,
-      data = d, id = id, obs_times = obs_times, h = 0.5
-    ),
-    function(d) kee_additive(survival::Surv(X, delta) ~ covariates,
-      data = d, id = id, obs_times = obs_times, h = 0.5
-    )
-  )) {
-    expect_error(f(bad), "must lie in \\[0, 1\\]")
-    expect_no_error(f(dat))
+  # The sieve basis and the cumulative-hazard quadrature are built on
+  # [0, max(X)], so rescaling time and the bandwidth together must leave the
+  # coefficients alone.  When both were pinned to [0, 1] this silently
+  # integrated over the wrong interval for any other scale.
+  fit <- function(d, h) {
+    coef(skmle(survival::Surv(X, delta) ~ covariates,
+      data = d, id = id, obs_times = obs_times, s = 0, h = h, nknots = 3
+    ))
   }
+  expect_equal(fit(dat, 0.3), fit(days, 0.3 * cc), tolerance = 1e-5)
+
+  # kee_cox sees time only through comparisons and lags, so it is invariant
+  # for the same reason and needs no rescaling at all.
+  cox <- function(d, h) {
+    coef(kee_cox(survival::Surv(X, delta) ~ covariates,
+      data = d, id = id, obs_times = obs_times, h = h
+    ))
+  }
+  expect_equal(cox(dat, 0.3), cox(days, 0.3 * cc), tolerance = 1e-4)
+
+  # An additive hazard is a rate per unit time, so its coefficients carry
+  # units of 1/time and scale by cc rather than staying put.
+  add_dat <- make_onesided_sim(120, s = 1, seed = 202)
+  add_days <- add_dat
+  add_days$X <- add_dat$X * cc
+  add_days$obs_times <- add_dat$obs_times * cc
+  add <- function(d, h) {
+    coef(kee_additive(survival::Surv(X, delta) ~ covariates,
+      data = d, id = id, obs_times = obs_times, h = h
+    ))
+  }
+  expect_equal(add(add_dat, 0.3), add(add_days, 0.3 * cc) * cc, tolerance = 1e-4)
+})
+
+test_that("times are still required to be finite and non-negative", {
+  dat <- make_onesided_sim(40)
+  bad <- dat
+  bad$X[1] <- -1
+  expect_error(
+    kee_cox(survival::Surv(X, delta) ~ covariates,
+      data = bad, id = id, obs_times = obs_times, h = 0.5
+    ),
+    "non-negative"
+  )
 })
 
 test_that("skmle no longer advertises an argument it ignores", {

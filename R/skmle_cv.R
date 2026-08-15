@@ -131,14 +131,14 @@ skmle_cv <- function(formula, data, id, obs_times, s = 0, K = 5, h_grid = NULL,
       stop("No observation times are strictly prior to failure/censoring times. Cannot determine default h_grid.")
     }
 
-    hmin <- max(min(pos_diffs), n^(-0.6))
+    hmin <- max(min(pos_diffs), tau * n^(-0.6))
 
     # max diff per subject
     max_diffs <- tapply(X_time - obs_times_vec, id_vec, function(x) {
       v <- x[x > 0]
       if (length(v) > 0) max(v) else NA
     })
-    hmax <- min(max(max_diffs, na.rm = TRUE), n^(-0.3))
+    hmax <- min(max(max_diffs, na.rm = TRUE), tau * n^(-0.3))
 
     if (hmin >= hmax) {
       h_grid <- c(hmin)
@@ -152,23 +152,25 @@ skmle_cv <- function(formula, data, id, obs_times, s = 0, K = 5, h_grid = NULL,
   fold_id_subj <- sample(rep(1:K, length.out = n))
 
   # pre-compute quadrature and knots
-  knots <- (1:nknots) / (nknots + 1)
+  tau <- max(X_time)
+  knots <- tau * (1:nknots) / (nknots + 1)
   lqrule <- gaussquad::legendre.quadrature.rules(lq_nodes)[[lq_nodes]]
   lq_x <- lqrule$x
   lq_w <- lqrule$w
-  tts <- 0.5 * lq_x + 0.5
-  bsmat_tt_mat <- as.matrix(splines::ns(tts, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1)))
+  tts <- 0.5 * tau * (lq_x + 1)
+  bsmat_tt_mat <- as.matrix(splines::ns(tts, knots = knots, intercept = TRUE, Boundary.knots = c(0, tau)))
 
   # C++ implementation handles the iteration
   cv_losses <- skmle_cv_cpp(
     n = n, p = ncol(Z), gammap = ncol(bsmat_tt_mat),
     s = as.numeric(s),
+    tau = as.numeric(tau),
     h_grid = as.numeric(h_grid),
     K = as.integer(K),
     fold_id = as.numeric(fold_id_subj),
     id_vec = as.numeric(id_vec),
     covariates = as.matrix(Z),
-    bsmat = as.matrix(splines::ns(X_time, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))),
+    bsmat = as.matrix(splines::ns(X_time, knots = knots, intercept = TRUE, Boundary.knots = c(0, tau))),
     X = as.numeric(X_time),
     obs_times = as.numeric(obs_times_vec),
     delta = as.numeric(delta),

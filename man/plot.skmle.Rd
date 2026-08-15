@@ -4,12 +4,13 @@
 \alias{plot.skmle}
 \title{Plot the estimated baseline function for skmle model}
 \usage{
-\method{plot}{skmle}(x, t_seq = seq(0, 1, length.out = 100), ...)
+\method{plot}{skmle}(x, t_seq = NULL, ...)
 }
 \arguments{
 \item{x}{An object of class \code{skmle}.}
 
-\item{t_seq}{A numeric vector of time points to evaluate the baseline function. Default is \code{seq(0, 1, length.out = 100)}.}
+\item{t_seq}{Time points at which to evaluate the baseline. Defaults to 100
+points spanning the follow-up the model was fitted on.}
 
 \item{...}{Further arguments passed to or from other methods.}
 }

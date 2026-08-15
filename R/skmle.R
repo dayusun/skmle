@@ -12,6 +12,9 @@
 #' @param id Subject identifier. Non-numeric identifiers are allowed and are internally
 #'   converted to integer subject codes.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
+#'   Times may be on any scale; the sieve basis and the cumulative-hazard
+#'   quadrature are built on the observed follow-up, so there is no need to
+#'   rescale to the unit interval first. `h` must be on the same scale.
 #' @param s Box-Cox transformation parameter, defaulting to `0`. `s = 0` is the
 #'   proportional hazards model, `s = 1` is the additive hazards model, and
 #'   values in between interpolate. If you do not have a reason to choose
@@ -142,14 +145,21 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
   id_vec <- as.integer(factor(id_raw))
 
   n <- length(unique(id_vec))
+  # End of follow-up.  The sieve basis and the cumulative-hazard quadrature both
+  # live on [0, tau]; pinning tau at 1 is a standardisation, not a requirement,
+  # and it silently truncated the integral for data on any other scale.
+  tau <- max(X_time)
+  if (!is.finite(tau) || tau <= 0) {
+    stop("event/censoring times must be positive", call. = FALSE)
+  }
   if (is.null(h)) {
     h <- default_bandwidth_surv(X_time, obs_times_vec, n)
     announce_bandwidth(h, "skmle_cv")
   }
   kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
 
-  knots <- (1:nknots) / (nknots + 1)
-  bsmat <- splines::ns(X_time, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))
+  knots <- tau * (1:nknots) / (nknots + 1)
+  bsmat <- splines::ns(X_time, knots = knots, intercept = TRUE, Boundary.knots = c(0, tau))
 
   lqrule <- gaussquad::legendre.quadrature.rules(lq_nodes)[[lq_nodes]]
   lq_x <- lqrule$x
@@ -157,11 +167,11 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
 
   # Precompute for quadrature points (matrix form only)
   n_quad <- length(lq_x)
-  tts <- 0.5 * lq_x + 0.5
+  tts <- 0.5 * tau * (lq_x + 1)
 
   dist_tt_mat <- outer(tts, obs_times_vec, "-")
   kerval_tt_all <- kernel_weights(dist_tt_mat, h, one_sided)
-  bsmat_tt_mat <- as.matrix(splines::ns(tts, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1)))
+  bsmat_tt_mat <- as.matrix(splines::ns(tts, knots = knots, intercept = TRUE, Boundary.knots = c(0, tau)))
 
   # inequality constraints matrix, may be empty if no rows satisfy the filter
   ineqmat <- matrix(numeric(0), nrow = 0, ncol = ncol(Z) + ncol(bsmat))
@@ -179,6 +189,7 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     gammap = ncol(bsmat),
     s = s,
     h = h,
+    tau = tau,
     covariates = as.matrix(Z),
     bsmat = as.matrix(bsmat),
     X = as.numeric(X_time),
@@ -218,6 +229,7 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     gamma = gamma_est,
     s = s,
     h = h,
+    tau = tau,
     one_sided = one_sided,
     covariates = as.matrix(Z),
     bsmat = as.matrix(bsmat),
@@ -255,6 +267,7 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     n = n,
     s = s,
     h = h,
+    tau = tau,
     nknots = nknots,
     call = match.call()
   )
@@ -398,7 +411,8 @@ print.summary.skmle <- function(x, ...) {
 #' Plot the estimated baseline function for skmle model
 #'
 #' @param x An object of class `skmle`.
-#' @param t_seq A numeric vector of time points to evaluate the baseline function. Default is `seq(0, 1, length.out = 100)`.
+#' @param t_seq Time points at which to evaluate the baseline. Defaults to 100
+#'   points spanning the follow-up the model was fitted on.
 #' @param ... Further arguments passed to or from other methods.
 #' @return A `ggplot` object showing the estimated nonparametric baseline
 #'   function evaluated on `t_seq`.
@@ -424,7 +438,7 @@ print.summary.skmle <- function(x, ...) {
 #' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal
 #' @importFrom splines ns
 #' @export
-plot.skmle <- function(x, t_seq = seq(0, 1, length.out = 100), ...) {
+plot.skmle <- function(x, t_seq = NULL, ...) {
   if (!inherits(x, "skmle")) {
     stop("Object must be of class 'skmle'")
   }
@@ -438,9 +452,11 @@ plot.skmle <- function(x, t_seq = seq(0, 1, length.out = 100), ...) {
     nknots <- length(x$gamma) - 2
   }
 
-  knots <- (1:nknots) / (nknots + 1)
+  tau <- if (is.null(x$tau)) 1 else x$tau
+  if (is.null(t_seq)) t_seq <- seq(0, tau, length.out = 100)
+  knots <- tau * (1:nknots) / (nknots + 1)
 
-  bsmat_plot <- splines::ns(t_seq, knots = knots, intercept = TRUE, Boundary.knots = c(0, 1))
+  bsmat_plot <- splines::ns(t_seq, knots = knots, intercept = TRUE, Boundary.knots = c(0, tau))
 
   baseline_est <- as.vector(bsmat_plot %*% x$gamma)
 

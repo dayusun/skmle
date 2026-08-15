@@ -8,6 +8,9 @@
 #' @param data Data frame containing all variables used in the fit.
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
+#'   Times may be on any scale; the sieve basis and the cumulative-hazard
+#'   quadrature are built on the observed follow-up, so there is no need to
+#'   rescale to the unit interval first. `h` must be on the same scale.
 #' @param h Positive kernel bandwidth. If omitted, one is read off the
 #'   observation times as a rule of thumb and reported in a message. Use
 #'   [skmle_cv()] to choose it from the data.
@@ -192,6 +195,9 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE) {
 #' @param data Data frame containing all variables used in the fit.
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
+#'   Times may be on any scale; the sieve basis and the cumulative-hazard
+#'   quadrature are built on the observed follow-up, so there is no need to
+#'   rescale to the unit interval first. `h` must be on the same scale.
 #' @param h Positive kernel bandwidth. If omitted, one is read off the
 #'   observation times as a rule of thumb and reported in a message. Use
 #'   [skmle_cv()] to choose it from the data.
@@ -318,6 +324,7 @@ kee_additive <- function(formula, data, id, obs_times, h = NULL, lq_nodes = 64,
         delta = as.numeric(delta),
         kerval = as.numeric(kerval),
         h = h,
+        tau = max(X_time),
         one_sided = one_sided,
         id = as.numeric(id_vec),
         lq_x = as.numeric(lq_x),

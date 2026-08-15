@@ -21,7 +21,10 @@ kee_additive(
 
 \item{id}{Subject identifier aligned row-wise with \code{data}.}
 
-\item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
+\item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.
+Times may be on any scale; the sieve basis and the cumulative-hazard
+quadrature are built on the observed follow-up, so there is no need to
+rescale to the unit interval first. \code{h} must be on the same scale.}
 
 \item{h}{Positive kernel bandwidth. If omitted, one is read off the
 observation times as a rule of thumb and reported in a message. Use

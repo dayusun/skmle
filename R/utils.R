@@ -1,32 +1,31 @@
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
-#' Validate that event and observation times are on the unit interval
+#' Validate the time scale
 #'
-#' The sieve approximation of the baseline hazard uses a natural cubic
-#' B-spline with `Boundary.knots = c(0, 1)`. Times outside this interval
-#' would rely on extrapolation and produce a sieve that is not the one
-#' implied by the paper. Users are expected to rescale their time axis
-#' beforehand.
+#' Times may be on any scale. The sieve basis and the cumulative-hazard
+#' quadrature are built on `[0, max(X_time)]`, so nothing has to be rescaled to
+#' the unit interval first; that was a convention of the original prototype
+#' rather than a requirement of the method. What is required is that times are
+#' finite and non-negative, and that follow-up has positive length.
 #'
-#' @param X_time Numeric vector of event/censoring times.
-#' @param obs_times_vec Numeric vector of covariate observation times.
-#'
-#' @return `NULL`, invisibly. Called for the side effect of raising an
-#'   informative error when either vector extends outside `[0, 1]`.
-#' @noRd
+#' @param X_time Event or censoring times.
+#' @param obs_times_vec Covariate observation times.
+#' @return `NULL`, invisibly. Called for the error.
+#' @keywords internal
 check_time_scale <- function(X_time, obs_times_vec) {
-  rng_X <- range(X_time, na.rm = TRUE)
-  rng_O <- range(obs_times_vec, na.rm = TRUE)
-  if (rng_X[1] < 0 || rng_X[2] > 1 || rng_O[1] < 0 || rng_O[2] > 1) {
+  if (anyNA(X_time) || anyNA(obs_times_vec) ||
+    !all(is.finite(X_time)) || !all(is.finite(obs_times_vec))) {
+    stop("event and observation times must be finite", call. = FALSE)
+  }
+  if (min(X_time) < 0 || min(obs_times_vec) < 0) {
     stop(
-      "Event and observation times must lie in [0, 1]. ",
-      "Observed range for event/censoring times: [",
-      format(rng_X[1]), ", ", format(rng_X[2]), "]; ",
-      "for observation times: [",
-      format(rng_O[1]), ", ", format(rng_O[2]), "]. ",
-      "Rescale before calling (e.g. divide by max follow-up).",
+      "event and observation times must be non-negative; observed minima ",
+      format(min(X_time)), " and ", format(min(obs_times_vec)),
       call. = FALSE
     )
+  }
+  if (max(X_time) <= 0) {
+    stop("follow-up has zero length: all event times are 0", call. = FALSE)
   }
   invisible(NULL)
 }
@@ -125,8 +124,9 @@ default_bandwidth_surv <- function(X_time, obs_times, n) {
       call. = FALSE
     )
   }
-  lo <- max(min(pos), n^(-0.6))
-  hi <- min(max(pos), n^(-0.3))
+  tau <- max(X_time)
+  lo <- max(min(pos), tau * n^(-0.6))
+  hi <- min(max(pos), tau * n^(-0.3))
   if (!is.finite(lo) || !is.finite(hi) || hi <= lo) lo else sqrt(lo * hi)
 }
 

@@ -79,9 +79,12 @@ struct skmle_data {
   const vec *delta;
   const vec *kerval;
 
-  // Quadrature points
+  // Quadrature points, on [-1, 1]; mapped to [0, tau] where tau is the end of
+  // follow-up.  Fixing tau at 1 would silently integrate the cumulative hazard
+  // over the wrong interval whenever the data are not on the unit scale.
   const vec *lq_x;
   const vec *lq_w;
+  double tau;
 
   // Matrices pre-computed for quadrature points
   const mat *bsmat_tt_all;
@@ -133,8 +136,8 @@ double nll_obj(unsigned n_vars, const double *x, double *grad,
   int n_quad = data->lq_x->n_elem;
 
   for (int q = 0; q < n_quad; ++q) {
-    double tt = 0.5 * (*data->lq_x)[q] + 0.5;
-    double weight = 0.5 * (*data->lq_w)[q];
+    double tt = 0.5 * data->tau * ((*data->lq_x)[q] + 1.0);
+    double weight = 0.5 * data->tau * (*data->lq_w)[q];
 
     // alpha_tt is 1x1 vector (scalar) because tt is scalar
     double alpha_tt = dot(trans((*data->bsmat_tt_all).row(q)), gamma);
@@ -209,7 +212,7 @@ void ineq_constraints(unsigned m, double *result, unsigned n_vars,
 }
 
 // [[Rcpp::export]]
-List skmle_cpp_fit(int n, int p, int gammap, double s, double h,
+List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau,
                    const arma::mat &covariates, const arma::mat &bsmat,
                    const arma::vec &X, const arma::vec &obs_times,
                    const arma::vec &delta, const arma::vec &kerval,
@@ -231,6 +234,7 @@ List skmle_cpp_fit(int n, int p, int gammap, double s, double h,
                      &kerval,
                      &lq_x,
                      &lq_w,
+                     tau,
                      &bsmat_tt_all,
                      &kerval_tt_all,
                      &ineqmat};
@@ -310,7 +314,7 @@ arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
 
 // [[Rcpp::export]]
 arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
-                 double h, bool one_sided, const arma::mat &covariates,
+                 double h, double tau, bool one_sided, const arma::mat &covariates,
                  const arma::mat &bsmat,
                  const arma::vec &X, const arma::vec &obs_times,
                  const arma::vec &delta, const arma::vec &kerval,
@@ -368,8 +372,8 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
   for (int q = 0; q < n_quad; ++q) {
     Rcpp::checkUserInterrupt();
 
-    double tt = 0.5 * lq_x[q] + 0.5;
-    double weight = 0.5 * lq_w[q];
+    double tt = 0.5 * tau * (lq_x[q] + 1.0);
+    double weight = 0.5 * tau * lq_w[q];
     double alpha_tt = dot(trans(bsmat_tt_all.row(q)), gamma);
 
     // The S0/S1 aggregates over `k` depend only on `q` (via tt and alpha_tt),
@@ -432,6 +436,7 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
 
 // [[Rcpp::export]]
 double skmle_eval_nll_cpp(int n, int p, int gammap, double s, double h,
+                          double tau,
                           const arma::vec &beta, const arma::vec &gamma,
                           const arma::mat &covariates, const arma::mat &bsmat,
                           const arma::vec &X, const arma::vec &obs_times,
@@ -454,6 +459,7 @@ double skmle_eval_nll_cpp(int n, int p, int gammap, double s, double h,
                      &kerval,
                      &lq_x,
                      &lq_w,
+                     tau,
                      &bsmat_tt_all,
                      &kerval_tt_all,
                      &empty_ineq};
@@ -479,7 +485,7 @@ inline double calc_kerfun(double dist, double h, bool one_sided) {
 }
 
 // [[Rcpp::export]]
-arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
+arma::vec skmle_cv_cpp(int n, int p, int gammap, double s, double tau,
                        const arma::vec &h_grid, int K, const arma::vec &fold_id,
                        const arma::vec &id_vec, const arma::mat &covariates,
                        const arma::mat &bsmat, const arma::vec &X,
@@ -496,7 +502,7 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
   // Quadrature points
   arma::vec tts(n_quad);
   for (int q = 0; q < n_quad; ++q) {
-    tts[q] = 0.5 * lq_x[q] + 0.5;
+    tts[q] = 0.5 * tau * (lq_x[q] + 1.0);
   }
 
   for (int hi = 0; hi < n_h; ++hi) {
@@ -606,6 +612,7 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
                                &kerval_train,
                                &lq_x,
                                &lq_w,
+                               tau,
                                &bsmat_tt_all,
                                &kerval_tt_train,
                                &ineqmat_train};
@@ -690,6 +697,7 @@ arma::vec skmle_cv_cpp(int n, int p, int gammap, double s,
                               &kerval_test,
                               &lq_x,
                               &lq_w,
+                              tau,
                               &bsmat_tt_all,
                               &kerval_tt_test,
                               &empty_ineq_test};

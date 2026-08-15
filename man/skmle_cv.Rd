@@ -35,7 +35,10 @@ response and the right-hand side must contain at least one covariate.}
 \item{id}{Subject identifier. Non-numeric identifiers are allowed and are internally
 converted to integer subject codes.}
 
-\item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.}
+\item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.
+Times may be on any scale; the sieve basis and the cumulative-hazard
+quadrature are built on the observed follow-up, so there is no need to
+rescale to the unit interval first. \code{h} must be on the same scale.}
 
 \item{s}{Box-Cox transformation parameter, defaulting to \code{0}. \code{s = 0} is the
 proportional hazards model, \code{s = 1} is the additive hazards model, and

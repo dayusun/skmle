@@ -271,8 +271,8 @@
 #' from the data.
 #'
 #' `h` is on the **same scale as the observation times**. Unlike the survival
-#' estimators there is no requirement that times lie on \eqn{[0, 1]}, but `h`
-#' must match whatever scale is used. A warning is issued when fewer than 5% of
+#' `h` must be on whatever scale the times are on; nothing else is assumed
+#' about that scale. A warning is issued when fewer than 5% of
 #' response occasions have any covariate observation in their window, which is
 #' the signature of a units mistake.
 #'
