@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the paper below."
 type: software
-title: "skmle: Sieve Maximum Kernel-weighted Log-likelihood Estimation (SMKLE)"
+title: "skmle: Sieve Maximum Kernel-weighted Log-likelihood Estimation"
 abstract: "R implementation of the sieve maximum kernel-weighted log-likelihood estimator for transformed hazards models with sparse, intermittently observed longitudinal covariates."
 authors:
   - family-names: Sun
