@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below."
+type: software
+title: "skmle: Sieve Maximum Kernel-weighted Log-likelihood Estimation (SMKLE)"
+abstract: "R implementation of the sieve maximum kernel-weighted log-likelihood estimator for transformed hazards models with sparse, intermittently observed longitudinal covariates."
+authors:
+  - family-names: Sun
+    given-names: Dayu
+    orcid: "https://orcid.org/0000-0002-7149-3303"
+    affiliation: Indiana University School of Medicine
+repository-code: "https://github.com/dayusun/skmle"
+url: "https://www.sundayu.me/skmle/"
+preferred-citation:
+  type: article
+  title: "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates"
+  authors:
+    - family-names: Sun
+      given-names: Dayu
+      orcid: "https://orcid.org/0000-0002-7149-3303"
+    - family-names: Sun
+      given-names: Zhuowei
+    - family-names: Zhao
+      given-names: Xingqiu
+    - family-names: Cao
+      given-names: Hongyuan
+  journal: Journal of the American Statistical Association
+  year: 2025
+  volume: 120
+  issue: 552
+  start: 2580
+  end: 2591
+  doi: 10.1080/01621459.2025.2476781

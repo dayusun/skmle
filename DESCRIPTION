@@ -1,5 +1,5 @@
 Package: skmle
-Title: Sieve Kernel Maximum Likelihood Estimation
+Title: Sieve Maximum Kernel-Weighted Log-Likelihood Estimation (SMKLE)
 Version: 0.1.0
 Authors@R:
     person(given = "Dayu",

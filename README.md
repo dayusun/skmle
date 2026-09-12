@@ -1,8 +1,14 @@
-# skmle
+# skmle: Sieve Maximum Kernel-weighted Log-likelihood Estimation (SMKLE)
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/dayusun/skmle/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/dayusun/skmle/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
+
+**SMKLE** is the *sieve maximum kernel-weighted log-likelihood estimator* of
+Sun, Sun, Zhao and Cao (2025), *Journal of the American Statistical Association*
+**120**(552), 2580-2591, [doi:10.1080/01621459.2025.2476781](https://doi.org/10.1080/01621459.2025.2476781).
+This package is its reference implementation. The package is spelled `skmle`
+and the estimator is spelled SMKLE; they are the same thing.
 
 Longitudinal covariates are rarely measured when you need them. A biomarker is
 drawn at a handful of clinic visits; the event you are modelling happens
