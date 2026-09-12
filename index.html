@@ -65,6 +65,7 @@
 </h1></div>
 <!-- badges: start -->
 
+<p><code>skmle</code> is the reference implementation of the <em>sieve maximum kernel-weighted log-likelihood estimator</em> of Sun, Sun, Zhao and Cao (2025), <em>Journal of the American Statistical Association</em> <strong>120</strong>(552), 2580-2591, <a href="https://doi.org/10.1080/01621459.2025.2476781" class="external-link">doi:10.1080/01621459.2025.2476781</a>.</p>
 <p>Longitudinal covariates are rarely measured when you need them. A biomarker is drawn at a handful of clinic visits; the event you are modelling happens somewhere between two of them, and the outcome you are modelling is recorded on a schedule of its own. Carrying the last value forward answers a different question, and smoothing the covariate first and substituting it is regression calibration, which is not consistent when the sampling is sparse.</p>
 <p><code>skmle</code> handles the mismatch directly, by weighting each observation according to how far its measurement time sits from the time being modelled. It covers two settings:</p>
 <p>For survival outcomes, the transformed hazards family, with covariates observed sparsely and intermittently. The Box-Cox parameter <code>s</code> indexes the family: <code>s = 0</code> is proportional hazards, <code>s = 1</code> is additive hazards, and other values interpolate. This is the Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and Cao (2025), plus faster specialised estimating equations for the two named cases.</p>
@@ -342,9 +343,8 @@
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li>
-<a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a>
-</li>
+<li><a href="LICENSE.html">Full license</a></li>
+<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
 

@@ -1,5 +1,11 @@
 # skmle
 
+`skmle` is the reference implementation of the *sieve maximum
+kernel-weighted log-likelihood estimator* of Sun, Sun, Zhao and Cao
+(2025), *Journal of the American Statistical Association* **120**(552),
+2580-2591,
+[doi:10.1080/01621459.2025.2476781](https://doi.org/10.1080/01621459.2025.2476781).
+
 Longitudinal covariates are rarely measured when you need them. A
 biomarker is drawn at a handful of clinic visits; the event you are
 modelling happens somewhere between two of them, and the outcome you are
