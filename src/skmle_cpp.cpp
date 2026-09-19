@@ -217,15 +217,27 @@ void ineq_constraints(unsigned m, double *result, unsigned n_vars,
   }
 }
 
-// [[Rcpp::export]]
-List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau,
-                   const arma::mat &covariates, const arma::mat &bsmat,
-                   const arma::vec &X, const arma::vec &obs_times,
-                   const arma::vec &delta, const arma::vec &kerval,
-                   const arma::vec &lq_x, const arma::vec &lq_w,
-                   const arma::mat &bsmat_tt_all,
-                   const arma::mat &kerval_tt_all, const arma::mat &ineqmat,
-                   int maxeval, double xtol_rel) {
+// One fit, shared by the R-facing export and the cross-validation loop below.
+//
+// Factored out rather than copied.  The CV loop needs exactly this optimiser
+// set-up, and a second copy of it is a second place for the objective, the
+// constraint tolerance or the algorithm to drift away from the one the user
+// gets from skmle().
+struct FitResult {
+  int status;
+  double minimum;
+  std::vector<double> solution;
+};
+
+static FitResult fit_core(int n, int p, int gammap, double s, double h,
+                          double tau, const arma::mat &covariates,
+                          const arma::mat &bsmat, const arma::vec &X,
+                          const arma::vec &obs_times, const arma::vec &delta,
+                          const arma::vec &kerval, const arma::vec &lq_x,
+                          const arma::vec &lq_w, const arma::mat &bsmat_tt_all,
+                          const arma::mat &kerval_tt_all,
+                          const arma::mat &ineqmat, int maxeval,
+                          double xtol_rel) {
 
   skmle_data data = {n,
                      p,
@@ -259,11 +271,30 @@ List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau,
   nlopt_set_xtol_rel(opt.get(), xtol_rel);
   nlopt_set_maxeval(opt.get(), maxeval);
 
-  double minf;
+  double minf = 0.0;
   nlopt_result res = nlopt_optimize(opt.get(), x.data(), &minf);
 
-  return List::create(Named("status") = static_cast<int>(res),
-                      Named("minimum") = minf, Named("solution") = x);
+  return FitResult{static_cast<int>(res), minf, x};
+}
+
+// [[Rcpp::export]]
+List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau,
+                   const arma::mat &covariates, const arma::mat &bsmat,
+                   const arma::vec &X, const arma::vec &obs_times,
+                   const arma::vec &delta, const arma::vec &kerval,
+                   const arma::vec &lq_x, const arma::vec &lq_w,
+                   const arma::mat &bsmat_tt_all,
+                   const arma::mat &kerval_tt_all, const arma::mat &ineqmat,
+                   int maxeval, double xtol_rel) {
+
+  FitResult fr =
+      fit_core(n, p, gammap, s, h, tau, covariates, bsmat, X, obs_times, delta,
+               kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, ineqmat,
+               maxeval, xtol_rel);
+
+  return List::create(Named("status") = fr.status,
+                      Named("minimum") = fr.minimum,
+                      Named("solution") = fr.solution);
 }
 
 // [[Rcpp::export]]
@@ -484,3 +515,200 @@ double skmle_eval_nll_cpp(int n, int p, int gammap, double s, double h,
   return nll_obj(n_vars, x.data(), nullptr, &data);
 }
 
+
+// ---------------------------------------------------------------------------
+// Cross-validation
+// ---------------------------------------------------------------------------
+//
+// The whole grid runs here rather than in R for one reason: the held-out score
+// evaluates the model's transformation, and evaluating it in R meant a second
+// implementation of trans_fun() living in R/utils.R, with nothing comparing the
+// two and no test that could, because trans_fun is not exported.  Scoring here
+// means the criterion and the objective call the same function.
+//
+// The weight arrives as a polynomial rather than as an R closure, because the
+// loop rebuilds the weights for every candidate bandwidth and cannot call back
+// into R to do it.  Every weight family in this package is a polynomial on an
+// interval, in u or in |u|, so four fields describe one exactly.
+struct WeightSpec {
+  arma::vec cf;   // coefficients c_0..c_{p-1} of sum_j c_j u^j
+  double a;       // support lower endpoint, in units of h
+  double b;       // support upper endpoint
+  bool mirror;    // shape functions are |u|^j rather than u^j
+  bool one_sided; // half kernel: only observations strictly in the past
+};
+
+// Deliberately NOT clamped below at zero.  A weight may be signed, and
+// clamping would silently drop the terms that remove the leading bias.  The
+// support test is what zeroes the weight outside the window.
+inline double calc_kerfun(double dist, double h, const WeightSpec &w) {
+  if (w.one_sided && dist <= 0.0)
+    return 0.0;
+  const double z = dist / h;
+  if (z < w.a || z > w.b)
+    return 0.0;
+  const double v = w.mirror ? std::fabs(z) : z;
+  double pw = 1.0, acc = 0.0;
+  for (arma::uword j = 0; j < w.cf.n_elem; ++j) {
+    acc += w.cf[j] * pw;
+    pw *= v;
+  }
+  return acc / h;
+}
+
+// Held-out negative log-likelihood per held-out subject.
+//
+// No kernel and no bandwidth appear here.  The pieces that depend on the data
+// alone -- the basis at the quadrature nodes, the quadrature weights, the row
+// each node reads its carried-forward covariate from -- are built once in R by
+// locf_score() and passed in; only beta and gamma change per candidate.
+static double locf_nll_cpp(const arma::mat &node_bs, const arma::vec &node_w,
+                           const arma::uvec &node_row,
+                           const arma::uvec &node_subj, const arma::mat &ev_bs,
+                           const arma::uvec &ev_row, const arma::vec &ev_delta,
+                           int n_subj, const arma::mat &Z,
+                           const arma::vec &beta, const arma::vec &gamma,
+                           double s, const arma::uvec &keep) {
+
+  arma::vec cumhaz = arma::zeros<arma::vec>(n_subj);
+  if (node_bs.n_rows > 0) {
+    arma::vec lin = node_bs * gamma + Z.rows(node_row) * beta;
+    for (arma::uword i = 0; i < lin.n_elem; ++i) {
+      cumhaz[node_subj[i]] += node_w[i] * trans_fun(lin[i], s);
+    }
+  }
+
+  arma::vec evlin = ev_bs * gamma + Z.rows(ev_row) * beta;
+
+  double acc = 0.0;
+  for (arma::uword j = 0; j < keep.n_elem; ++j) {
+    const arma::uword m = keep[j];
+    acc += ev_delta[m] * std::log(trans_fun(evlin[m], s)) - cumhaz[m];
+  }
+  return -acc / static_cast<double>(keep.n_elem);
+}
+
+// [[Rcpp::export]]
+arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau,
+                       const arma::vec &h_grid, int K,
+                       const arma::uvec &fold_id_subj, const arma::uvec &id_vec,
+                       const arma::mat &covariates, const arma::mat &bsmat,
+                       const arma::vec &X, const arma::vec &obs_times,
+                       const arma::vec &delta, const arma::vec &lq_x,
+                       const arma::vec &lq_w, const arma::mat &bsmat_tt_all,
+                       const arma::vec &tts, const arma::mat &node_bs,
+                       const arma::vec &node_w, const arma::uvec &node_row,
+                       const arma::uvec &node_subj, const arma::mat &ev_bs,
+                       const arma::uvec &ev_row, const arma::vec &ev_delta,
+                       int n_subj, int maxeval, double xtol_rel, bool quiet,
+                       const arma::vec &w_coef, double w_a, double w_b,
+                       bool w_mirror, bool one_sided) {
+
+  const WeightSpec wspec = {w_coef, w_a, w_b, w_mirror, one_sided};
+
+  const int n_h = h_grid.n_elem;
+  const int n_row = X.n_elem;
+  const int n_quad = tts.n_elem;
+
+  // Zbs is the constraint design, needed only when s != 0.
+  arma::mat Zbs;
+  if (s != 0.0) Zbs = arma::join_rows(covariates, bsmat);
+
+  // Held-out subject codes per fold, and the row-level training mask.
+  std::vector<arma::uvec> keep_by_fold(K);
+  for (int k = 0; k < K; ++k) {
+    keep_by_fold[k] = arma::find(fold_id_subj == static_cast<arma::uword>(k + 1));
+  }
+
+  arma::mat out(2, n_h);
+
+  for (int hi = 0; hi < n_h; ++hi) {
+    Rcpp::checkUserInterrupt();
+    const double h = h_grid[hi];
+    if (!quiet) Rcpp::Rcout << "Evaluating bandwidth h = " << h << "\n";
+
+    arma::vec kerval(n_row);
+    for (int i = 0; i < n_row; ++i) {
+      kerval[i] = calc_kerfun(X[i] - obs_times[i], h, wspec);
+    }
+
+    arma::mat kerval_tt(n_quad, n_row);
+    for (int q = 0; q < n_quad; ++q) {
+      for (int i = 0; i < n_row; ++i) {
+        kerval_tt(q, i) = calc_kerfun(tts[q] - obs_times[i], h, wspec);
+      }
+    }
+
+    // Same support the fit uses, so the constraint set matches the objective.
+    arma::uvec feasible;
+    if (s != 0.0) {
+      feasible = arma::zeros<arma::uvec>(n_row);
+      for (int i = 0; i < n_row; ++i) {
+        const double d = X[i] - obs_times[i];
+        feasible[i] = (std::fabs(d) <= h && (!one_sided || d > 0)) ? 1u : 0u;
+      }
+    }
+
+    arma::vec fold_losses(K);
+
+    for (int k = 0; k < K; ++k) {
+      arma::uvec tr(n_row);
+      for (int i = 0; i < n_row; ++i) {
+        tr[i] = (fold_id_subj[id_vec[i]] != static_cast<arma::uword>(k + 1)) ? 1u : 0u;
+      }
+      const arma::uvec tr_idx = arma::find(tr);
+
+      arma::mat ineqmat(0, p + gammap);
+      if (s != 0.0) {
+        const arma::uvec ci = arma::find(tr % feasible);
+        if (!ci.is_empty()) ineqmat = Zbs.rows(ci);
+      }
+
+      // The objective divides by the number of training SUBJECTS, not rows.
+      const arma::uvec tr_subj = arma::unique(id_vec.elem(tr_idx));
+
+      FitResult fr = fit_core(
+          static_cast<int>(tr_subj.n_elem), p, gammap, s, h, tau,
+          covariates.rows(tr_idx), bsmat.rows(tr_idx), X.elem(tr_idx),
+          obs_times.elem(tr_idx), delta.elem(tr_idx), kerval.elem(tr_idx), lq_x,
+          lq_w, bsmat_tt_all, kerval_tt.cols(tr_idx), ineqmat, maxeval,
+          xtol_rel);
+
+      // A training fit that failed cannot produce a trustworthy held-out
+      // score: let this bandwidth lose the grid outright.
+      if (fr.status < 0) {
+        fold_losses[k] = arma::datum::inf;
+        continue;
+      }
+
+      const arma::vec sol(fr.solution);
+      fold_losses[k] = locf_nll_cpp(
+          node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta,
+          n_subj, covariates, sol.head(p), sol.tail(gammap), s,
+          keep_by_fold[k]);
+    }
+
+    out(0, hi) = arma::mean(fold_losses);
+    // stats::sd() is the n-1 denominator; arma::stddev defaults to the same.
+    out(1, hi) = arma::stddev(fold_losses) / std::sqrt(static_cast<double>(K));
+  }
+
+  return out;
+}
+
+// Thin wrapper so the test suite can check the held-out score directly,
+// against integrate() on the same carried-forward path.  The scorer is not
+// reachable from R otherwise, and a criterion nothing can call is a criterion
+// nothing can check.
+//
+// [[Rcpp::export]]
+double locf_nll_cpp_r(const arma::mat &node_bs, const arma::vec &node_w,
+                      const arma::uvec &node_row, const arma::uvec &node_subj,
+                      const arma::mat &ev_bs, const arma::uvec &ev_row,
+                      const arma::vec &ev_delta, int n_subj,
+                      const arma::mat &Z, const arma::vec &beta,
+                      const arma::vec &gamma, double s,
+                      const arma::uvec &keep) {
+  return locf_nll_cpp(node_bs, node_w, node_row, node_subj, ev_bs, ev_row,
+                      ev_delta, n_subj, Z, beta, gamma, s, keep);
+}

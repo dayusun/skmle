@@ -34,7 +34,16 @@ test_that("the held-out log-likelihood matches integrate() on the same path", {
   gamma <- seq(0.3, -0.5, length.out = ncol(basis(Xi)))
 
   sc <- locf_score(rep(Xi, 3), obs, rep(1L, 3), rep(1, 3), knots, tau)
-  got <- locf_nll(sc, Z, beta, gamma, 0, 1L)
+  # The scorer the cross-validation loop actually uses, called directly.
+  # Indices reach C++ zero-based, exactly as skmle_cv() passes them.
+  got <- locf_nll_cpp_r(
+    node_bs = sc$node_bs, node_w = as.numeric(sc$node_w),
+    node_row = as.integer(sc$node_row) - 1L,
+    node_subj = as.integer(sc$node_subj) - 1L,
+    ev_bs = sc$ev_bs, ev_row = as.integer(sc$ev_row) - 1L,
+    ev_delta = as.numeric(sc$ev_delta), n_subj = as.integer(sc$n_subj),
+    Z = Z, beta = beta, gamma = gamma, s = 0, keep = 0L
+  )
 
   haz <- function(t) {
     exp(as.numeric(basis(t) %*% gamma) +

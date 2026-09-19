@@ -24,12 +24,12 @@ that it is finite and non-negative, and that follow-up has positive length.
 \details{
 \code{obs_times_vec} is held to the weaker standard of being finite, and may be
 negative. No basis and no quadrature rule is ever evaluated at a covariate
-observation time: it enters only through the lag \code{X_time - obs_times_vec},
-and the one-sided rule tests the sign of that lag, not the sign of the time.
-The earlier non-negativity requirement applied a constraint belonging to
-\code{X_time} to an argument that does not carry it. A negative observation time
-means a covariate measured before the time origin, which is a scientific
-statement about the data and not a numerical one; see the note under
+observation time: it reaches the score only through the lag
+\code{X_time - obs_times_vec}, and the one-sided rule tests the sign of that lag,
+not the sign of the time. The earlier non-negativity requirement applied a
+constraint belonging to \code{X_time} to an argument that does not carry it. A
+negative observation time means a covariate measured before the time origin,
+which is a scientific statement about the data and not a numerical one; see
 \dQuote{Negative observation times} in \code{\link[=kee_cox]{kee_cox()}}.
 }
 \keyword{internal}

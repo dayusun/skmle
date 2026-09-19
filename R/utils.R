@@ -108,31 +108,38 @@ kernel_weights <- function(lag, h, one_sided = TRUE) {
     kv
 }
 
+#' The Epanechnikov kernel described as a polynomial
+#'
+#' The cross-validation loop rebuilds the weights for every candidate bandwidth
+#' inside C++ and cannot call an R function to do it, so the weight travels as
+#' four plain values instead: the coefficients of \eqn{\sum_j c_j u^j}, the
+#' support, and whether the shape functions are \eqn{|u|^j} rather than
+#' \eqn{u^j}. For \eqn{0.75(1 - u^2)} the coefficients are `c(0.75, 0, -0.75)`
+#' and the support is `[0, 1]` for the half kernel, `[-1, 1]` for the full one.
+#' `calc_kerfun()` in `src/skmle_cpp.cpp` reads them back.
+#'
+#' This is the second description of a kernel the package already has in
+#' [kernel_weights()], so `test-cv-weightspec.R` holds the two against each
+#' other. Two descriptions that nothing compares is how they drift apart.
+#'
+#' @param one_sided Logical; `TRUE` for the half kernel.
+#' @return A list with `coef`, `a`, `b` and `mirror`.
+#' @keywords internal
+epan_weight_spec <- function(one_sided = TRUE) {
+    list(
+        coef = c(0.75, 0, -0.75),
+        a = if (one_sided) 0 else -1,
+        b = 1,
+        mirror = FALSE
+    )
+}
+
 
 # Data-driven default bandwidths.
 #
 # A student should not have to invent a number to get a first fit.  These are
 # rules of thumb.  Cross-validation does the job properly, and the message that
 # accompanies the default says so and names the function.
-
-#' The transformation of the linear predictor, in R
-#'
-#' Mirror of `trans_fun()` in `src/skmle_cpp.cpp`, including its floor outside
-#' the feasible region: the hazard is zero there, but the log-likelihood takes
-#' its log, so the value is floored at machine epsilon rather than at zero.
-#'
-#' @param x Numeric vector of linear predictors.
-#' @param s Transformation parameter; `0` gives `exp()`.
-#' @return `g(x)`, elementwise.
-#' @noRd
-trans_link <- function(x, s) {
-  if (s == 0) return(exp(x))
-  base <- s * x + 1
-  out <- rep(2.220446e-16, length(x))
-  ok <- base > 0
-  out[ok] <- base[ok]^(1 / s)
-  out
-}
 
 #' Default bandwidth for the survival estimators
 #'

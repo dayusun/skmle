@@ -77,30 +77,13 @@ locf_score <- function(X_time, obs_times_vec, id_vec, delta, knots, tau,
   )
 }
 
-#' Held-out negative log-likelihood for one fold
-#'
-#' @param score Output of `locf_score()`.
-#' @param Z Covariate matrix, all rows.
-#' @param beta,gamma Coefficients from the training fit.
-#' @param s Transformation parameter.
-#' @param keep Integer subject codes held out in this fold.
-#' @return The negative log-likelihood per held-out subject.
-#' @noRd
-locf_nll <- function(score, Z, beta, gamma, s, keep) {
-  haz <- trans_link(
-    as.numeric(score$node_bs %*% gamma) +
-      as.numeric(Z[score$node_row, , drop = FALSE] %*% beta), s
-  )
-  cumhaz <- numeric(score$n_subj)
-  agg <- rowsum(score$node_w * haz, score$node_subj, reorder = TRUE)
-  cumhaz[as.integer(rownames(agg))] <- agg[, 1]
-
-  ev <- trans_link(
-    as.numeric(score$ev_bs %*% gamma) +
-      as.numeric(Z[score$ev_row, , drop = FALSE] %*% beta), s
-  )
-  -sum(score$ev_delta[keep] * log(ev[keep]) - cumhaz[keep]) / length(keep)
-}
+# The held-out score itself lives in C++, as locf_nll_cpp() in
+# src/skmle_cpp.cpp.  It was written here once, and scoring in R meant a second
+# implementation of the model's transformation: R/utils.R carried a trans_link()
+# that mirrored trans_fun() by hand, floor and all, with nothing able to compare
+# them because trans_fun is not exported.  Scoring in C++ means the criterion
+# and the objective call the same function, which is a guarantee rather than a
+# test someone has to remember to write.
 
 #' Select the Bandwidth by Cross-Validation
 #'
@@ -338,49 +321,39 @@ skmle_cv <- function(formula, data, id, obs_times, s = 0, K = 5, h_grid = NULL,
   gammap <- ncol(bsmat_tt_mat)
 
   # The held-out score is a function of the data alone, so it is built once and
-  # reused for every (h, fold) pair. See locf_score().
+  # reused for every (h, fold) pair. See locf_score(). It stays in R because it
+  # is set-up rather than a loop, it needs splines::ns() and findInterval(), and
+  # it evaluates no part of the model: it returns a basis, weights and row
+  # indices. The SCORING runs in C++, because that evaluates the transformation,
+  # and a second implementation of the transformation is the thing worth
+  # avoiding.
   score <- locf_score(X_time, obs_times_vec, id_vec, delta, knots, tau)
-  Zbs <- cbind(Z, bsmat)
 
-  cv_losses <- vapply(h_grid, function(h) {
-    if (!quiet) cat(sprintf("Evaluating bandwidth h = %g\n", h))
-    kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
-    kerval_tt <- kernel_weights(outer(tts, obs_times_vec, "-"), h, one_sided)
-    # Same support the fit uses, so the constraint set matches the objective.
-    feasible <- if (s == 0) NULL else {
-      (abs(X_time - obs_times_vec) <= h) & (!one_sided | (X_time > obs_times_vec))
-    }
+  # The weight as the four fields the C++ loop needs to rebuild it for every
+  # candidate bandwidth: the coefficients of sum_j c_j u^j, the support, and
+  # whether the shape functions are |u|^j rather than u^j.
+  wspec <- epan_weight_spec(one_sided)
 
-    fold_losses <- vapply(seq_len(K), function(k) {
-      tr <- fold_id_subj[id_vec] != k
-      ineqmat <- matrix(numeric(0), nrow = 0, ncol = p + gammap)
-      if (s != 0 && any(tr & feasible)) {
-        ineqmat <- Zbs[tr & feasible, , drop = FALSE]
-      }
-      fit <- skmle_cpp_fit(
-        n = length(unique(id_vec[tr])), p = p, gammap = gammap,
-        s = as.numeric(s), h = h, tau = tau,
-        covariates = Z[tr, , drop = FALSE],
-        bsmat = bsmat[tr, , drop = FALSE],
-        X = X_time[tr], obs_times = obs_times_vec[tr], delta = delta[tr],
-        kerval = kerval[tr],
-        lq_x = lq_x, lq_w = lq_w,
-        bsmat_tt_all = bsmat_tt_mat,
-        kerval_tt_all = kerval_tt[, tr, drop = FALSE],
-        ineqmat = ineqmat,
-        maxeval = as.integer(maxeval), xtol_rel = as.numeric(xtol_rel)
-      )
-      # A training fit that failed cannot produce a trustworthy held-out score:
-      # let this bandwidth lose the grid outright.
-      if (fit$status < 0) {
-        return(Inf)
-      }
-      locf_nll(score, Z, fit$solution[seq_len(p)], fit$solution[-seq_len(p)],
-               s, which(fold_id_subj == k))
-    }, numeric(1))
-
-    c(mean(fold_losses), stats::sd(fold_losses) / sqrt(K))
-  }, numeric(2))
+  cv_losses <- skmle_cv_cpp(
+    p = p, gammap = gammap, s = as.numeric(s), tau = as.numeric(tau),
+    h_grid = as.numeric(h_grid), K = as.integer(K),
+    fold_id_subj = as.integer(fold_id_subj),
+    id_vec = as.integer(id_vec) - 1L,
+    covariates = as.matrix(Z), bsmat = bsmat,
+    X = as.numeric(X_time), obs_times = as.numeric(obs_times_vec),
+    delta = as.numeric(delta),
+    lq_x = as.numeric(lq_x), lq_w = as.numeric(lq_w),
+    bsmat_tt_all = bsmat_tt_mat, tts = as.numeric(tts),
+    node_bs = score$node_bs, node_w = as.numeric(score$node_w),
+    node_row = as.integer(score$node_row) - 1L,
+    node_subj = as.integer(score$node_subj) - 1L,
+    ev_bs = score$ev_bs, ev_row = as.integer(score$ev_row) - 1L,
+    ev_delta = as.numeric(score$ev_delta), n_subj = as.integer(score$n_subj),
+    maxeval = as.integer(maxeval), xtol_rel = as.numeric(xtol_rel),
+    quiet = as.logical(quiet),
+    w_coef = as.numeric(wspec$coef), w_a = wspec$a, w_b = wspec$b,
+    w_mirror = wspec$mirror, one_sided = as.logical(one_sided)
+  )
 
   cv_results <- tibble::tibble(
     h = h_grid,

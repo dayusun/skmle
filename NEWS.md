@@ -1,5 +1,31 @@
 # skmle 0.1.0
 
+## The cross-validation loop runs in C++
+
+* **The fold loop and the held-out score moved back into C++**, as
+  `skmle_cv_cpp()`. The reason is not speed, which is dominated by the fit
+  either way. Scoring in R required a second implementation of the model's
+  transformation: `R/utils.R` carried a `trans_link()` that mirrored
+  `trans_fun()` in `src/skmle_cpp.cpp` by hand, floor and all, and because
+  `trans_fun` is not exported nothing could compare them and no test did. The
+  criterion and the objective now call the same function, which is a guarantee
+  rather than a test someone has to remember to write. `trans_link()` is gone.
+* The optimiser set-up is factored into one internal `fit_core()`, shared by
+  `skmle_cpp_fit()` and the loop, so the fit the cross-validation scores cannot
+  drift from the fit `skmle()` returns.
+* `locf_score()` stays in R. It is set-up rather than a loop, it needs
+  `splines::ns()` and `findInterval()`, and it evaluates no part of the model:
+  it returns a basis, quadrature weights and row indices.
+* The criterion is unchanged, and that is checked rather than asserted. The
+  losses from the R loop were recorded before the port, and the C++ loop
+  reproduces them to 4.4e-16 with identical coefficients.
+  `test-cv-reference.R` keeps the comparison in the suite.
+* The kernel now has two descriptions, the R `kernel_weights()` the fit uses
+  and the polynomial `epan_weight_spec()` the loop hands to C++, so
+  `test-cv-weightspec.R` holds them against each other over four bandwidths and
+  both kernels. Two descriptions with nothing comparing them is the defect this
+  change removed, and it does not get back in through the weight.
+
 ## Covariate observation times may be negative
 
 * **`obs_times` is no longer required to be non-negative.** Event times still
