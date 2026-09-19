@@ -22,6 +22,9 @@
 #' @param h Positive kernel bandwidth. If omitted, one is read off the
 #'   observation times as a rule of thumb and reported in a message. Use
 #'   [skmle_cv()] to choose it from the data.
+#' @param weight Weight function of the standardised lag \eqn{(t - r)/h}, or
+#'   `NULL` (the default) for the Epanechnikov kernel implied by `one_sided`.
+#'   Any R function will do; see [kernel-weights].
 #' @param one_sided Logical. `TRUE` (the default) uses a half kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
@@ -97,7 +100,8 @@
 #' @importFrom splines ns
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
-skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE) {
+skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, weight = NULL, one_sided = TRUE) {
+  weight <- resolve_weight(weight, one_sided)
   # validate inputs --------------------------------------------------------
   if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
     stop("formula, data, id and obs_times must all be supplied")
@@ -156,7 +160,7 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     h <- default_bandwidth_surv(X_time, obs_times_vec, n)
     announce_bandwidth(h, "skmle_cv")
   }
-  kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
+  kerval <- kernel_weights(X_time - obs_times_vec, h, weight, one_sided)
 
   knots <- tau * (1:nknots) / (nknots + 1)
   bsmat <- splines::ns(X_time, knots = knots, intercept = TRUE, Boundary.knots = c(0, tau))
@@ -170,7 +174,7 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
   tts <- 0.5 * tau * (lq_x + 1)
 
   dist_tt_mat <- outer(tts, obs_times_vec, "-")
-  kerval_tt_all <- kernel_weights(dist_tt_mat, h, one_sided)
+  kerval_tt_all <- kernel_weights(dist_tt_mat, h, weight, one_sided)
   bsmat_tt_mat <- as.matrix(splines::ns(tts, knots = knots, intercept = TRUE, Boundary.knots = c(0, tau)))
 
   # inequality constraints matrix, may be empty if no rows satisfy the filter

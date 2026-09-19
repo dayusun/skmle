@@ -75,12 +75,12 @@ safe_sandwich <- function(A, B, scale = 1, what = "variance") {
 }
 
 
-#' Epanechnikov kernel and the row weights built from it
+#' Row weights from a weight function
 #'
-#' The kernel was written out inline in `skmle()`, `kee_cox()` and
-#' `kee_additive()`. Keeping one copy matters now that the half/full choice is
-#' a user-facing argument: three inline copies are three places for the switch
-#' to be forgotten.
+#' The one place a weight is turned into the numbers the estimators use, so
+#' there is one description of any given kernel rather than one per call site.
+#' `epan_kernel()` is kept because three fitting functions used to write the
+#' Epanechnikov out inline and older code may still reach for it.
 #'
 #' @param u Numeric vector or matrix of standardised lags.
 #' @return `epan_kernel()` returns \eqn{0.75(1 - u^2)_+}, shape preserved.
@@ -95,45 +95,32 @@ epan_kernel <- function(u) {
 #' @param lag Raw time difference `t - r`, a vector or a matrix. Matrices keep
 #'   their shape, which the sieve quadrature relies on.
 #' @param h Positive bandwidth.
-#' @param one_sided Logical. When `TRUE` (the default) rows with a non-positive
-#'   lag receive zero weight, which is the risk-set restriction of a hazard
-#'   model: only covariate observations before the time inform it. `FALSE`
-#'   smooths from both sides.
+#' @param weight A weight function of the standardised lag, or `NULL` for the
+#'   Epanechnikov that `one_sided` implies; see [kernel-weights]. `NULL` is the
+#'   default for the same reason it is the default at every entry point: a
+#'   literal `w_epan_half()` here silently turns `one_sided = FALSE` into a
+#'   one-sided fit, because the support stays `[0, 1]` and the negative lags
+#'   are zeroed by the weight rather than kept. The package's own test suite
+#'   caught that, which is the argument for not having written it twice.
+#' @param one_sided Logical. When `TRUE` rows with a non-positive lag receive
+#'   zero weight, which is the risk-set restriction of a hazard model: only
+#'   covariate observations before the time inform it. It is applied after the
+#'   weight has been evaluated, because it is a modelling choice rather than a
+#'   property of the kernel.
 #' @return `kernel_weights()` returns the scaled weights `W(lag/h)/h`.
 #' @rdname epan_kernel
 #' @keywords internal
-kernel_weights <- function(lag, h, one_sided = TRUE) {
-    kv <- epan_kernel(lag / h) / h
+kernel_weights <- function(lag, h, weight = NULL, one_sided = TRUE) {
+    weight <- resolve_weight(weight, one_sided)
+    kv <- weight(lag / h) / h
+    # A weight is allowed to ignore the shape of its argument only if it is
+    # already scalar-shaped; resolve_weight() checks the matrix case up front,
+    # so anything arriving here that lost its dim is a weight that slipped
+    # through a path which did not resolve. Restore rather than fail silently.
+    if (!identical(dim(kv), dim(lag))) dim(kv) <- dim(lag)
     if (one_sided) kv <- kv * (lag > 0)
     kv
 }
-
-#' The Epanechnikov kernel described as a polynomial
-#'
-#' The cross-validation loop rebuilds the weights for every candidate bandwidth
-#' inside C++ and cannot call an R function to do it, so the weight travels as
-#' four plain values instead: the coefficients of \eqn{\sum_j c_j u^j}, the
-#' support, and whether the shape functions are \eqn{|u|^j} rather than
-#' \eqn{u^j}. For \eqn{0.75(1 - u^2)} the coefficients are `c(0.75, 0, -0.75)`
-#' and the support is `[0, 1]` for the half kernel, `[-1, 1]` for the full one.
-#' `calc_kerfun()` in `src/skmle_cpp.cpp` reads them back.
-#'
-#' This is the second description of a kernel the package already has in
-#' [kernel_weights()], so `test-cv-weightspec.R` holds the two against each
-#' other. Two descriptions that nothing compares is how they drift apart.
-#'
-#' @param one_sided Logical; `TRUE` for the half kernel.
-#' @return A list with `coef`, `a`, `b` and `mirror`.
-#' @keywords internal
-epan_weight_spec <- function(one_sided = TRUE) {
-    list(
-        coef = c(0.75, 0, -0.75),
-        a = if (one_sided) 0 else -1,
-        b = 1,
-        mirror = FALSE
-    )
-}
-
 
 # Data-driven default bandwidths.
 #

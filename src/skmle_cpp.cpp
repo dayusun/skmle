@@ -526,35 +526,14 @@ double skmle_eval_nll_cpp(int n, int p, int gammap, double s, double h,
 // two and no test that could, because trans_fun is not exported.  Scoring here
 // means the criterion and the objective call the same function.
 //
-// The weight arrives as a polynomial rather than as an R closure, because the
-// loop rebuilds the weights for every candidate bandwidth and cannot call back
-// into R to do it.  Every weight family in this package is a polynomial on an
-// interval, in u or in |u|, so four fields describe one exactly.
-struct WeightSpec {
-  arma::vec cf;   // coefficients c_0..c_{p-1} of sum_j c_j u^j
-  double a;       // support lower endpoint, in units of h
-  double b;       // support upper endpoint
-  bool mirror;    // shape functions are |u|^j rather than u^j
-  bool one_sided; // half kernel: only observations strictly in the past
-};
-
-// Deliberately NOT clamped below at zero.  A weight may be signed, and
-// clamping would silently drop the terms that remove the leading bias.  The
-// support test is what zeroes the weight outside the window.
-inline double calc_kerfun(double dist, double h, const WeightSpec &w) {
-  if (w.one_sided && dist <= 0.0)
-    return 0.0;
-  const double z = dist / h;
-  if (z < w.a || z > w.b)
-    return 0.0;
-  const double v = w.mirror ? std::fabs(z) : z;
-  double pw = 1.0, acc = 0.0;
-  for (arma::uword j = 0; j < w.cf.n_elem; ++j) {
-    acc += w.cf[j] * pw;
-    pw *= v;
-  }
-  return acc / h;
-}
+// The weight is an R function and is evaluated in R, once per candidate
+// bandwidth, vectorised over every lag at once.  It is NOT reimplemented here.
+// A previous version described the weight to C++ as polynomial coefficients so
+// the loop could rebuild it, which meant the package held two descriptions of
+// every kernel and needed a test to keep them agreeing.  One R call per
+// candidate costs nothing next to K fits and leaves exactly one description.
+// It also means any R function works, including weights that are not
+// polynomial, not symmetric and not nonnegative.
 
 // Held-out negative log-likelihood per held-out subject.
 //
@@ -601,10 +580,7 @@ arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau,
                        const arma::uvec &node_subj, const arma::mat &ev_bs,
                        const arma::uvec &ev_row, const arma::vec &ev_delta,
                        int n_subj, int maxeval, double xtol_rel, bool quiet,
-                       const arma::vec &w_coef, double w_a, double w_b,
-                       bool w_mirror, bool one_sided) {
-
-  const WeightSpec wspec = {w_coef, w_a, w_b, w_mirror, one_sided};
+                       Rcpp::Function weight, bool one_sided) {
 
   const int n_h = h_grid.n_elem;
   const int n_row = X.n_elem;
@@ -627,17 +603,33 @@ arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau,
     const double h = h_grid[hi];
     if (!quiet) Rcpp::Rcout << "Evaluating bandwidth h = " << h << "\n";
 
-    arma::vec kerval(n_row);
-    for (int i = 0; i < n_row; ++i) {
-      kerval[i] = calc_kerfun(X[i] - obs_times[i], h, wspec);
+    // Two R calls, both vectorised over every lag: the row lags, and the
+    // quadrature-node-by-row lag matrix.  The one-sided restriction is applied
+    // here rather than inside the weight, because it is the risk-set rule of
+    // the model and not a property of the kernel.
+    const arma::vec row_lag = X - obs_times;
+    arma::vec kerval = Rcpp::as<arma::vec>(weight(Rcpp::wrap(row_lag / h))) / h;
+    if (kerval.n_elem != static_cast<arma::uword>(n_row)) {
+      Rcpp::stop("'weight' returned %d values for %d lags; it must return one "
+                 "value per element of its argument",
+                 static_cast<int>(kerval.n_elem), n_row);
     }
+    if (one_sided) kerval %= arma::conv_to<arma::vec>::from(row_lag > 0);
 
-    arma::mat kerval_tt(n_quad, n_row);
+    arma::mat node_lag(n_quad, n_row);
     for (int q = 0; q < n_quad; ++q) {
-      for (int i = 0; i < n_row; ++i) {
-        kerval_tt(q, i) = calc_kerfun(tts[q] - obs_times[i], h, wspec);
-      }
+      for (int i = 0; i < n_row; ++i) node_lag(q, i) = tts[q] - obs_times[i];
     }
+    arma::mat kerval_tt =
+        Rcpp::as<arma::mat>(weight(Rcpp::wrap(node_lag / h))) / h;
+    if (kerval_tt.n_rows != static_cast<arma::uword>(n_quad) ||
+        kerval_tt.n_cols != static_cast<arma::uword>(n_row)) {
+      Rcpp::stop("'weight' did not preserve the shape of its argument: given a "
+                 "%dx%d matrix it returned %dx%d",
+                 n_quad, n_row, static_cast<int>(kerval_tt.n_rows),
+                 static_cast<int>(kerval_tt.n_cols));
+    }
+    if (one_sided) kerval_tt %= arma::conv_to<arma::mat>::from(node_lag > 0);
 
     // Same support the fit uses, so the constraint set matches the objective.
     arma::uvec feasible;

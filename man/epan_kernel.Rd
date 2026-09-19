@@ -3,11 +3,11 @@
 \name{epan_kernel}
 \alias{epan_kernel}
 \alias{kernel_weights}
-\title{Epanechnikov kernel and the row weights built from it}
+\title{Row weights from a weight function}
 \usage{
 epan_kernel(u)
 
-kernel_weights(lag, h, one_sided = TRUE)
+kernel_weights(lag, h, weight = NULL, one_sided = TRUE)
 }
 \arguments{
 \item{u}{Numeric vector or matrix of standardised lags.}
@@ -17,10 +17,19 @@ their shape, which the sieve quadrature relies on.}
 
 \item{h}{Positive bandwidth.}
 
-\item{one_sided}{Logical. When \code{TRUE} (the default) rows with a non-positive
-lag receive zero weight, which is the risk-set restriction of a hazard
-model: only covariate observations before the time inform it. \code{FALSE}
-smooths from both sides.}
+\item{weight}{A weight function of the standardised lag, or \code{NULL} for the
+Epanechnikov that \code{one_sided} implies; see \link{kernel-weights}. \code{NULL} is the
+default for the same reason it is the default at every entry point: a
+literal \code{w_epan_half()} here silently turns \code{one_sided = FALSE} into a
+one-sided fit, because the support stays \verb{[0, 1]} and the negative lags
+are zeroed by the weight rather than kept. The package's own test suite
+caught that, which is the argument for not having written it twice.}
+
+\item{one_sided}{Logical. When \code{TRUE} rows with a non-positive lag receive
+zero weight, which is the risk-set restriction of a hazard model: only
+covariate observations before the time inform it. It is applied after the
+weight has been evaluated, because it is a modelling choice rather than a
+property of the kernel.}
 }
 \value{
 \code{epan_kernel()} returns \eqn{0.75(1 - u^2)_+}, shape preserved.
@@ -28,9 +37,9 @@ smooths from both sides.}
 \code{kernel_weights()} returns the scaled weights \code{W(lag/h)/h}.
 }
 \description{
-The kernel was written out inline in \code{skmle()}, \code{kee_cox()} and
-\code{kee_additive()}. Keeping one copy matters now that the half/full choice is
-a user-facing argument: three inline copies are three places for the switch
-to be forgotten.
+The one place a weight is turned into the numbers the estimators use, so
+there is one description of any given kernel rather than one per call site.
+\code{epan_kernel()} is kept because three fitting functions used to write the
+Epanechnikov out inline and older code may still reach for it.
 }
 \keyword{internal}

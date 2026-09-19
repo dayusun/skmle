@@ -20,6 +20,7 @@ skmle_cv(
   xtol_rel = 1e-06,
   seed = NULL,
   quiet = FALSE,
+  weight = NULL,
   one_sided = TRUE
 )
 
@@ -68,6 +69,10 @@ integration.}
 If \code{NULL}, the current RNG state is used and no explicit seed is set.}
 
 \item{quiet}{Logical; if \code{TRUE}, suppress progress output.}
+
+\item{weight}{Weight function of the standardised lag \eqn{(t - r)/h}, or
+\code{NULL} (the default) for the Epanechnikov kernel implied by \code{one_sided}.
+Any R function will do; see \link{kernel-weights}.}
 
 \item{one_sided}{Logical. \code{TRUE} (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform

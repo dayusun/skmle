@@ -16,6 +16,9 @@
 #' @param h Positive kernel bandwidth. If omitted, one is read off the
 #'   observation times as a rule of thumb and reported in a message. Use
 #'   [skmle_cv()] to choose it from the data.
+#' @param weight Weight function of the standardised lag \eqn{(t - r)/h}, or
+#'   `NULL` (the default) for the Epanechnikov kernel implied by `one_sided`.
+#'   Any R function will do; see [kernel-weights].
 #' @param one_sided Logical. `TRUE` (the default) uses a half kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
@@ -113,7 +116,9 @@
 #' @importFrom stats model.frame model.matrix model.response
 #' @importFrom nleqslv nleqslv
 #' @export
-kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE) {
+kee_cox <- function(formula, data, id, obs_times, h = NULL, weight = NULL,
+                    one_sided = TRUE) {
+    weight <- resolve_weight(weight, one_sided)
     # basic input validation
     if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
         stop("formula, data, id and obs_times must all be supplied")
@@ -168,7 +173,7 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE) {
         h <- default_bandwidth_surv(X_time, obs_times_vec, n)
         announce_bandwidth(h, "skmle_cv")
     }
-    kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
+    kerval <- kernel_weights(X_time - obs_times_vec, h, weight, one_sided)
 
     estequ <- function(beta) {
         kee_cox_estequ(
@@ -245,6 +250,9 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE) {
 #' @param h Positive kernel bandwidth. If omitted, one is read off the
 #'   observation times as a rule of thumb and reported in a message. Use
 #'   [skmle_cv()] to choose it from the data.
+#' @param weight Weight function of the standardised lag \eqn{(t - r)/h}, or
+#'   `NULL` (the default) for the Epanechnikov kernel implied by `one_sided`.
+#'   Any R function will do; see [kernel-weights].
 #' @param one_sided Logical. `TRUE` (the default) uses a half kernel: only
 #'   covariate observations strictly before the event or quadrature time inform
 #'   that time, which is the risk-set restriction and the estimator as
@@ -303,7 +311,8 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE) {
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
 kee_additive <- function(formula, data, id, obs_times, h = NULL, lq_nodes = 64,
-                         one_sided = TRUE) {
+                         weight = NULL, one_sided = TRUE) {
+    weight <- resolve_weight(weight, one_sided)
     # basic validation
     if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
         stop("formula, data, id and obs_times must all be supplied")
@@ -355,7 +364,7 @@ kee_additive <- function(formula, data, id, obs_times, h = NULL, lq_nodes = 64,
         h <- default_bandwidth_surv(X_time, obs_times_vec, n)
         announce_bandwidth(h, "skmle_cv")
     }
-    kerval <- kernel_weights(X_time - obs_times_vec, h, one_sided)
+    kerval <- kernel_weights(X_time - obs_times_vec, h, weight, one_sided)
 
     lqrule <- gaussquad::legendre.quadrature.rules(lq_nodes)[[lq_nodes]]
     lq_x <- lqrule$x

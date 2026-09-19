@@ -61,8 +61,8 @@ skmle_eval_nll_cpp <- function(n, p, gammap, s, h, tau, beta, gamma, covariates,
     .Call(`_skmle_skmle_eval_nll_cpp`, n, p, gammap, s, h, tau, beta, gamma, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all)
 }
 
-skmle_cv_cpp <- function(p, gammap, s, tau, h_grid, K, fold_id_subj, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, tts, node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, maxeval, xtol_rel, quiet, w_coef, w_a, w_b, w_mirror, one_sided) {
-    .Call(`_skmle_skmle_cv_cpp`, p, gammap, s, tau, h_grid, K, fold_id_subj, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, tts, node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, maxeval, xtol_rel, quiet, w_coef, w_a, w_b, w_mirror, one_sided)
+skmle_cv_cpp <- function(p, gammap, s, tau, h_grid, K, fold_id_subj, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, tts, node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, maxeval, xtol_rel, quiet, weight, one_sided) {
+    .Call(`_skmle_skmle_cv_cpp`, p, gammap, s, tau, h_grid, K, fold_id_subj, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, tts, node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, maxeval, xtol_rel, quiet, weight, one_sided)
 }
 
 locf_nll_cpp_r <- function(node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, Z, beta, gamma, s, keep) {

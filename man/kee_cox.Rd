@@ -4,7 +4,15 @@
 \alias{kee_cox}
 \title{Fit a Cox-Type KEE Model}
 \usage{
-kee_cox(formula, data, id, obs_times, h = NULL, one_sided = TRUE)
+kee_cox(
+  formula,
+  data,
+  id,
+  obs_times,
+  h = NULL,
+  weight = NULL,
+  one_sided = TRUE
+)
 }
 \arguments{
 \item{formula}{A model formula with a \code{survival::Surv()} response.}
@@ -23,6 +31,10 @@ times} in \code{\link[=kee_cox]{kee_cox()}}.}
 \item{h}{Positive kernel bandwidth. If omitted, one is read off the
 observation times as a rule of thumb and reported in a message. Use
 \code{\link[=skmle_cv]{skmle_cv()}} to choose it from the data.}
+
+\item{weight}{Weight function of the standardised lag \eqn{(t - r)/h}, or
+\code{NULL} (the default) for the Epanechnikov kernel implied by \code{one_sided}.
+Any R function will do; see \link{kernel-weights}.}
 
 \item{one_sided}{Logical. \code{TRUE} (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform

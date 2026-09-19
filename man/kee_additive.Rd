@@ -11,6 +11,7 @@ kee_additive(
   obs_times,
   h = NULL,
   lq_nodes = 64,
+  weight = NULL,
   one_sided = TRUE
 )
 }
@@ -33,6 +34,10 @@ observation times as a rule of thumb and reported in a message. Use
 \code{\link[=skmle_cv]{skmle_cv()}} to choose it from the data.}
 
 \item{lq_nodes}{Number of quadrature nodes used in the numerical integration step.}
+
+\item{weight}{Weight function of the standardised lag \eqn{(t - r)/h}, or
+\code{NULL} (the default) for the Epanechnikov kernel implied by \code{one_sided}.
+Any R function will do; see \link{kernel-weights}.}
 
 \item{one_sided}{Logical. \code{TRUE} (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform

@@ -15,6 +15,7 @@ skmle(
   lq_nodes = 64,
   maxeval = 10000,
   xtol_rel = 1e-06,
+  weight = NULL,
   one_sided = TRUE
 )
 }
@@ -53,6 +54,10 @@ integration.}
 \item{maxeval}{Maximum number of optimizer evaluations.}
 
 \item{xtol_rel}{Relative convergence tolerance passed to the optimizer.}
+
+\item{weight}{Weight function of the standardised lag \eqn{(t - r)/h}, or
+\code{NULL} (the default) for the Epanechnikov kernel implied by \code{one_sided}.
+Any R function will do; see \link{kernel-weights}.}
 
 \item{one_sided}{Logical. \code{TRUE} (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform
