@@ -1,5 +1,43 @@
 # skmle 0.1.0
 
+## Covariate observation times may be negative
+
+* **`obs_times` is no longer required to be non-negative.** Event times still
+  are, because the sieve basis and the cumulative-hazard quadrature are built
+  on `[0, max(X)]` and anything outside that span is extrapolation. An
+  observation time is never an argument to a basis: it reaches the score only
+  through the lag `X - obs_times`, and the one-sided rule tests the sign of
+  that lag, not the sign of the time. The old check applied a constraint
+  belonging to one argument to an argument that does not carry it.
+* What this buys is a covariate measured before the participant entered
+  follow-up, a screening draw or a run-in visit, without re-origining the time
+  axis. Shifting the origin moves `X` too and leaves every lag and every risk
+  set unchanged, so it was never a way to recover that information.
+* **The permission is numerical and the interpretation is not.** A pre-entry
+  measurement has to be commensurable with the on-study ones, entry may not be
+  independent of the covariate that preceded it, and a participant contributes
+  a pre-entry row only by having survived to enrol. None of this is checked.
+  `?kee_cox` states it under "Negative observation times".
+* Reach is unchanged: a row further back than one bandwidth from every event
+  time still contributes nothing, and the fit equals the fit with that row
+  deleted.
+
+## Weights that can take negative values
+
+* **The estimating equations and the sieve likelihood guard on a nonzero row
+  weight rather than a positive one.** A weight function supplied by a caller
+  is not required to be nonnegative, and the old `> 0` test dropped
+  negative-weight rows silently instead of failing, which made the score wrong
+  with no diagnostic. The objective, its gradient, and the bread and meat of
+  the sandwich now sum over the same rows; previously a negative weight would
+  have put them on different row sets.
+* The internal risk-set weights keep their `> 0` test, which is a skip-zero
+  optimisation on a kernel that is nonnegative by construction, not a sign
+  assumption about the caller's weight.
+* The kernels shipped with the package are nonnegative, so every result the
+  package has produced is unchanged to the last bit; the difference appears
+  only under a caller-supplied weight.
+
 ## Scope
 
 The package covers two settings, not one. Alongside the transformed hazards

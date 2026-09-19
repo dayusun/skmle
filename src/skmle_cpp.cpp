@@ -114,7 +114,13 @@ double nll_obj(unsigned n_vars, const double *x, double *grad,
   int n_obs = data->X->n_elem;
 
   for (int i = 0; i < n_obs; ++i) {
-    if ((*data->delta)[i] == 1.0 && (*data->kerval)[i] > 0) {
+    // Guard on nonzero, not positive.  A weight function supplied by a caller
+    // is not required to be nonnegative, and a `> 0` test drops those rows
+    // silently rather than failing.  The objective, its gradient, and the
+    // bread and meat in calc_A/calc_B must all sum over the SAME rows or they
+    // describe different estimators, so the four guards move together.  The
+    // kernels shipped here are nonnegative, for which the two forms agree.
+    if ((*data->delta)[i] == 1.0 && (*data->kerval)[i] != 0) {
       double t_val = trans_fun(inner1[i], data->s);
       if (t_val > 0)
         res1 += std::log(t_val) * (*data->kerval)[i];
@@ -277,7 +283,8 @@ arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
   for (int i = 0; i < n; ++i) {
     if (i % 100 == 0) Rcpp::checkUserInterrupt();
 
-    if (delta[i] == 1.0 && kerval[i] > 0) {
+    // Nonzero, not positive: see the note in nll_obj.
+    if (delta[i] == 1.0 && kerval[i] != 0) {
       double S0_sum = 0.0;
       arma::vec S1_sum = arma::zeros<arma::vec>(p);
       arma::mat S2_sum = arma::zeros<arma::mat>(p, p);
@@ -339,7 +346,10 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
       continue;
     id_counts[idx] += 1;
 
-    if (delta[i] == 1.0 && kerval[i] > 0 && (X[i] - obs_times[i]) > 0) {
+    // Nonzero WEIGHT, positive LAG.  The two tests are unrelated: the lag test
+    // is the one-sided restriction and stays `> 0`; the weight test only asks
+    // whether the row contributes at all.  See the note in nll_obj.
+    if (delta[i] == 1.0 && kerval[i] != 0 && (X[i] - obs_times[i]) > 0) {
       double S0_sum = 0.0;
       arma::vec S1_sum = arma::zeros<arma::vec>(p);
       for (int k = 0; k < n; ++k) {

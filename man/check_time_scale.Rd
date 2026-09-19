@@ -9,7 +9,7 @@ check_time_scale(X_time, obs_times_vec)
 \arguments{
 \item{X_time}{Event or censoring times.}
 
-\item{obs_times_vec}{Covariate observation times.}
+\item{obs_times_vec}{Covariate observation times. May be negative.}
 }
 \value{
 \code{NULL}, invisibly. Called for the error.
@@ -18,7 +18,18 @@ check_time_scale(X_time, obs_times_vec)
 Times may be on any scale. The sieve basis and the cumulative-hazard
 quadrature are built on \verb{[0, max(X_time)]}, so nothing has to be rescaled to
 the unit interval first; that was a convention of the original prototype
-rather than a requirement of the method. What is required is that times are
-finite and non-negative, and that follow-up has positive length.
+rather than a requirement of the method. What is required of \code{X_time} is
+that it is finite and non-negative, and that follow-up has positive length.
+}
+\details{
+\code{obs_times_vec} is held to the weaker standard of being finite, and may be
+negative. No basis and no quadrature rule is ever evaluated at a covariate
+observation time: it enters only through the lag \code{X_time - obs_times_vec},
+and the one-sided rule tests the sign of that lag, not the sign of the time.
+The earlier non-negativity requirement applied a constraint belonging to
+\code{X_time} to an argument that does not carry it. A negative observation time
+means a covariate measured before the time origin, which is a scientific
+statement about the data and not a numerical one; see the note under
+\dQuote{Negative observation times} in \code{\link[=kee_cox]{kee_cox()}}.
 }
 \keyword{internal}

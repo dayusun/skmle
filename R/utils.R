@@ -5,11 +5,21 @@
 #' Times may be on any scale. The sieve basis and the cumulative-hazard
 #' quadrature are built on `[0, max(X_time)]`, so nothing has to be rescaled to
 #' the unit interval first; that was a convention of the original prototype
-#' rather than a requirement of the method. What is required is that times are
-#' finite and non-negative, and that follow-up has positive length.
+#' rather than a requirement of the method. What is required of `X_time` is
+#' that it is finite and non-negative, and that follow-up has positive length.
+#'
+#' `obs_times_vec` is held to the weaker standard of being finite, and may be
+#' negative. No basis and no quadrature rule is ever evaluated at a covariate
+#' observation time: it reaches the score only through the lag
+#' `X_time - obs_times_vec`, and the one-sided rule tests the sign of that lag,
+#' not the sign of the time. The earlier non-negativity requirement applied a
+#' constraint belonging to `X_time` to an argument that does not carry it. A
+#' negative observation time means a covariate measured before the time origin,
+#' which is a scientific statement about the data and not a numerical one; see
+#' \dQuote{Negative observation times} in [kee_cox()].
 #'
 #' @param X_time Event or censoring times.
-#' @param obs_times_vec Covariate observation times.
+#' @param obs_times_vec Covariate observation times. May be negative.
 #' @return `NULL`, invisibly. Called for the error.
 #' @keywords internal
 check_time_scale <- function(X_time, obs_times_vec) {
@@ -17,10 +27,10 @@ check_time_scale <- function(X_time, obs_times_vec) {
     !all(is.finite(X_time)) || !all(is.finite(obs_times_vec))) {
     stop("event and observation times must be finite", call. = FALSE)
   }
-  if (min(X_time) < 0 || min(obs_times_vec) < 0) {
+  if (min(X_time) < 0) {
     stop(
-      "event and observation times must be non-negative; observed minima ",
-      format(min(X_time)), " and ", format(min(obs_times_vec)),
+      "event times must be non-negative; observed minimum ",
+      format(min(X_time)),
       call. = FALSE
     )
   }

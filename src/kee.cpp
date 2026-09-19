@@ -22,7 +22,12 @@ arma::vec kee_cox_estequ(const arma::vec &beta, const arma::mat &covariates,
   for (int i = 0; i < n; ++i) {
     if (i % 100 == 0) Rcpp::checkUserInterrupt();
 
-    if (delta[i] == 1.0 && kerval[i] > 0) {
+    // Guard on nonzero, not positive.  A weight function is not required to be
+    // nonnegative, and a `> 0` test silently drops every negative-weight row
+    // instead of failing, which makes the score wrong with no diagnostic.  The
+    // kernels shipped here are nonnegative, so the two forms agree exactly for
+    // them; the difference only shows up under a caller-supplied weight.
+    if (delta[i] == 1.0 && kerval[i] != 0) {
       part1 += kerval[i] * trans(covariates.row(i));
 
       double S0_XX_sum = 0.0;
@@ -75,7 +80,8 @@ List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
   for (int i = 0; i < n; ++i) {
     if (i % 100 == 0) Rcpp::checkUserInterrupt();
 
-    if (delta[i] == 1.0 && kerval[i] > 0) {
+    // Nonzero, not positive: see the note in kee_cox_estequ.
+    if (delta[i] == 1.0 && kerval[i] != 0) {
       double S0_XX_sum = 0.0;
       arma::vec S1_XX_sum = arma::zeros<arma::vec>(p);
       arma::mat S2_XX_sum = arma::zeros<arma::mat>(p, p);
@@ -204,7 +210,8 @@ List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
   for (int i = 0; i < n; ++i) {
     if (i % 100 == 0) Rcpp::checkUserInterrupt();
 
-    if (kerval[i] > 0) {
+    // Nonzero, not positive: see the note in kee_cox_estequ.
+    if (kerval[i] != 0) {
       double delta_i = delta[i]; // B uses delta according to kee formulation
       if (delta_i == 1.0) {
         double S0_XX_sum = 0.0;
