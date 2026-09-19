@@ -13,6 +13,7 @@ kee_additive(
   obs_times,
   h = NULL,
   lq_nodes = 64,
+  weight = NULL,
   one_sided = TRUE
 )
 ```
@@ -38,7 +39,9 @@ kee_additive(
   Longitudinal observation times aligned row-wise with `data`. Times may
   be on any scale; the sieve basis and the cumulative-hazard quadrature
   are built on the observed follow-up, so there is no need to rescale to
-  the unit interval first. `h` must be on the same scale.
+  the unit interval first. `h` must be on the same scale. Observation
+  times may be negative; see “Negative observation times” in
+  [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md).
 
 - h:
 
@@ -50,6 +53,13 @@ kee_additive(
 - lq_nodes:
 
   Number of quadrature nodes used in the numerical integration step.
+
+- weight:
+
+  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
+  default) for the Epanechnikov kernel implied by `one_sided`. Any R
+  function will do; see
+  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
 
 - one_sided:
 

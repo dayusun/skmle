@@ -46,6 +46,45 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="skmle-010">skmle 0.1.0<a class="anchor" aria-label="anchor" href="#skmle-010"></a></h2>
 <div class="section level3">
+<h3 id="any-weight-function-not-only-the-ones-supplied-0-1-0">Any weight function, not only the ones supplied<a class="anchor" aria-label="anchor" href="#any-weight-function-not-only-the-ones-supplied-0-1-0"></a></h3>
+<ul><li>
+<strong><code><a href="../reference/skmle.html">skmle()</a></code>, <code><a href="../reference/kee_cox.html">kee_cox()</a></code>, <code><a href="../reference/kee_additive.html">kee_additive()</a></code> and <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code> take a <code>weight</code> argument.</strong> Any R function of the standardised lag <code>u = (t - r)/h</code> may be passed; the fitting code privileges no particular kernel. <code><a href="../reference/kernel-weights.html">w_epan_half()</a></code> and <code><a href="../reference/kernel-weights.html">w_epan_full()</a></code> build the two Epanechnikov kernels and are exported.</li>
+<li>A weight takes one argument and returns the shape it was given. The sieve quadrature evaluates it on a matrix of node-by-observation lags, not only on a vector, so a weight built from <code><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply()</a></code> or a scalar <code>if()</code> would be recycled into the wrong cells. Both the length and the matrix shape are checked when the argument is resolved, rather than failing later inside the fit.</li>
+<li>A weight may take negative values and need not integrate to 1. The normalisation cancels in the risk-set ratios and is absorbed into <code>h</code> elsewhere, which is why <code><a href="../reference/kernel-weights.html">w_epan_half()</a></code> integrates to 1/2.</li>
+<li>
+<code>weight</code> defaults to <code>NULL</code>, meaning the Epanechnikov that <code>one_sided</code> implies. A literal <code><a href="../reference/kernel-weights.html">w_epan_half()</a></code> default would have been wrong, and was wrong for one commit: its support is <code>[0, 1]</code>, so <code>one_sided = FALSE</code> with that default zeroes every negative lag through the support and returns a one-sided fit under a two-sided name. The package’s own suite caught it and now pins it.</li>
+<li>
+<code>one_sided</code> stays a separate argument, because it is a property of the model and not of the kernel. It is the risk-set restriction of a hazard model and applies to the sign of the lag after the weight is evaluated, so a two-sided weight under <code>one_sided = TRUE</code> is truncated at zero rather than rejected.</li>
+<li>
+<code><a href="../reference/kee_async.html">kee_async()</a></code>, <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> and <code><a href="../reference/kee_async_cv.html">kee_async_cv()</a></code> do not take <code>weight</code>; they use the full Epanechnikov of Cao, Zeng and Fine.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="the-cross-validation-loop-runs-in-c-0-1-0">The cross-validation loop runs in C++<a class="anchor" aria-label="anchor" href="#the-cross-validation-loop-runs-in-c-0-1-0"></a></h3>
+<ul><li>
+<strong>The fold loop and the held-out score moved back into C++</strong>, as <code>skmle_cv_cpp()</code>. The reason is not speed, which is dominated by the fit either way. Scoring in R required a second implementation of the model’s transformation: <code>R/utils.R</code> carried a <code>trans_link()</code> that mirrored <code>trans_fun()</code> in <code>src/skmle_cpp.cpp</code> by hand, floor and all, and because <code>trans_fun</code> is not exported nothing could compare them and no test did. The criterion and the objective now call the same function, which is a guarantee rather than a test someone has to remember to write. <code>trans_link()</code> is gone.</li>
+<li>The optimiser set-up is factored into one internal <code>fit_core()</code>, shared by <code>skmle_cpp_fit()</code> and the loop, so the fit the cross-validation scores cannot drift from the fit <code><a href="../reference/skmle.html">skmle()</a></code> returns.</li>
+<li>
+<code>locf_score()</code> stays in R. It is set-up rather than a loop, it needs <code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns()</a></code> and <code><a href="https://rdrr.io/r/base/findInterval.html" class="external-link">findInterval()</a></code>, and it evaluates no part of the model: it returns a basis, quadrature weights and row indices.</li>
+<li>The criterion is unchanged, and that is checked rather than asserted. The losses from the R loop were recorded before the port, and the C++ loop reproduces them to 4.4e-16 with identical coefficients. <code>test-cv-reference.R</code> keeps the comparison in the suite.</li>
+<li>The fold loop evaluates the caller’s weight function itself, as an <code>Rcpp::Function</code>, so the kernel keeps one description. An earlier draft of this change gave C++ a polynomial description of the weight alongside the R closure and a test comparing the two; handing the closure across removes the second description rather than testing it.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="covariate-observation-times-may-be-negative-0-1-0">Covariate observation times may be negative<a class="anchor" aria-label="anchor" href="#covariate-observation-times-may-be-negative-0-1-0"></a></h3>
+<ul><li>
+<strong><code>obs_times</code> is no longer required to be non-negative.</strong> Event times still are, because the sieve basis and the cumulative-hazard quadrature are built on <code>[0, max(X)]</code> and anything outside that span is extrapolation. An observation time is never an argument to a basis: it reaches the score only through the lag <code>X - obs_times</code>, and the one-sided rule tests the sign of that lag, not the sign of the time. The old check applied a constraint belonging to one argument to an argument that does not carry it.</li>
+<li>What this buys is a covariate measured before the participant entered follow-up, a screening draw or a run-in visit, without re-origining the time axis. Shifting the origin moves <code>X</code> too and leaves every lag and every risk set unchanged, so it was never a way to recover that information.</li>
+<li>
+<strong>The permission is numerical and the interpretation is not.</strong> A pre-entry measurement has to be commensurable with the on-study ones, entry may not be independent of the covariate that preceded it, and a participant contributes a pre-entry row only by having survived to enrol. None of this is checked. <code><a href="../reference/kee_cox.html">?kee_cox</a></code> states it under “Negative observation times”.</li>
+<li>Reach is unchanged: a row further back than one bandwidth from every event time still contributes nothing, and the fit equals the fit with that row deleted.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="weights-that-can-take-negative-values-0-1-0">Weights that can take negative values<a class="anchor" aria-label="anchor" href="#weights-that-can-take-negative-values-0-1-0"></a></h3>
+<ul><li>
+<strong>The estimating equations and the sieve likelihood guard on a nonzero row weight rather than a positive one.</strong> A weight function supplied by a caller is not required to be nonnegative, and the old <code>&gt; 0</code> test dropped negative-weight rows silently instead of failing, which made the score wrong with no diagnostic. The objective, its gradient, and the bread and meat of the sandwich now sum over the same rows; previously a negative weight would have put them on different row sets.</li>
+<li>The internal risk-set weights keep their <code>&gt; 0</code> test, which is a skip-zero optimisation on a kernel that is nonnegative by construction, not a sign assumption about the caller’s weight.</li>
+<li>The kernels shipped with the package are nonnegative, so every result the package has produced is unchanged to the last bit; the difference appears only under a caller-supplied weight.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="scope-0-1-0">Scope<a class="anchor" aria-label="anchor" href="#scope-0-1-0"></a></h3>
 <p>The package covers two settings, not one. Alongside the transformed hazards models for survival outcomes it now fits generalised linear models for asynchronous longitudinal outcomes, where the response and the covariate are recorded on different time grids. The <code>Title</code> drops its “for Survival Models” restriction, and the <code>Description</code>, README, package help page and tutorial have been rewritten to present the two settings on equal footing rather than treating the second as an extra.</p>
 </div>
@@ -103,6 +142,20 @@
 <li>
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> and <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> methods for the <code>kee_td</code> coefficient curves.</li>
 <li>Both estimators are backed by C++: pairs are enumerated once and collapsed onto covariate rows, so the pair design never enters the Newton loop. The time-dependent weight factorises over the two occasion indices, so no pair is enumerated there at all.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bandwidth-selection-in-skmle_cv-0-1-0">Bandwidth selection in <code>skmle_cv()</code>
+<a class="anchor" aria-label="anchor" href="#bandwidth-selection-in-skmle_cv-0-1-0"></a></h3>
+<ul><li>
+<strong>The held-out loss no longer falls away with the bandwidth.</strong> It was the kernel-weighted log-likelihood evaluated on the held-out fold, and the kernel weight is <code>W(u/h)/h</code>, so the weight a subject contributes shrinks as <code>h</code> grows and the criterion decreased monotonically whatever the fit was worth. The largest candidate in <code>h_grid</code> won every grid on every data set – including the automatic grid – and coefficients further from the truth were preferred to coefficients nearer it. Reported by a reader of the tutorial, whose CV curve was monotone across <code>n = 200/1000</code>, censoring <code>0.2/0.7</code> and five seeds.</li>
+<li>The score is now an ordinary log-likelihood evaluated on the held-out subjects, with the covariate path carried forward from the last observation. No kernel and no bandwidth enter it, so it is the same yardstick for every candidate and the comparison is about the fit. See <code><a href="../reference/skmle_cv.html">?skmle_cv</a></code>.</li>
+<li>
+<strong>A minimum at an endpoint of <code>h_grid</code> now warns</strong>, as <code><a href="../reference/kee_async_cv.html">kee_async_cv()</a></code> already did: the selected value is then the best of the values offered rather than a minimum. On the automatic grid this fires often, because the grid stops at the rate-based <code>tau * n^-0.3</code> while the finite-sample minimum of the loss commonly lies above it.</li>
+<li>
+<strong><code>cv_results</code> gains an <code>se</code> column</strong>, the standard error of each loss across the folds, because the criterion is flat: at the sample sizes in the tutorial every candidate is within one standard error of the minimum. It also scores prediction of the held-out hazard, where the baseline can absorb attenuation in <code>beta</code>, so it leans towards more smoothing than the coefficients on their own would want. Over 10 replicates at <code>n = 200</code> on a grid spanning 0.05 to 0.9, the squared error of <code>beta-hat</code> at the selected bandwidth averaged 0.155, against 0.205 at the largest candidate – what the old criterion always returned – and 0.065 at the oracle bandwidth. A one-standard-error rule does <em>not</em> help: it lands in the noisy small-<code>h</code> end and scored 0.205, and <code><a href="../reference/skmle_cv.html">?skmle_cv</a></code> says so.</li>
+<li>
+<strong><code>h_grid = NULL</code> worked again.</strong> The automatic grid referred to the end of follow-up before it was computed, so the documented default errored with <code>object 'tau' not found</code> for any data set.</li>
+<li>The fold loop moved from C++ to R. It only subsets matrices and calls the optimiser, which R does in a dozen lines, and the held-out score needs a spline basis at subject-specific quadrature nodes.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="half-and-full-kernels-0-1-0">Half and full kernels<a class="anchor" aria-label="anchor" href="#half-and-full-kernels-0-1-0"></a></h3>

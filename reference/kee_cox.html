@@ -53,7 +53,15 @@ a kernel estimating-equation approach.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">kee_cox</span><span class="op">(</span><span class="va">formula</span>, <span class="va">data</span>, <span class="va">id</span>, <span class="va">obs_times</span>, h <span class="op">=</span> <span class="cn">NULL</span>, one_sided <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">kee_cox</span><span class="op">(</span></span>
+<span>  <span class="va">formula</span>,</span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">id</span>,</span>
+<span>  <span class="va">obs_times</span>,</span>
+<span>  h <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  one_sided <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -76,13 +84,21 @@ a kernel estimating-equation approach.</p>
 <dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.
 Times may be on any scale; the sieve basis and the cumulative-hazard
 quadrature are built on the observed follow-up, so there is no need to
-rescale to the unit interval first. <code>h</code> must be on the same scale.</p></dd>
+rescale to the unit interval first. <code>h</code> must be on the same scale.
+Observation times may be negative; see “Negative observation
+times” in <code>kee_cox()</code>.</p></dd>
 
 
 <dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
 <dd><p>Positive kernel bandwidth. If omitted, one is read off the
 observation times as a rule of thumb and reported in a message. Use
 <code><a href="skmle_cv.html">skmle_cv()</a></code> to choose it from the data.</p></dd>
+
+
+<dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
+<dd><p>Weight function of the standardised lag \((t - r)/h\), or
+<code>NULL</code> (the default) for the Epanechnikov kernel implied by <code>one_sided</code>.
+Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p></dd>
 
 
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>
@@ -107,6 +123,44 @@ and the original function call.</p>
 baseline component. It is therefore a useful specialized alternative to <code><a href="skmle.html">skmle()</a></code>
 when the scientific model is Cox-type and the main interest is in the regression
 coefficients.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="negative-observation-times">Negative observation times<a class="anchor" aria-label="anchor" href="#negative-observation-times"></a></h2>
+
+
+<p><code>obs_times</code> may be negative. Event times may not: the sieve basis and the
+cumulative-hazard quadrature are built on <code>[0, max(X)]</code>, so an event time
+outside that span is extrapolation. Observation times carry no such
+constraint. They enter the score only through the lag <code>X - obs_times</code>, and
+the half kernel admits a row on the sign of that lag rather than on the sign
+of the time, so a covariate observed at <code>-180</code> and an event at <code>30</code> sit a lag
+of <code>210</code> apart and are handled like any other pair.</p>
+<p>Reach still decides whether such a row counts for anything. A pre-origin
+observation contributes only where it falls within <code>h</code> of an event time, so
+one further back than a bandwidth is silently outside every window and the
+fit is identical to the fit with that row deleted. Admitting negative times
+widens what is representable, not what is reachable.</p>
+<p><strong>The permission is numerical; the interpretation is not.</strong> A negative
+observation time means a covariate measured before the time origin, that is,
+before the participant entered follow-up. Shifting the origin so that every
+time is positive is a different operation: it moves <code>X</code> too, leaves every lag
+and every risk set unchanged, and buys nothing. Holding <code>X</code> anchored at zero
+and admitting negative observation times adds information the fit would
+otherwise discard, and that is a claim about the data:</p><ul><li><p><strong>The pre-entry measurement must be commensurable with the on-study ones.</strong>
+A biomarker assayed on a different platform, in a different laboratory, or
+under a different protocol before enrolment is not the same variable, and
+the estimator cannot detect that it is not. Carry a provenance indicator
+and check that it does not predict the outcome.</p></li>
+<li><p><strong>Entry is often not independent of the covariate.</strong> If a participant was
+enrolled because of the value measured beforehand, conditioning on entry
+has already selected on the covariate, and the pre-entry row reintroduces
+that selection into the risk-set average.</p></li>
+<li><p><strong>Immortal time.</strong> A participant contributes a pre-entry covariate only by
+having survived to enrol. Nothing in the weighting corrects for this.</p></li>
+</ul><p>None of these is a defect in the estimator, and none of them is checked. If
+the pre-entry observations are ordinary measurements on the same scale, for
+example a run-in visit or a screening draw, using them is the point. If they
+come from elsewhere, the fit will be quiet and wrong.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

@@ -67,6 +67,7 @@ log-likelihood estimator (SMKLE).</p>
 <span>  lq_nodes <span class="op">=</span> <span class="fl">64</span>,</span>
 <span>  maxeval <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  xtol_rel <span class="op">=</span> <span class="fl">1e-06</span>,</span>
+<span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  one_sided <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -128,6 +129,12 @@ integration.</p></dd>
 
 <dt id="arg-xtol-rel">xtol_rel<a class="anchor" aria-label="anchor" href="#arg-xtol-rel"></a></dt>
 <dd><p>Relative convergence tolerance passed to the optimizer.</p></dd>
+
+
+<dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
+<dd><p>Weight function of the standardised lag \((t - r)/h\), or
+<code>NULL</code> (the default) for the Epanechnikov kernel implied by <code>one_sided</code>.
+Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p></dd>
 
 
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>

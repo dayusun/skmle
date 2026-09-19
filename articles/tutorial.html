@@ -354,7 +354,9 @@ the package also provides dedicated estimating-equation estimators.</p>
 <div class="section level2">
 <h2 id="selecting-a-bandwidth">Selecting a bandwidth<a class="anchor" aria-label="anchor" href="#selecting-a-bandwidth"></a>
 </h2>
-<p>Bandwidth selection can be handled by <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code>.</p>
+<p>Bandwidth selection can be handled by <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code>. Leave
+<code>h_grid</code> out and it builds one from the observation times,
+log-spaced over the range the theory supports.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">999</span><span class="op">)</span></span>
 <span></span>
@@ -365,42 +367,80 @@ the package also provides dedicated estimating-equation estimators.</p>
 <span>  obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span>
 <span>  s <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  K <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>  h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>  nknots <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: the selected bandwidth is an endpoint of 'h_grid', so it is the best</span></span>
+<span><span class="co">#&gt; of the values offered rather than a minimum. Widen the grid.</span></span>
 <span></span>
 <span><span class="va">cv_fit</span><span class="op">$</span><span class="va">h_cv</span></span>
-<span><span class="co">#&gt; [1] 0.5</span></span>
+<span><span class="co">#&gt; [1] 0.2685796</span></span>
 <span><span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
-<span><span class="co">#&gt;       h cvloss</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.3  0.758</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   0.4  0.729</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>   0.5  0.699</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 3</span></span></span>
+<span><span class="co">#&gt;         h cvloss     se</span></span>
+<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 0.082<span style="text-decoration: underline;">3</span>  0.604 0.061<span style="text-decoration: underline;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 0.093<span style="text-decoration: underline;">8</span>  0.591 0.048<span style="text-decoration: underline;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 0.107   0.566 0.017<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 0.122   0.507 0.036<span style="text-decoration: underline;">1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 0.139   0.460 0.077<span style="text-decoration: underline;">0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 0.159   0.438 0.103 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 0.181   0.428 0.115 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 0.206   0.421 0.119 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 0.235   0.407 0.122 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 0.269   0.394 0.124</span></span></code></pre></div>
 <p>The returned object contains:</p>
 <ul>
 <li>the selected bandwidth</li>
 <li>the refitted <code>skmle</code> model at that bandwidth</li>
 <li>the cross-validation loss table</li>
 </ul>
+<p>Each candidate is scored by an ordinary log-likelihood on the
+held-out subjects, with the covariate path carried forward from the last
+observation. Note what is <em>not</em> in that sentence: a kernel and a
+bandwidth. Scoring the fold with the kernel-weighted log-likelihood
+instead would not compare like with like, because the kernel weight
+<code>W(u/h)/h</code> shrinks as <code>h</code> grows and the loss would
+fall away with it whatever the fit was worth. <code><a href="../reference/skmle_cv.html">?skmle_cv</a></code>
+gives the criterion in full.</p>
+<p>Read <code>cv_results</code> rather than only <code>h_cv</code>, and
+read the <code>se</code> column with it. Two warnings are worth taking
+literally.</p>
+<p>If the minimum sits at an end of the grid, <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code>
+says so: the answer is then the best of the values offered, not a
+minimum. On the automatic grid that happens often, because the grid
+stops at <span class="math inline">\(\tau n^{-0.3}\)</span> – the rate
+the asymptotics assume – while the finite-sample minimum of the loss
+frequently lies above it. Widen <code>h_grid</code> by hand to see where
+the curve turns.</p>
+<p>And the curve is flat. With 80 subjects every candidate above is
+within one standard error of the minimum, which is the honest answer:
+this much data does not pin down a bandwidth. The criterion also scores
+prediction of the held-out hazard, in which the baseline can absorb
+attenuation in <code>beta</code>, so it leans towards more smoothing
+than the coefficients on their own would want.</p>
+<p>It is tempting to correct that lean by taking the smallest
+<code>h</code> within one standard error of the minimum. Don’t: over 10
+replicates at <span class="math inline">\(n = 200\)</span> that rule put
+the squared error of <code>beta</code> back where the grid maximum had
+it, because it lands in the noisy small-<code>h</code> end. The rise at
+the left of the curve is real.</p>
 <p>You can then inspect the final refit in the usual way.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, </span></span>
-<span><span class="co">#&gt;     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.5)</span></span>
+<span><span class="co">#&gt;     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.268579588381844)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   n= 80</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)  </span></span>
-<span><span class="co">#&gt; covariates1  1.02973    0.41714  2.4686  0.01357 *</span></span>
-<span><span class="co">#&gt; covariates2 -0.41579    0.28015 -1.4842  0.13776  </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value  Pr(&gt;|z|)    </span></span>
+<span><span class="co">#&gt; covariates1  1.39410    0.37867  3.6815 0.0002318 ***</span></span>
+<span><span class="co">#&gt; covariates2 -0.40813    0.30330 -1.3456 0.1784320    </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Log-likelihood: -0.1331</span></span></code></pre></div>
+<span><span class="co">#&gt; Log-likelihood: 0.06801</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="half-kernel-or-full-kernel">Half kernel or full kernel<a class="anchor" aria-label="anchor" href="#half-kernel-or-full-kernel"></a>

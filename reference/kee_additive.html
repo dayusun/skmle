@@ -60,6 +60,7 @@ a kernel estimating-equation approach.</p>
 <span>  <span class="va">obs_times</span>,</span>
 <span>  h <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  lq_nodes <span class="op">=</span> <span class="fl">64</span>,</span>
+<span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  one_sided <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -84,7 +85,9 @@ a kernel estimating-equation approach.</p>
 <dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.
 Times may be on any scale; the sieve basis and the cumulative-hazard
 quadrature are built on the observed follow-up, so there is no need to
-rescale to the unit interval first. <code>h</code> must be on the same scale.</p></dd>
+rescale to the unit interval first. <code>h</code> must be on the same scale.
+Observation times may be negative; see “Negative observation
+times” in <code><a href="kee_cox.html">kee_cox()</a></code>.</p></dd>
 
 
 <dt id="arg-h">h<a class="anchor" aria-label="anchor" href="#arg-h"></a></dt>
@@ -95,6 +98,12 @@ observation times as a rule of thumb and reported in a message. Use
 
 <dt id="arg-lq-nodes">lq_nodes<a class="anchor" aria-label="anchor" href="#arg-lq-nodes"></a></dt>
 <dd><p>Number of quadrature nodes used in the numerical integration step.</p></dd>
+
+
+<dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
+<dd><p>Weight function of the standardised lag \((t - r)/h\), or
+<code>NULL</code> (the default) for the Epanechnikov kernel implied by <code>one_sided</code>.
+Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p></dd>
 
 
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>

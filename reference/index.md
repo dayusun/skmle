@@ -3,7 +3,7 @@
 ## Package overview
 
 - [`skmle-package`](https://www.sundayu.me/skmle/reference/skmle-package.md)
-  : skmle: Sieve Kernel Maximum Likelihood Estimation
+  : skmle: Sieve Maximum Kernel-Weighted Log-Likelihood Estimation
 
 ## Survival models with sparse longitudinal covariates
 
@@ -31,6 +31,17 @@ response and a covariate observed on different time grids.
   [`print(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
   : Asynchronous longitudinal regression with time-dependent
   coefficients
+
+## Kernel weights
+
+The weight a model gives a covariate observation at a given lag. Both
+model families take one through their `weight` argument, and any
+function of the standardised lag will do; the two Epanechnikov kernels
+here are the supplied starting points.
+
+- [`w_epan_half()`](https://www.sundayu.me/skmle/reference/kernel-weights.md)
+  [`w_epan_full()`](https://www.sundayu.me/skmle/reference/kernel-weights.md)
+  : Kernel weight functions
 
 ## Simulation
 

@@ -18,6 +18,7 @@ skmle(
   lq_nodes = 64,
   maxeval = 10000,
   xtol_rel = 1e-06,
+  weight = NULL,
   one_sided = TRUE
 )
 ```
@@ -81,6 +82,13 @@ skmle(
 - xtol_rel:
 
   Relative convergence tolerance passed to the optimizer.
+
+- weight:
+
+  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
+  default) for the Epanechnikov kernel implied by `one_sided`. Any R
+  function will do; see
+  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
 
 - one_sided:
 

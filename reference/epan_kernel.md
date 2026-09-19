@@ -1,19 +1,16 @@
-# Epanechnikov kernel and the row weights built from it
+# Row weights from a weight function
 
-The kernel was written out inline in
-[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md),
-[`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) and
-[`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md).
-Keeping one copy matters now that the half/full choice is a user-facing
-argument: three inline copies are three places for the switch to be
-forgotten.
+The one place a weight is turned into the numbers the estimators use, so
+there is one description of any given kernel rather than one per call
+site. `epan_kernel()` is kept because three fitting functions used to
+write the Epanechnikov out inline and older code may still reach for it.
 
 ## Usage
 
 ``` r
 epan_kernel(u)
 
-kernel_weights(lag, h, one_sided = TRUE)
+kernel_weights(lag, h, weight = NULL, one_sided = TRUE)
 ```
 
 ## Arguments
@@ -31,12 +28,26 @@ kernel_weights(lag, h, one_sided = TRUE)
 
   Positive bandwidth.
 
+- weight:
+
+  A weight function of the standardised lag, or `NULL` for the
+  Epanechnikov that `one_sided` implies; see
+  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
+  `NULL` is the default for the same reason it is the default at every
+  entry point: a literal
+  [`w_epan_half()`](https://www.sundayu.me/skmle/reference/kernel-weights.md)
+  here silently turns `one_sided = FALSE` into a one-sided fit, because
+  the support stays `[0, 1]` and the negative lags are zeroed by the
+  weight rather than kept. The package's own test suite caught that,
+  which is the argument for not having written it twice.
+
 - one_sided:
 
-  Logical. When `TRUE` (the default) rows with a non-positive lag
-  receive zero weight, which is the risk-set restriction of a hazard
-  model: only covariate observations before the time inform it. `FALSE`
-  smooths from both sides.
+  Logical. When `TRUE` rows with a non-positive lag receive zero weight,
+  which is the risk-set restriction of a hazard model: only covariate
+  observations before the time inform it. It is applied after the weight
+  has been evaluated, because it is a modelling choice rather than a
+  property of the kernel.
 
 ## Value
 

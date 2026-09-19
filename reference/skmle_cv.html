@@ -65,6 +65,7 @@
 <span>  xtol_rel <span class="op">=</span> <span class="fl">1e-06</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  one_sided <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -147,6 +148,12 @@ If <code>NULL</code>, the current RNG state is used and no explicit seed is set.
 <dd><p>Logical; if <code>TRUE</code>, suppress progress output.</p></dd>
 
 
+<dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
+<dd><p>Weight function of the standardised lag \((t - r)/h\), or
+<code>NULL</code> (the default) for the Epanechnikov kernel implied by <code>one_sided</code>.
+Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p></dd>
+
+
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>
 <dd><p>Logical. <code>TRUE</code> (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform
@@ -169,14 +176,23 @@ are always consistent.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>cv.skmle</code> with components:</p><ul><li><p><code>h_cv</code>: selected bandwidth,</p></li>
 <li><p><code>fit</code>: <code>skmle</code> fit refit on the full data,</p></li>
-<li><p><code>cv_results</code>: data frame of candidate bandwidths and CV losses,</p></li>
+<li><p><code>cv_results</code>: data frame of candidate bandwidths, their CV losses, and the
+standard error of each loss across the folds,</p></li>
 <li><p><code>h_grid</code>: bandwidth grid used in the search,</p></li>
 <li><p><code>fold_id</code>: the subject-to-fold assignment vector (length <code>n</code>),</p></li>
 <li><p><code>seed</code>: the value of <code>seed</code> supplied by the user, or <code>NULL</code>,</p></li>
 <li><p><code>call</code>: the matched call.</p></li>
 </ul></div>
     <div class="section level2">
-    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <h2 id="kernel-choice">Kernel choice<a class="anchor" aria-label="anchor" href="#kernel-choice"></a></h2>
+
+
+<p><code>one_sided</code> is used inside the fold loop as well as being passed through to
+the refit, so the bandwidth is selected under the same kernel the final fit
+uses.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="how-the-folds-are-formed">How the folds are formed<a class="anchor" aria-label="anchor" href="#how-the-folds-are-formed"></a></h2>
     <p><code>skmle_cv()</code> splits subjects across folds. Several rows belong to the same
 subject in long format, so splitting by row would put one subject on both
 sides of the split.</p>
@@ -186,12 +202,56 @@ Because the fold assignment is random, pass <code>seed</code> (or <code><a href=
 calling) to make the grid selection reproducible.</p>
     </div>
     <div class="section level2">
-    <h2 id="kernel-choice">Kernel choice<a class="anchor" aria-label="anchor" href="#kernel-choice"></a></h2>
-
-
-<p><code>one_sided</code> is used inside the fold loop as well as being passed through to
-the refit, so the bandwidth is selected under the same kernel the final fit
-uses.</p>
+    <h2 id="what-the-held-out-loss-is">What the held-out loss is<a class="anchor" aria-label="anchor" href="#what-the-held-out-loss-is"></a></h2>
+    <p>Each training fold is fitted at the candidate bandwidth, and the fit is scored
+on the held-out subjects by an ordinary log-likelihood per subject,</p>
+<p>$$-\frac{1}{n_{\mathrm{test}}} \sum_{i \in \mathrm{test}}
+  \left[ \delta_i \log g\{\hat\alpha(X_i) + Z_i(X_i)^\top \hat\beta\}
+  - \int_0^{X_i} g\{\hat\alpha(t) + Z_i(t)^\top \hat\beta\}\,dt \right],$$</p>
+<p>where \(Z_i(t)\) is the covariate carried forward from the last observation
+at or before \(t\) (and the first observation carried back, before the first
+observation time). The integral is exact up to the Legendre rule applied
+between consecutive observation times, where the carried-forward path jumps.</p>
+<p>No kernel and no bandwidth appear in that expression, and that is the point.
+The kernel-weighted log-likelihood <code><a href="skmle.html">skmle()</a></code> maximises <strong>cannot</strong> be compared
+across bandwidths: its weights are \(W(u/h)/h\), so the weight each subject
+contributes falls away as <code>h</code> grows, and the criterion decreases
+monotonically in <code>h</code> whatever the fit is worth. Scored that way the largest
+candidate wins every grid on every data set, and coefficients further from the
+truth are preferred to coefficients nearer it. Dividing by the admitted
+weight, or scoring at one bandwidth held fixed across the grid, does not
+rescue it. The carried-forward likelihood is one yardstick for every
+candidate, so its approximation cancels out of the comparison and what is left
+is the quality of the fit.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="the-default-grid">The default grid<a class="anchor" aria-label="anchor" href="#the-default-grid"></a></h2>
+    <p>When <code>h_grid</code> is <code>NULL</code> the grid is log-spaced over
+\([\max\{\min_i (X_i - T_{ij})_+,\ \tau n^{-0.6}\},\
+\min\{\max_i \max_j (X_i - T_{ij})_+,\ \tau n^{-0.3}\}]\), with
+\(\tau = \max_i X_i\), so it adapts to the scale of the times on its own.</p>
+<p>Always look at <code>cv_results</code>. A minimum at an endpoint of the grid raises a
+warning: the selected value is then the best of the values offered rather than
+a minimum, and the grid should be widened. On the automatic grid that warning
+is common, because \(n^{-0.3}\) is the rate the asymptotics assume while the
+finite-sample minimum of the loss frequently lies above it. Widening <code>h_grid</code>
+by hand shows where the curve turns.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="how-sharp-the-selection-is">How sharp the selection is<a class="anchor" aria-label="anchor" href="#how-sharp-the-selection-is"></a></h2>
+    <p>Not very, and the <code>se</code> column says so: it is the standard error of each loss
+across the folds, and over a wide middle range of <code>h</code> the losses sit inside one
+standard error of each other. Read the curve, not only <code>h_cv</code>.</p>
+<p>The criterion scores prediction of the held-out hazard, in which the baseline
+\(\hat\alpha\) can absorb attenuation in \(\hat\beta\), so it leans towards
+more smoothing than the coefficients on their own would want. Over 10
+replicates at \(n = 200\) on a grid spanning <code>0.05</code> to <code>0.9</code>, the mean
+squared error of \(\hat\beta\) at the selected bandwidth was <code>0.155</code>, against
+<code>0.205</code> at the largest candidate and <code>0.065</code> at the bandwidth an oracle would
+have picked. Resist the temptation to correct the lean by taking the smallest
+bandwidth within one standard error of the minimum: that lands in the noisy
+small-<code>h</code> end, and scored <code>0.205</code> over the same replicates – no better than
+taking the largest candidate. The rise at the left of the curve is real.</p>
     </div>
 
     <div class="section level2">
@@ -217,34 +277,42 @@ uses.</p>
 <span class="r-in"><span>  obs_times <span class="op">=</span> <span class="va">obs_times</span>,</span></span>
 <span class="r-in"><span>  s <span class="op">=</span> <span class="fl">0</span>,</span></span>
 <span class="r-in"><span>  K <span class="op">=</span> <span class="fl">3</span>,</span></span>
-<span class="r-in"><span>  h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">2026</span>,</span></span>
 <span class="r-in"><span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">cv_fit</span><span class="op">$</span><span class="va">h_cv</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.158428</span>
+<span class="r-in"><span><span class="co"># Read the whole table, not just the selection: a minimum on the edge of the</span></span></span>
+<span class="r-in"><span><span class="co"># grid is a boundary artefact and warns.</span></span></span>
 <span class="r-in"><span><span class="va">cv_fit</span><span class="op">$</span><span class="va">cv_results</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 2</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       h cvloss</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>   0.3  0.475</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>   0.4  0.517</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>   0.5  0.530</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         h cvloss     se</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 0.096<span style="text-decoration: underline;">9</span>  0.295 0.057<span style="text-decoration: underline;">7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 0.110   0.294 0.064<span style="text-decoration: underline;">4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 0.124   0.258 0.097<span style="text-decoration: underline;">6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 0.140   0.235 0.115 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 0.158   0.228 0.119 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 0.179   0.233 0.116 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 0.203   0.238 0.116 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 0.229   0.238 0.109 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 0.259   0.229 0.100 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 0.293   0.233 0.092<span style="text-decoration: underline;">8</span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     id = id, obs_times = obs_times, s = 0, h = 0.3)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     id = id, obs_times = obs_times, s = 0, h = 0.158427999136039)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n= 60</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.15277    0.48689  2.3676   0.0179 *</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.23009    0.36932 -0.6230   0.5333  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             Estimate Std. Error z value Pr(&gt;|z|)   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates1  1.52299    0.51344  2.9663 0.003014 **</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> covariates2 -0.36860    0.46092 -0.7997 0.423880   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: 0.213 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Log-likelihood: 0.4295 </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

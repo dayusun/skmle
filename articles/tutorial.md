@@ -255,6 +255,8 @@ summary(fit_kee_add)
 
 Bandwidth selection can be handled by
 [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md).
+Leave `h_grid` out and it builds one from the observation times,
+log-spaced over the range the theory supports.
 
 ``` r
 
@@ -267,20 +269,28 @@ cv_fit <- skmle_cv(
   obs_times = obs_times,
   s = 0,
   K = 3,
-  h_grid = c(0.3, 0.4, 0.5),
   nknots = 3,
   quiet = TRUE
 )
+#> Warning: the selected bandwidth is an endpoint of 'h_grid', so it is the best
+#> of the values offered rather than a minimum. Widen the grid.
 
 cv_fit$h_cv
-#> [1] 0.5
+#> [1] 0.2685796
 cv_fit$cv_results
-#> # A tibble: 3 × 2
-#>       h cvloss
-#>   <dbl>  <dbl>
-#> 1   0.3  0.758
-#> 2   0.4  0.729
-#> 3   0.5  0.699
+#> # A tibble: 10 × 3
+#>         h cvloss     se
+#>     <dbl>  <dbl>  <dbl>
+#>  1 0.0823  0.604 0.0612
+#>  2 0.0938  0.591 0.0482
+#>  3 0.107   0.566 0.0177
+#>  4 0.122   0.507 0.0361
+#>  5 0.139   0.460 0.0770
+#>  6 0.159   0.438 0.103 
+#>  7 0.181   0.428 0.115 
+#>  8 0.206   0.421 0.119 
+#>  9 0.235   0.407 0.122 
+#> 10 0.269   0.394 0.124
 ```
 
 The returned object contains:
@@ -289,6 +299,40 @@ The returned object contains:
 - the refitted `skmle` model at that bandwidth
 - the cross-validation loss table
 
+Each candidate is scored by an ordinary log-likelihood on the held-out
+subjects, with the covariate path carried forward from the last
+observation. Note what is *not* in that sentence: a kernel and a
+bandwidth. Scoring the fold with the kernel-weighted log-likelihood
+instead would not compare like with like, because the kernel weight
+`W(u/h)/h` shrinks as `h` grows and the loss would fall away with it
+whatever the fit was worth.
+[`?skmle_cv`](https://www.sundayu.me/skmle/reference/skmle_cv.md) gives
+the criterion in full.
+
+Read `cv_results` rather than only `h_cv`, and read the `se` column with
+it. Two warnings are worth taking literally.
+
+If the minimum sits at an end of the grid,
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) says
+so: the answer is then the best of the values offered, not a minimum. On
+the automatic grid that happens often, because the grid stops at \\\tau
+n^{-0.3}\\ – the rate the asymptotics assume – while the finite-sample
+minimum of the loss frequently lies above it. Widen `h_grid` by hand to
+see where the curve turns.
+
+And the curve is flat. With 80 subjects every candidate above is within
+one standard error of the minimum, which is the honest answer: this much
+data does not pin down a bandwidth. The criterion also scores prediction
+of the held-out hazard, in which the baseline can absorb attenuation in
+`beta`, so it leans towards more smoothing than the coefficients on
+their own would want.
+
+It is tempting to correct that lean by taking the smallest `h` within
+one standard error of the minimum. Don’t: over 10 replicates at \\n =
+200\\ that rule put the squared error of `beta` back where the grid
+maximum had it, because it lands in the noisy small-`h` end. The rise at
+the left of the curve is real.
+
 You can then inspect the final refit in the usual way.
 
 ``` r
@@ -296,17 +340,17 @@ You can then inspect the final refit in the usual way.
 summary(cv_fit$fit)
 #> Call:
 #> skmle::skmle(formula = Surv(X, delta) ~ covariates, data = dat, 
-#>     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.5)
+#>     id = id, obs_times = obs_times, s = 0, nknots = 3, h = 0.268579588381844)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  1.02973    0.41714  2.4686  0.01357 *
-#> covariates2 -0.41579    0.28015 -1.4842  0.13776  
+#>             Estimate Std. Error z value  Pr(>|z|)    
+#> covariates1  1.39410    0.37867  3.6815 0.0002318 ***
+#> covariates2 -0.40813    0.30330 -1.3456 0.1784320    
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> Log-likelihood: -0.1331
+#> Log-likelihood: 0.06801
 ```
 
 ## Half kernel or full kernel
