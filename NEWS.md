@@ -1,5 +1,33 @@
 # skmle 0.1.0
 
+## Any weight function, not only the ones supplied
+
+* **`skmle()`, `kee_cox()`, `kee_additive()` and `skmle_cv()` take a `weight`
+  argument.** Any R function of the standardised lag `u = (t - r)/h` may be
+  passed; the fitting code privileges no particular kernel. `w_epan_half()`
+  and `w_epan_full()` build the two Epanechnikov kernels and are exported.
+* A weight takes one argument and returns the shape it was given. The sieve
+  quadrature evaluates it on a matrix of node-by-observation lags, not only on
+  a vector, so a weight built from `apply()` or a scalar `if()` would be
+  recycled into the wrong cells. Both the length and the matrix shape are
+  checked when the argument is resolved, rather than failing later inside the
+  fit.
+* A weight may take negative values and need not integrate to 1. The
+  normalisation cancels in the risk-set ratios and is absorbed into `h`
+  elsewhere, which is why `w_epan_half()` integrates to 1/2.
+* `weight` defaults to `NULL`, meaning the Epanechnikov that `one_sided`
+  implies. A literal `w_epan_half()` default would have been wrong, and was
+  wrong for one commit: its support is `[0, 1]`, so `one_sided = FALSE` with
+  that default zeroes every negative lag through the support and returns a
+  one-sided fit under a two-sided name. The package's own suite caught it and
+  now pins it.
+* `one_sided` stays a separate argument, because it is a property of the model
+  and not of the kernel. It is the risk-set restriction of a hazard model and
+  applies to the sign of the lag after the weight is evaluated, so a two-sided
+  weight under `one_sided = TRUE` is truncated at zero rather than rejected.
+* `kee_async()`, `kee_async_td()` and `kee_async_cv()` do not take `weight`;
+  they use the full Epanechnikov of Cao, Zeng and Fine.
+
 ## The cross-validation loop runs in C++
 
 * **The fold loop and the held-out score moved back into C++**, as
@@ -20,11 +48,11 @@
   losses from the R loop were recorded before the port, and the C++ loop
   reproduces them to 4.4e-16 with identical coefficients.
   `test-cv-reference.R` keeps the comparison in the suite.
-* The kernel now has two descriptions, the R `kernel_weights()` the fit uses
-  and the polynomial `epan_weight_spec()` the loop hands to C++, so
-  `test-cv-weightspec.R` holds them against each other over four bandwidths and
-  both kernels. Two descriptions with nothing comparing them is the defect this
-  change removed, and it does not get back in through the weight.
+* The fold loop evaluates the caller's weight function itself, as an
+  `Rcpp::Function`, so the kernel keeps one description. An earlier draft of
+  this change gave C++ a polynomial description of the weight alongside the R
+  closure and a test comparing the two; handing the closure across removes the
+  second description rather than testing it.
 
 ## Covariate observation times may be negative
 
