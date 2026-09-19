@@ -73,6 +73,15 @@ reference:
   - kee_async_cv
   - kee_async_td
 
+- title: Kernel weights
+  desc: >
+    The weight a model gives a covariate observation at a given lag. Both
+    model families take one through their `weight` argument, and any function
+    of the standardised lag will do; the two Epanechnikov kernels here are
+    the supplied starting points.
+  contents:
+  - kernel-weights
+
 - title: Simulation
   contents:
   - sim_skmle_data
