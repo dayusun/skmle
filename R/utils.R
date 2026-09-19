@@ -115,6 +115,25 @@ kernel_weights <- function(lag, h, one_sided = TRUE) {
 # rules of thumb.  Cross-validation does the job properly, and the message that
 # accompanies the default says so and names the function.
 
+#' The transformation of the linear predictor, in R
+#'
+#' Mirror of `trans_fun()` in `src/skmle_cpp.cpp`, including its floor outside
+#' the feasible region: the hazard is zero there, but the log-likelihood takes
+#' its log, so the value is floored at machine epsilon rather than at zero.
+#'
+#' @param x Numeric vector of linear predictors.
+#' @param s Transformation parameter; `0` gives `exp()`.
+#' @return `g(x)`, elementwise.
+#' @noRd
+trans_link <- function(x, s) {
+  if (s == 0) return(exp(x))
+  base <- s * x + 1
+  out <- rep(2.220446e-16, length(x))
+  ok <- base > 0
+  out[ok] <- base[ok]^(1 / s)
+  out
+}
+
 #' Default bandwidth for the survival estimators
 #'
 #' Geometric midpoint of the grid `skmle_cv()` searches, which is built from the

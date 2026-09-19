@@ -78,17 +78,18 @@ test_that("every survival estimator accepts a full kernel and stays finite", {
 test_that("cross-validation tunes under the kernel the refit will use", {
     skip_on_cran()
     dat <- make_onesided_sim(60)
+    # A two-point grid always has its minimum at an endpoint, hence the warning.
     cv <- function(...) {
-        skmle_cv(survival::Surv(X, delta) ~ covariates,
+        suppressWarnings(skmle_cv(survival::Surv(X, delta) ~ covariates,
             data = dat, id = id, obs_times = obs_times, s = 0,
             K = 3, h_grid = c(0.4, 0.6), seed = 1, quiet = TRUE, ...
-        )
+        ))
     }
     half <- cv()
     full <- cv(one_sided = FALSE)
 
-    # Different kernel, different held-out loss: the fold loop rebuilds the
-    # weights per bandwidth in C++ and had the half kernel hardcoded there.
+    # Different kernel, different fit on each training fold, so a different
+    # held-out score even though the score itself carries no kernel.
     expect_false(isTRUE(all.equal(half$cv_results$cvloss, full$cv_results$cvloss)))
     # And the choice reaches the refit rather than being dropped from the call.
     expect_identical(full$fit$call$one_sided, FALSE)

@@ -189,7 +189,9 @@ summary(fit_kee_add)
 
 ## Selecting a bandwidth
 
-Bandwidth selection can be handled by `skmle_cv()`.
+Bandwidth selection can be handled by `skmle_cv()`. Leave `h_grid` out and it
+builds one from the observation times, log-spaced over the range the theory
+supports.
 
 ```{r}
 set.seed(999)
@@ -201,7 +203,6 @@ cv_fit <- skmle_cv(
   obs_times = obs_times,
   s = 0,
   K = 3,
-  h_grid = c(0.3, 0.4, 0.5),
   nknots = 3,
   quiet = TRUE
 )
@@ -215,6 +216,33 @@ The returned object contains:
 - the selected bandwidth
 - the refitted `skmle` model at that bandwidth
 - the cross-validation loss table
+
+Each candidate is scored by an ordinary log-likelihood on the held-out subjects,
+with the covariate path carried forward from the last observation. Note what is
+*not* in that sentence: a kernel and a bandwidth. Scoring the fold with the
+kernel-weighted log-likelihood instead would not compare like with like, because
+the kernel weight `W(u/h)/h` shrinks as `h` grows and the loss would fall away
+with it whatever the fit was worth. `?skmle_cv` gives the criterion in full.
+
+Read `cv_results` rather than only `h_cv`, and read the `se` column with it.
+Two warnings are worth taking literally.
+
+If the minimum sits at an end of the grid, `skmle_cv()` says so: the answer is
+then the best of the values offered, not a minimum. On the automatic grid that
+happens often, because the grid stops at \(\tau n^{-0.3}\) -- the rate the
+asymptotics assume -- while the finite-sample minimum of the loss frequently
+lies above it. Widen `h_grid` by hand to see where the curve turns.
+
+And the curve is flat. With 80 subjects every candidate above is within one
+standard error of the minimum, which is the honest answer: this much data does
+not pin down a bandwidth. The criterion also scores prediction of the held-out
+hazard, in which the baseline can absorb attenuation in `beta`, so it leans
+towards more smoothing than the coefficients on their own would want.
+
+It is tempting to correct that lean by taking the smallest `h` within one
+standard error of the minimum. Don't: over 10 replicates at \(n = 200\) that rule
+put the squared error of `beta` back where the grid maximum had it, because it
+lands in the noisy small-`h` end. The rise at the left of the curve is real.
 
 You can then inspect the final refit in the usual way.
 

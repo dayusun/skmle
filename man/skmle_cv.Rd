@@ -86,7 +86,8 @@ An object of class \code{cv.skmle} with components:
 \itemize{
 \item \code{h_cv}: selected bandwidth,
 \item \code{fit}: \code{skmle} fit refit on the full data,
-\item \code{cv_results}: data frame of candidate bandwidths and CV losses,
+\item \code{cv_results}: data frame of candidate bandwidths, their CV losses, and the
+standard error of each loss across the folds,
 \item \code{h_grid}: bandwidth grid used in the search,
 \item \code{fold_id}: the subject-to-fold assignment vector (length \code{n}),
 \item \code{seed}: the value of \code{seed} supplied by the user, or \code{NULL},
@@ -96,7 +97,14 @@ An object of class \code{cv.skmle} with components:
 \description{
 Perform K-fold cross-validation to select the kernel bandwidth for \code{skmle()}.
 }
-\details{
+\section{Kernel choice}{
+
+\code{one_sided} is used inside the fold loop as well as being passed through to
+the refit, so the bandwidth is selected under the same kernel the final fit
+uses.
+}
+
+\section{How the folds are formed}{
 \code{skmle_cv()} splits subjects across folds. Several rows belong to the same
 subject in long format, so splitting by row would put one subject on both
 sides of the split.
@@ -106,11 +114,62 @@ function refits \code{skmle()} on the full data set using the selected value.
 Because the fold assignment is random, pass \code{seed} (or \code{set.seed()} before
 calling) to make the grid selection reproducible.
 }
-\section{Kernel choice}{
 
-\code{one_sided} is used inside the fold loop as well as being passed through to
-the refit, so the bandwidth is selected under the same kernel the final fit
-uses.
+\section{What the held-out loss is}{
+Each training fold is fitted at the candidate bandwidth, and the fit is scored
+on the held-out subjects by an ordinary log-likelihood per subject,
+
+\deqn{-\frac{1}{n_{\mathrm{test}}} \sum_{i \in \mathrm{test}}
+  \left[ \delta_i \log g\{\hat\alpha(X_i) + Z_i(X_i)^\top \hat\beta\}
+  - \int_0^{X_i} g\{\hat\alpha(t) + Z_i(t)^\top \hat\beta\}\,dt \right],}
+
+where \eqn{Z_i(t)} is the covariate carried forward from the last observation
+at or before \eqn{t} (and the first observation carried back, before the first
+observation time). The integral is exact up to the Legendre rule applied
+between consecutive observation times, where the carried-forward path jumps.
+
+No kernel and no bandwidth appear in that expression, and that is the point.
+The kernel-weighted log-likelihood \code{skmle()} maximises \strong{cannot} be compared
+across bandwidths: its weights are \eqn{W(u/h)/h}, so the weight each subject
+contributes falls away as \code{h} grows, and the criterion decreases
+monotonically in \code{h} whatever the fit is worth. Scored that way the largest
+candidate wins every grid on every data set, and coefficients further from the
+truth are preferred to coefficients nearer it. Dividing by the admitted
+weight, or scoring at one bandwidth held fixed across the grid, does not
+rescue it. The carried-forward likelihood is one yardstick for every
+candidate, so its approximation cancels out of the comparison and what is left
+is the quality of the fit.
+}
+
+\section{The default grid}{
+When \code{h_grid} is \code{NULL} the grid is log-spaced over
+\eqn{[\max\{\min_i (X_i - T_{ij})_+,\ \tau n^{-0.6}\},\
+\min\{\max_i \max_j (X_i - T_{ij})_+,\ \tau n^{-0.3}\}]}, with
+\eqn{\tau = \max_i X_i}, so it adapts to the scale of the times on its own.
+
+Always look at \code{cv_results}. A minimum at an endpoint of the grid raises a
+warning: the selected value is then the best of the values offered rather than
+a minimum, and the grid should be widened. On the automatic grid that warning
+is common, because \eqn{n^{-0.3}} is the rate the asymptotics assume while the
+finite-sample minimum of the loss frequently lies above it. Widening \code{h_grid}
+by hand shows where the curve turns.
+}
+
+\section{How sharp the selection is}{
+Not very, and the \code{se} column says so: it is the standard error of each loss
+across the folds, and over a wide middle range of \code{h} the losses sit inside one
+standard error of each other. Read the curve, not only \code{h_cv}.
+
+The criterion scores prediction of the held-out hazard, in which the baseline
+\eqn{\hat\alpha} can absorb attenuation in \eqn{\hat\beta}, so it leans towards
+more smoothing than the coefficients on their own would want. Over 10
+replicates at \eqn{n = 200} on a grid spanning \code{0.05} to \code{0.9}, the mean
+squared error of \eqn{\hat\beta} at the selected bandwidth was \code{0.155}, against
+\code{0.205} at the largest candidate and \code{0.065} at the bandwidth an oracle would
+have picked. Resist the temptation to correct the lean by taking the smallest
+bandwidth within one standard error of the minimum: that lands in the noisy
+small-\code{h} end, and scored \code{0.205} over the same replicates -- no better than
+taking the largest candidate. The rise at the left of the curve is real.
 }
 
 \examples{
@@ -135,12 +194,13 @@ cv_fit <- skmle_cv(
   obs_times = obs_times,
   s = 0,
   K = 3,
-  h_grid = c(0.3, 0.4, 0.5),
   seed = 2026,
   quiet = TRUE
 )
 
 cv_fit$h_cv
+# Read the whole table, not just the selection: a minimum on the edge of the
+# grid is a boundary artefact and warns.
 cv_fit$cv_results
 summary(cv_fit$fit)
 }

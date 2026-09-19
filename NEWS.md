@@ -142,6 +142,42 @@ time = time)` are complete calls.
   time-dependent weight factorises over the two occasion indices, so no pair is
   enumerated there at all.
 
+## Bandwidth selection in `skmle_cv()`
+
+* **The held-out loss no longer falls away with the bandwidth.** It was the
+  kernel-weighted log-likelihood evaluated on the held-out fold, and the kernel
+  weight is `W(u/h)/h`, so the weight a subject contributes shrinks as `h` grows
+  and the criterion decreased monotonically whatever the fit was worth. The
+  largest candidate in `h_grid` won every grid on every data set -- including the
+  automatic grid -- and coefficients further from the truth were preferred to
+  coefficients nearer it. Reported by a reader of the tutorial, whose CV curve
+  was monotone across `n = 200/1000`, censoring `0.2/0.7` and five seeds.
+* The score is now an ordinary log-likelihood evaluated on the held-out
+  subjects, with the covariate path carried forward from the last observation.
+  No kernel and no bandwidth enter it, so it is the same yardstick for every
+  candidate and the comparison is about the fit. See `?skmle_cv`.
+* **A minimum at an endpoint of `h_grid` now warns**, as `kee_async_cv()` already
+  did: the selected value is then the best of the values offered rather than a
+  minimum. On the automatic grid this fires often, because the grid stops at the
+  rate-based `tau * n^-0.3` while the finite-sample minimum of the loss commonly
+  lies above it.
+* **`cv_results` gains an `se` column**, the standard error of each loss across
+  the folds, because the criterion is flat: at the sample sizes in the tutorial
+  every candidate is within one standard error of the minimum. It also scores
+  prediction of the held-out hazard, where the baseline can absorb attenuation in
+  `beta`, so it leans towards more smoothing than the coefficients on their own
+  would want. Over 10 replicates at `n = 200` on a grid spanning 0.05 to 0.9, the
+  squared error of `beta-hat` at the selected bandwidth averaged 0.155, against
+  0.205 at the largest candidate -- what the old criterion always returned -- and
+  0.065 at the oracle bandwidth. A one-standard-error rule does *not* help: it
+  lands in the noisy small-`h` end and scored 0.205, and `?skmle_cv` says so.
+* **`h_grid = NULL` worked again.** The automatic grid referred to the end of
+  follow-up before it was computed, so the documented default errored with
+  `object 'tau' not found` for any data set.
+* The fold loop moved from C++ to R. It only subsets matrices and calls the
+  optimiser, which R does in a dozen lines, and the held-out score needs a spline
+  basis at subject-specific quadrature nodes.
+
 ## Half and full kernels
 
 * `skmle()`, `kee_cox()`, `kee_additive()`, `skmle_cv()`, `kee_async()` and
