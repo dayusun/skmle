@@ -2,16 +2,17 @@
 
 ## Bandwidth selection for the asynchronous estimators
 
-* `kee_async_cv()` gains `criterion = "fixed"`, which scores every candidate
-  bandwidth on the same held-out pairs, formed at `h_eval`, with the
-  canonical deviance of the link. The default stays `criterion = "matched"`.
-  In a simulation (2,000 data sets per cell; n = 100, 200, 400; identity and
-  logistic links) the fixed criterion gave 1.40 to 2.29 times the oracle MSE
-  of the slope against 1.15 to 3.42 for the matched one, and was worse in
-  every identity-link cell.
-* The documentation describes Cao, Zeng and Fine's (2015) plug-in rule, which
-  is not implemented, and its performance in the same simulation (1.31 to
-  1.75 times the oracle MSE).
+* `kee_async_cv()` gains four held-out criteria besides the default
+  `"matched"`: `"fixed"` (every candidate scored on the same held-out pairs,
+  formed at `h_eval`, which may be `"min"`, `"lower"` or several values),
+  `"locf"` (nearest-prior pairs, no bandwidth) and `"eeq"` (norm of the
+  held-out estimating function). It also gains `repeats` (repeated K-fold)
+  and `select` (`"min"`, `"flat"`, `"smooth"`, `"unimodal"`).
+* In a simulation with 5 repeated 5-fold splits and a 48-point grid,
+  `criterion = "fixed", h_eval = "lower"` gave the smallest mean squared
+  error of the slope in all six cells (1.3 to 2.5 times that of the best
+  single bandwidth on the grid, against 2.1 to 23 times for `"matched"`).
+  The default is unchanged for now.
 
 ## Bug fixes
 

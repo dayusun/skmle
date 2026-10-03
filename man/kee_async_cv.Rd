@@ -124,17 +124,21 @@ candidate on the same held-out pairs, formed at \code{h_eval} (default: the
 smallest candidate), with the canonical deviance of the link; with the
 pairs fixed, only \eqn{\hat\beta_h} varies across candidates.
 
-In a simulation with \code{sim_async_data()} (2,000 data sets per cell,
-n = 100, 200, 400, identity and logistic links, 12 bandwidths from 0.02 to
-0.6), neither criterion dominated. Relative to the bandwidth with the
-smallest Monte Carlo MSE of the slope, \code{"matched"} gave 1.15 to 1.29 times
-the oracle MSE for the identity link and 1.79 to 3.42 for the logistic
-link; \code{"fixed"} gave 1.40 to 1.50 and 2.05 to 2.29. The fixed criterion
-spreads its choices almost uniformly over the grid: the differences
-between candidates on a common evaluation set are small next to the
-fold-to-fold noise. Coverage of the sandwich interval at the selected
-bandwidth was below 95\% for every selector, including the oracle, because
-the estimator's bias is not negligible at these bandwidths.
+In a simulation with \code{sim_async_data()} (2,000 data sets per cell;
+n = 100, 200, 400; identity and logistic links; 48 bandwidths from 0.005
+to 1.5; 5-fold cross-validation repeated over 5 random splits; the
+minimiser of the mean held-out loss), \code{criterion = "fixed"} with
+\code{h_eval = "lower"} had the smallest mean squared error of the slope in
+every cell: 1.3 to 1.5 times that of the best single bandwidth on the grid
+for the identity link and 1.8 to 2.5 times for the logistic link, against
+2.1 to 2.5 and 8 to 23 times for \code{"matched"}, which chose the smallest
+bandwidths on the grid. With \code{h_eval} at the smallest candidate, \code{"fixed"}
+was worse than \code{"matched"} for the identity link: an evaluation window
+that admits few pairs makes the criterion noisy. The best single bandwidth
+is a yardstick computed from the known coefficient, not a selector.
+Coverage of the sandwich interval at the selected bandwidth was below 95\%
+for every criterion (66\% to 85\% for \code{"fixed"} at \code{"lower"}), because the
+estimator's bias is not negligible at the bandwidths chosen.
 
 Two further criteria score the held-out subjects without a kernel window
 that moves with the candidate:
