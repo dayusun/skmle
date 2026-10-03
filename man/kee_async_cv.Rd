@@ -20,7 +20,9 @@ kee_async_cv(
   maxit = 50L,
   tol = 1e-08,
   seed = NULL,
-  quiet = FALSE
+  quiet = FALSE,
+  criterion = c("fixed", "matched"),
+  h_eval = NULL
 )
 
 \method{print}{cv.kee_async}(x, ...)
@@ -68,6 +70,13 @@ strictly before the response.}
 
 \item{quiet}{Logical; suppress progress output.}
 
+\item{criterion}{\code{"fixed"} (the default) scores every candidate on the same
+held-out pairs, formed at \code{h_eval}; \code{"matched"} scores each candidate at
+its own bandwidth, as earlier versions did. See Details.}
+
+\item{h_eval}{Evaluation bandwidth for \code{criterion = "fixed"}. Defaults to
+the smallest candidate in \code{h_grid}.}
+
 \item{x}{A \code{cv.kee_async} object.}
 
 \item{...}{Ignored.}
@@ -80,43 +89,66 @@ An object of class \code{cv.kee_async}:
 \item{cv_results}{Data frame of \code{h}, the mean held-out loss \code{cvloss}, and
 \code{nfold_used}, the number of folds that produced a usable fit.}
 \item{h_grid, fold_id, seed, call}{Selection metadata.}
+\item{criterion, h_eval}{The criterion used and, for \code{"fixed"}, the
+evaluation bandwidth.}
 }
 }
 \description{
 K-fold cross-validation over \strong{subjects} for \code{\link[=kee_async]{kee_async()}}. For each
-candidate bandwidth the estimator is fitted on the training subjects and
-scored on the held-out subjects by the kernel-weighted squared error of the
-fitted mean,
-\deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
-       [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
-      {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.}
+candidate bandwidth the estimator is fitted on the training subjects, and
+every candidate is scored on the held-out subjects against the \strong{same}
+kernel-weighted set of response-covariate pairs, formed at one evaluation
+bandwidth \code{h_eval}:
+\deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_{h_e}(T_{ij} - S_{ik})
+       \, \ell\{Y_i(T_{ij}), X_i(S_{ik})^\top \hat\beta_h\}}
+      {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_{h_e}(T_{ij} - S_{ik})},}
+where \eqn{\ell} is the deviance of the canonical model for \code{link}:
+squared error for \code{"identity"}, \eqn{\mu - y\eta} for \code{"log"} and
+\eqn{\log(1 + e^\eta) - y\eta} for \code{"logistic"}.
 }
+\section{What the criterion estimates}{
+With the evaluation pairs held fixed, the only thing that changes across
+candidates is \eqn{\hat\beta_h}. For the identity link the expected loss is
+a constant plus \eqn{(\hat\beta_h - \beta_e)^\top \Sigma_e (\hat\beta_h -
+\beta_e)}, where \eqn{\beta_e} is the limit of the estimator at \code{h_eval} and
+\eqn{\Sigma_e} the weighted second moment of the covariates; for the other
+links the same holds to second order, because the loss is the one whose
+score is the estimating equation. Minimising it therefore minimises a
+weighted mean squared error of \eqn{\hat\beta_h}, bias and variance
+together, without estimating the bias. Taking \code{h_eval} small puts
+\eqn{\beta_e} close to the true coefficient; the default is the smallest
+candidate.
+
+\code{criterion = "matched"} scores each candidate at its own bandwidth, with
+squared error, as earlier versions did. That criterion compares
+different sets of pairs across candidates: a wider window admits pairs
+whose covariate was measured further from the response, whose error is
+larger whatever \eqn{\hat\beta_h} is, and the bias of \eqn{\hat\beta_h}
+does not enter it at all. It is kept for reproducibility.
+
+Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} differently, by
+minimising \eqn{\hat C^2 h^4 + \hat V(h)}, with \eqn{\hat C} the slope of a
+regression of \eqn{\hat\beta(h)} on \eqn{h^2} and \eqn{\hat V(h)} from one
+random half split. That rule is not implemented here: the \eqn{h^2} bias
+it assumes fails when the covariate path is not differentiable (an
+Ornstein-Uhlenbeck covariate gives bias of order \eqn{h}), and over the
+grid it is applied to the bias is smaller than the sampling noise in
+\eqn{\hat\beta(h)}, so \eqn{\hat C} is not estimable.
+}
+
 \section{How the folds are formed}{
 Folds are formed over subjects, never over rows. Rows within a subject come
 from one trajectory, so splitting by row would put a subject on both sides of
 the split and leak the answer into the held-out score.
 }
 
-\section{Why the loss is normalised}{
-Dividing by the total weight is what makes bandwidths comparable. A larger
-\code{h} admits more pairs and so accumulates a larger unnormalised error whatever
-the quality of the fit; without the denominator the criterion would select
-the smallest candidate every time.
-}
-
-\section{Why squared error and not a likelihood}{
-These estimators solve an estimating equation. There is no likelihood, so
-nothing to evaluate as a held-out log-likelihood. The same weighted squared error on the
-response scale is used for all three links, applied after \code{link}.
-}
-
 \section{The default grid}{
 When \code{h_grid} is \code{NULL} the grid is log-spaced over
 \eqn{[2 (Q_3 - Q_1) n^{-0.7},\, 2 (Q_3 - Q_1) n^{-0.3}]}, where
 \eqn{Q_1, Q_3} are quartiles of the pooled observation times of both tables
-and \eqn{n} is the number of subjects. This is the rule used by the reference
-implementation of Cao, Zeng and Fine's method, and it adapts to the scale of
-\code{time} on its own.
+and \eqn{n} is the number of subjects. This is the range used by the
+authors' reference implementation, and it adapts to the scale of \code{time} on
+its own.
 
 Always look at \code{cv_results}. If the minimum sits at an endpoint of the grid a
 warning is issued, and the grid should be widened by hand: the selected value

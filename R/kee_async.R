@@ -193,6 +193,24 @@
     num / den
 }
 
+# Weighted mean deviance of the canonical model for the link, from the same
+# collapsed quantities: sum_m w_m l(Y_m, eta_k) with l = (y - mu)^2,
+# mu - y eta, or log(1 + e^eta) - y eta.  Its score in beta is the estimating
+# equation, so its minimiser over beta is the estimator's own limit.
+.async_deviance <- function(ac, X, beta, lk) {
+    if (lk == 0L) {
+        return(.async_loss(ac, X, beta, lk))
+    }
+    eta <- as.numeric(X %*% beta)
+    kappa <- if (lk == 1L) exp(eta) else log1p(exp(-abs(eta))) + pmax(eta, 0)
+    num <- sum(ac$omega * kappa) - sum(ac$c * eta)
+    den <- sum(ac$omega)
+    if (!is.finite(num) || !is.finite(den) || den <= 0) {
+        return(NA_real_)
+    }
+    num / den
+}
+
 .async_fit_ti <- function(d, h, one_sided, lk, maxit, tol, start = NULL) {
     ac <- .async_collapse(d, h, one_sided)
     if (is.null(ac)) {
@@ -433,41 +451,62 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #'
 #' @description
 #' K-fold cross-validation over **subjects** for [kee_async()]. For each
-#' candidate bandwidth the estimator is fitted on the training subjects and
-#' scored on the held-out subjects by the kernel-weighted squared error of the
-#' fitted mean,
-#' \deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
-#'        [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
-#'       {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.}
+#' candidate bandwidth the estimator is fitted on the training subjects, and
+#' every candidate is scored on the held-out subjects against the **same**
+#' kernel-weighted set of response-covariate pairs, formed at one evaluation
+#' bandwidth `h_eval`:
+#' \deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_{h_e}(T_{ij} - S_{ik})
+#'        \, \ell\{Y_i(T_{ij}), X_i(S_{ik})^\top \hat\beta_h\}}
+#'       {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_{h_e}(T_{ij} - S_{ik})},}
+#' where \eqn{\ell} is the deviance of the canonical model for `link`:
+#' squared error for `"identity"`, \eqn{\mu - y\eta} for `"log"` and
+#' \eqn{\log(1 + e^\eta) - y\eta} for `"logistic"`.
 #'
 #' @details
+#' # What the criterion estimates
+#'
+#' With the evaluation pairs held fixed, the only thing that changes across
+#' candidates is \eqn{\hat\beta_h}. For the identity link the expected loss is
+#' a constant plus \eqn{(\hat\beta_h - \beta_e)^\top \Sigma_e (\hat\beta_h -
+#' \beta_e)}, where \eqn{\beta_e} is the limit of the estimator at `h_eval` and
+#' \eqn{\Sigma_e} the weighted second moment of the covariates; for the other
+#' links the same holds to second order, because the loss is the one whose
+#' score is the estimating equation. Minimising it therefore minimises a
+#' weighted mean squared error of \eqn{\hat\beta_h}, bias and variance
+#' together, without estimating the bias. Taking `h_eval` small puts
+#' \eqn{\beta_e} close to the true coefficient; the default is the smallest
+#' candidate.
+#'
+#' `criterion = "matched"` scores each candidate at its own bandwidth, with
+#' squared error, as earlier versions did. That criterion compares
+#' different sets of pairs across candidates: a wider window admits pairs
+#' whose covariate was measured further from the response, whose error is
+#' larger whatever \eqn{\hat\beta_h} is, and the bias of \eqn{\hat\beta_h}
+#' does not enter it at all. It is kept for reproducibility.
+#'
+#' Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} differently, by
+#' minimising \eqn{\hat C^2 h^4 + \hat V(h)}, with \eqn{\hat C} the slope of a
+#' regression of \eqn{\hat\beta(h)} on \eqn{h^2} and \eqn{\hat V(h)} from one
+#' random half split. That rule is not implemented here: the \eqn{h^2} bias
+#' it assumes fails when the covariate path is not differentiable (an
+#' Ornstein-Uhlenbeck covariate gives bias of order \eqn{h}), and over the
+#' grid it is applied to the bias is smaller than the sampling noise in
+#' \eqn{\hat\beta(h)}, so \eqn{\hat C} is not estimable.
+#'
 #' # How the folds are formed
 #'
 #' Folds are formed over subjects, never over rows. Rows within a subject come
 #' from one trajectory, so splitting by row would put a subject on both sides of
 #' the split and leak the answer into the held-out score.
 #'
-#' # Why the loss is normalised
-#'
-#' Dividing by the total weight is what makes bandwidths comparable. A larger
-#' `h` admits more pairs and so accumulates a larger unnormalised error whatever
-#' the quality of the fit; without the denominator the criterion would select
-#' the smallest candidate every time.
-#'
-#' # Why squared error and not a likelihood
-#'
-#' These estimators solve an estimating equation. There is no likelihood, so
-#' nothing to evaluate as a held-out log-likelihood. The same weighted squared error on the
-#' response scale is used for all three links, applied after `link`.
-#'
 #' # The default grid
 #'
 #' When `h_grid` is `NULL` the grid is log-spaced over
 #' \eqn{[2 (Q_3 - Q_1) n^{-0.7},\, 2 (Q_3 - Q_1) n^{-0.3}]}, where
 #' \eqn{Q_1, Q_3} are quartiles of the pooled observation times of both tables
-#' and \eqn{n} is the number of subjects. This is the rule used by the reference
-#' implementation of Cao, Zeng and Fine's method, and it adapts to the scale of
-#' `time` on its own.
+#' and \eqn{n} is the number of subjects. This is the range used by the
+#' authors' reference implementation, and it adapts to the scale of `time` on
+#' its own.
 #'
 #' Always look at `cv_results`. If the minimum sits at an endpoint of the grid a
 #' warning is issued, and the grid should be widened by hand: the selected value
@@ -481,6 +520,11 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #' @param seed Optional integer seed for the subject-to-fold assignment. Pass it
 #'   (or call [set.seed()] first) to make the selection reproducible.
 #' @param quiet Logical; suppress progress output.
+#' @param criterion `"fixed"` (the default) scores every candidate on the same
+#'   held-out pairs, formed at `h_eval`; `"matched"` scores each candidate at
+#'   its own bandwidth, as earlier versions did. See Details.
+#' @param h_eval Evaluation bandwidth for `criterion = "fixed"`. Defaults to
+#'   the smallest candidate in `h_grid`.
 #'
 #' @return An object of class `cv.kee_async`:
 #' \describe{
@@ -489,6 +533,8 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #'   \item{cv_results}{Data frame of `h`, the mean held-out loss `cvloss`, and
 #'     `nfold_used`, the number of folds that produced a usable fit.}
 #'   \item{h_grid, fold_id, seed, call}{Selection metadata.}
+#'   \item{criterion, h_eval}{The criterion used and, for `"fixed"`, the
+#'     evaluation bandwidth.}
 #' }
 #'
 #' @references
@@ -513,8 +559,10 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
                          n_h = 10L, K = 5L, one_sided = FALSE,
                          link = c("identity", "log", "logistic"),
                          intercept = TRUE, maxit = 50L, tol = 1e-8,
-                         seed = NULL, quiet = FALSE) {
+                         seed = NULL, quiet = FALSE,
+                         criterion = c("fixed", "matched"), h_eval = NULL) {
     link <- match.arg(link)
+    criterion <- match.arg(criterion)
     .async_check_one_sided(one_sided)
     call <- match.call()
     d <- .async_parse(
@@ -540,6 +588,13 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
         stop("'h_grid' must be positive and free of NA", call. = FALSE)
     }
 
+    if (criterion == "fixed") {
+        if (is.null(h_eval)) h_eval <- min(h_grid)
+        .async_check_h(h_eval, "h_eval")
+    } else {
+        h_eval <- NULL
+    }
+
     K <- as.integer(K)
     if (K > d$n) {
         if (!quiet) {
@@ -555,6 +610,24 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
     if (!is.null(seed)) set.seed(seed)
     fold_id <- sample(rep_len(seq_len(K), d$n))
 
+    # Under "fixed" the held-out pairs do not depend on the candidate, so they
+    # are collapsed once per fold.
+    ac_eval <- vector("list", K)
+    if (criterion == "fixed") {
+        for (f in seq_len(K)) {
+            te <- which(fold_id == f)
+            if (length(te)) {
+                ac_eval[[f]] <- .async_collapse(.async_subset(d, te), h_eval, one_sided)
+            }
+        }
+        if (all(vapply(ac_eval, is.null, logical(1)))) {
+            stop(
+                "no held-out pair falls within 'h_eval' = ", format(h_eval),
+                "; choose a larger 'h_eval'", call. = FALSE
+            )
+        }
+    }
+
     losses <- matrix(NA_real_, K, length(h_grid))
     for (m in seq_along(h_grid)) {
         if (!quiet) cat(sprintf("Evaluating bandwidth h = %g\n", h_grid[m]))
@@ -568,9 +641,16 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
             if (is.null(fit) || fit$convergence == 1L) next
             if (!all(is.finite(fit$beta))) next
             dte <- .async_subset(d, te)
-            ac <- .async_collapse(dte, h_grid[m], one_sided)
-            if (is.null(ac)) next
-            losses[f, m] <- .async_loss(ac, dte$X, as.numeric(fit$beta), lk)
+            if (criterion == "fixed") {
+                if (is.null(ac_eval[[f]])) next
+                losses[f, m] <- .async_deviance(
+                    ac_eval[[f]], dte$X, as.numeric(fit$beta), lk
+                )
+            } else {
+                ac <- .async_collapse(dte, h_grid[m], one_sided)
+                if (is.null(ac)) next
+                losses[f, m] <- .async_loss(ac, dte$X, as.numeric(fit$beta), lk)
+            }
         }
     }
 
@@ -602,6 +682,8 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
     fit_call$K <- NULL
     fit_call$seed <- NULL
     fit_call$quiet <- NULL
+    fit_call$criterion <- NULL
+    fit_call$h_eval <- NULL
     fit <- eval(fit_call, parent.frame())
 
     out <- list(
@@ -613,6 +695,8 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
         h_grid = h_grid,
         fold_id = fold_id,
         seed = seed,
+        criterion = criterion,
+        h_eval = h_eval,
         call = call
     )
     class(out) <- "cv.kee_async"
@@ -627,7 +711,13 @@ print.cv.kee_async <- function(x, ...) {
   cat("Call:\n")
   print(x$call)
   cat("\n", length(unique(x$fold_id)),
-    "-fold subject-level cross-validation\n\n",
+    "-fold subject-level cross-validation, ",
+    if (identical(x$criterion, "matched")) {
+      "each candidate scored at its own bandwidth"
+    } else {
+      paste0("scored at h_eval = ", format(x$h_eval, digits = 4))
+    },
+    "\n\n",
     sep = ""
   )
   print(x$cv_results, row.names = FALSE, digits = 5)
