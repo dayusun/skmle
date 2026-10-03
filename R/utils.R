@@ -122,6 +122,56 @@ kernel_weights <- function(lag, h, weight = NULL, one_sided = TRUE) {
     kv
 }
 
+#' Risk-set weights at the event times
+#'
+#' The risk-set averages \eqn{S^{(k)}} use the same kernel as the main term of
+#' each estimating equation, so they are built from the same weight function
+#' and the same one-sided rule, here, rather than rewritten in C++. Rows are
+#' the distinct event times among the rows that contribute (`delta == 1` and a
+#' nonzero row weight), columns are the observation rows, and `index` maps
+#' each data row to its row of `K` (0-based, `-1` for a row that does not
+#' contribute).
+#'
+#' The matrix has one row per distinct event time, not per data row, because
+#' every row of a subject shares the subject's event time.
+#'
+#' @param X_time,obs_times,delta Event times, observation times, event
+#'   indicator.
+#' @param kerval Row weights from [kernel_weights()].
+#' @param h,weight,one_sided As for [kernel_weights()].
+#' @return A list with `index` (integer) and `K` (numeric matrix).
+#' @keywords internal
+risk_set_weights <- function(X_time, obs_times, delta, kerval, h, weight,
+                             one_sided) {
+    contributes <- delta == 1 & kerval != 0
+    ev_times <- unique(X_time[contributes])
+    index <- rep(-1L, length(X_time))
+    index[contributes] <- match(X_time[contributes], ev_times) - 1L
+    K <- kernel_weights(outer(ev_times, obs_times, "-"), h, weight, one_sided)
+    list(index = index, K = matrix(as.numeric(K), nrow = length(ev_times)))
+}
+
+#' Rows that carry a feasibility constraint
+#'
+#' For `s != 0` the transformed hazard needs `1 + s * eta > 0` wherever the
+#' objective evaluates it with nonzero weight. A row is constrained when its
+#' lag falls in the weight's declared support or its weight is nonzero, and,
+#' under `one_sided`, its lag is positive. For the Epanechnikov kernels this is
+#' exactly the earlier `|lag| <= h` rule; for a weight reaching further than
+#' `h` it follows the weight. `skmle_cv_cpp()` applies the same rule.
+#'
+#' @param lag `X - obs_times`.
+#' @param kerval Row weights from [kernel_weights()].
+#' @param h,weight,one_sided As for [kernel_weights()].
+#' @return Logical vector.
+#' @keywords internal
+constraint_rows <- function(lag, kerval, h, weight, one_sided) {
+    supp <- weight_support(weight)
+    u <- lag / h
+    reach <- (u >= supp[1] & u <= supp[2]) | kerval != 0
+    reach & (!one_sided | lag > 0)
+}
+
 # Data-driven default bandwidths.
 #
 # A student should not have to invent a number to get a first fit.  These are

@@ -10,8 +10,8 @@ kee_cox(
   id,
   obs_times,
   h = NULL,
-  weight = NULL,
-  one_sided = TRUE
+  one_sided = TRUE,
+  weight = NULL
 )
 }
 \arguments{
@@ -32,10 +32,6 @@ times} in \code{\link[=kee_cox]{kee_cox()}}.}
 observation times as a rule of thumb and reported in a message. Use
 \code{\link[=skmle_cv]{skmle_cv()}} to choose it from the data.}
 
-\item{weight}{Weight function of the standardised lag \eqn{(t - r)/h}, or
-\code{NULL} (the default) for the Epanechnikov kernel implied by \code{one_sided}.
-Any R function will do; see \link{kernel-weights}.}
-
 \item{one_sided}{Logical. \code{TRUE} (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform
 that time, which is the risk-set restriction and the estimator as
@@ -43,6 +39,10 @@ published. \code{FALSE} uses a full, two-sided kernel, smoothing the covariate
 path from both sides. The switch applies to the risk-set
 averages inside the C++ backend as well as to the row weights, so the two
 are always consistent.}
+
+\item{weight}{Weight function of the standardised lag \eqn{(t - r)/h}, or
+\code{NULL} (the default) for the Epanechnikov kernel implied by \code{one_sided}.
+Any R function will do; see \link{kernel-weights}.}
 }
 \value{
 An object of class \code{kee} containing coefficient estimates, the estimated

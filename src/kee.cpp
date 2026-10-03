@@ -7,9 +7,9 @@ using namespace arma;
 
 // [[Rcpp::export]]
 arma::vec kee_cox_estequ(const arma::vec &beta, const arma::mat &covariates,
-                         const arma::vec &X, const arma::vec &obs_times,
-                         const arma::vec &delta, const arma::vec &kerval,
-                         double h, int n_subj, bool one_sided = true) {
+                         const arma::vec &X, const arma::vec &delta,
+                         const arma::vec &kerval, const arma::ivec &ev_index,
+                         const arma::mat &K_ev, int n_subj) {
 
   int n = X.n_elem;
   int p = covariates.n_cols;
@@ -33,26 +33,21 @@ arma::vec kee_cox_estequ(const arma::vec &beta, const arma::mat &covariates,
       double S0_XX_sum = 0.0;
       arma::vec S1_XX_sum = arma::zeros<arma::vec>(p);
 
-      // Compute S0 and S1
+      // Compute S0 and S1.  The risk-set weight is the caller's weight at the
+      // lag X_i - r_k, one-sided rule already applied; see risk_set_weights().
+      const int e = ev_index[i];
       for (int k = 0; k < n; ++k) {
         if (X[i] <= X[k]) {
-          double dist_XX = X[i] - obs_times[k];
-          // Half kernel: only covariate observations strictly before the event
-          // time enter the risk-set average.  Full kernel: both sides, and the
-          // Epanechnikov factor below already vanishes outside |dist| < h.
-          if (!one_sided || dist_XX > 0) {
-            double kerval_XX =
-                std::max((1.0 - std::pow(dist_XX / h, 2.0)) * 0.75, 0.0) / h;
-            if (kerval_XX > 0) {
-              double term = kerval_XX * expbeta[k];
-              S0_XX_sum += term;
-              S1_XX_sum += term * trans(covariates.row(k));
-            }
+          double kerval_XX = K_ev(e, k);
+          if (kerval_XX != 0) {
+            double term = kerval_XX * expbeta[k];
+            S0_XX_sum += term;
+            S1_XX_sum += term * trans(covariates.row(k));
           }
         }
       }
 
-      if (S0_XX_sum > 0) {
+      if (S0_XX_sum != 0) {
         arma::vec Zbar_XX = S1_XX_sum / S0_XX_sum;
         part2 += kerval[i] * Zbar_XX;
       }
@@ -64,9 +59,9 @@ arma::vec kee_cox_estequ(const arma::vec &beta, const arma::mat &covariates,
 
 // [[Rcpp::export]]
 List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
-                 const arma::vec &X, const arma::vec &obs_times,
-                 const arma::vec &delta, const arma::vec &kerval, double h,
-                 bool one_sided, const arma::vec &id, int n_subj) {
+                 const arma::vec &X, const arma::vec &delta,
+                 const arma::vec &kerval, const arma::ivec &ev_index,
+                 const arma::mat &K_ev, const arma::vec &id, int n_subj) {
 
   int n = X.n_elem;
   int p = covariates.n_cols;
@@ -86,27 +81,22 @@ List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
       arma::vec S1_XX_sum = arma::zeros<arma::vec>(p);
       arma::mat S2_XX_sum = arma::zeros<arma::mat>(p, p);
 
+      // Same risk-set weights as kee_cox_estequ.
+      const int e = ev_index[i];
       for (int k = 0; k < n; ++k) {
         if (X[i] <= X[k]) {
-          double dist_XX = X[i] - obs_times[k];
-          // Half kernel: only covariate observations strictly before the event
-          // time enter the risk-set average.  Full kernel: both sides, and the
-          // Epanechnikov factor below already vanishes outside |dist| < h.
-          if (!one_sided || dist_XX > 0) {
-            double kerval_XX =
-                std::max((1.0 - std::pow(dist_XX / h, 2.0)) * 0.75, 0.0) / h;
-            if (kerval_XX > 0) {
-              double term = kerval_XX * expbeta[k];
-              S0_XX_sum += term;
-              S1_XX_sum += term * trans(covariates.row(k));
-              S2_XX_sum +=
-                  term * (trans(covariates.row(k)) * covariates.row(k));
-            }
+          double kerval_XX = K_ev(e, k);
+          if (kerval_XX != 0) {
+            double term = kerval_XX * expbeta[k];
+            S0_XX_sum += term;
+            S1_XX_sum += term * trans(covariates.row(k));
+            S2_XX_sum +=
+                term * (trans(covariates.row(k)) * covariates.row(k));
           }
         }
       }
 
-      if (S0_XX_sum > 0) {
+      if (S0_XX_sum != 0) {
         arma::vec Zbar_XX = S1_XX_sum / S0_XX_sum;
         arma::mat S2_o_S0 = S2_XX_sum / S0_XX_sum;
 
@@ -132,9 +122,9 @@ List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
 
 // [[Rcpp::export]]
 List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
-                      const arma::vec &obs_times, const arma::vec &delta,
-                      const arma::vec &kerval, double h, double tau,
-                      bool one_sided, const arma::vec &id,
+                      const arma::vec &delta, const arma::vec &kerval,
+                      const arma::ivec &ev_index, const arma::mat &K_ev,
+                      const arma::mat &K_tt, double tau, const arma::vec &id,
                       const arma::vec &lq_x, const arma::vec &lq_w,
                       int n_subj) {
 
@@ -160,38 +150,32 @@ List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
     double S0_tt_sum = 0.0;
     arma::vec S1_tt_sum = arma::zeros<arma::vec>(p);
 
+    // K_tt(q, k) is the caller's weight at the lag tt - r_k, one-sided rule
+    // already applied, built in R on the same nodes as tt here.
     for (int k = 0; k < n; ++k) {
       if (tt <= X[k]) {
-        double dist_tt = tt - obs_times[k];
-        if (!one_sided || dist_tt > 0) {
-          double kerval_tt =
-              std::max((1.0 - std::pow(dist_tt / h, 2.0)) * 0.75, 0.0) / h;
-          if (kerval_tt > 0) {
-            S0_tt_sum += kerval_tt;
-            S1_tt_sum += kerval_tt * trans(covariates.row(k));
-          }
+        double kerval_tt = K_tt(q, k);
+        if (kerval_tt != 0) {
+          S0_tt_sum += kerval_tt;
+          S1_tt_sum += kerval_tt * trans(covariates.row(k));
         }
       }
     }
 
-    if (S0_tt_sum > 0) {
+    if (S0_tt_sum != 0) {
       arma::vec Zbar_tt = S1_tt_sum / S0_tt_sum;
 
       for (int i = 0; i < n; ++i) {
         if (tt <= X[i]) {
-          double dist_tt = tt - obs_times[i];
-          if (!one_sided || dist_tt > 0) {
-            double kerval_tt =
-                std::max((1.0 - std::pow(dist_tt / h, 2.0)) * 0.75, 0.0) / h;
-            if (kerval_tt > 0) {
-              arma::vec cov_m_Zbar = trans(covariates.row(i)) - Zbar_tt;
-              int idx = static_cast<int>(std::round(id[i])) - 1;
-              if (idx >= 0 && idx < n_subj) {
-                // cov_m_Zbar is col vec (p x 1), covariates.row(i) is row vec
-                // (1 x p) -> (p x p)
-                id_to_A[idx] +=
-                    weight * kerval_tt * (cov_m_Zbar * covariates.row(i));
-              }
+          double kerval_tt = K_tt(q, i);
+          if (kerval_tt != 0) {
+            arma::vec cov_m_Zbar = trans(covariates.row(i)) - Zbar_tt;
+            int idx = static_cast<int>(std::round(id[i])) - 1;
+            if (idx >= 0 && idx < n_subj) {
+              // cov_m_Zbar is col vec (p x 1), covariates.row(i) is row vec
+              // (1 x p) -> (p x p)
+              id_to_A[idx] +=
+                  weight * kerval_tt * (cov_m_Zbar * covariates.row(i));
             }
           }
         }
@@ -217,21 +201,20 @@ List kee_additive_est(const arma::mat &covariates, const arma::vec &X,
         double S0_XX_sum = 0.0;
         arma::vec S1_XX_sum = arma::zeros<arma::vec>(p);
 
+        // The one-sided rule lives in K_ev, so one_sided = FALSE reaches this
+        // risk set too, as Remark 7 of the paper requires.
+        const int e = ev_index[i];
         for (int k = 0; k < n; ++k) {
           if (X[i] <= X[k]) {
-            double dist_XX = X[i] - obs_times[k];
-            if (dist_XX > 0) {
-              double kerval_XX =
-                  std::max((1.0 - std::pow(dist_XX / h, 2.0)) * 0.75, 0.0) / h;
-              if (kerval_XX > 0) {
-                S0_XX_sum += kerval_XX;
-                S1_XX_sum += kerval_XX * trans(covariates.row(k));
-              }
+            double kerval_XX = K_ev(e, k);
+            if (kerval_XX != 0) {
+              S0_XX_sum += kerval_XX;
+              S1_XX_sum += kerval_XX * trans(covariates.row(k));
             }
           }
         }
 
-        if (S0_XX_sum > 0) {
+        if (S0_XX_sum != 0) {
           arma::vec Zbar_XX = S1_XX_sum / S0_XX_sum;
           int idx = static_cast<int>(std::round(id[i])) - 1;
           if (idx >= 0 && idx < n_subj) {

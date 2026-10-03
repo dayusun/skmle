@@ -1,6 +1,8 @@
 #include <RcppArmadillo.h>
 #include <algorithm>
 #include <memory>
+#include <utility>
+#include <vector>
 #include <nloptrAPI.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -155,7 +157,7 @@ double nll_obj(unsigned n_vars, const double *x, double *grad,
     for (int i = 0; i < n_obs; ++i) {
       if (tt < (*data->X)[i]) {
         double k_tt = (*data->kerval_tt_all)(q, i);
-        if (k_tt > 0) {
+        if (k_tt != 0) {
           double in_val = alpha_tt + dot((*data->covariates).row(i), beta);
           double t_val = trans_fun(in_val, data->s);
           q_res2 += t_val * k_tt; // sum over i
@@ -229,15 +231,17 @@ struct FitResult {
   std::vector<double> solution;
 };
 
-static FitResult fit_core(int n, int p, int gammap, double s, double h,
-                          double tau, const arma::mat &covariates,
-                          const arma::mat &bsmat, const arma::vec &X,
-                          const arma::vec &obs_times, const arma::vec &delta,
-                          const arma::vec &kerval, const arma::vec &lq_x,
-                          const arma::vec &lq_w, const arma::mat &bsmat_tt_all,
-                          const arma::mat &kerval_tt_all,
-                          const arma::mat &ineqmat, int maxeval,
-                          double xtol_rel) {
+static FitResult solve_once(int n, int p, int gammap, double s, double h,
+                            double tau, const arma::mat &covariates,
+                            const arma::mat &bsmat, const arma::vec &X,
+                            const arma::vec &obs_times, const arma::vec &delta,
+                            const arma::vec &kerval, const arma::vec &lq_x,
+                            const arma::vec &lq_w,
+                            const arma::mat &bsmat_tt_all,
+                            const arma::mat &kerval_tt_all,
+                            const arma::mat &ineqmat,
+                            const std::vector<double> &start, int maxeval,
+                            double xtol_rel) {
 
   skmle_data data = {n,
                      p,
@@ -259,6 +263,7 @@ static FitResult fit_core(int n, int p, int gammap, double s, double h,
 
   int n_vars = p + gammap;
   std::vector<double> x(n_vars, 0.0);
+  if (static_cast<int>(start.size()) == n_vars) x = start;
 
   NloptOptPtr opt(nlopt_create(NLOPT_LD_SLSQP, n_vars));
   if (s != 0.0 && ineqmat.n_rows > 0) {
@@ -277,6 +282,64 @@ static FitResult fit_core(int n, int p, int gammap, double s, double h,
   return FitResult{static_cast<int>(res), minf, x};
 }
 
+// The estimator is the one in the paper: feasibility constraints at the rows
+// the event term evaluates (`ineqmat`).  The cumulative-hazard integrand is
+// floored where it is infeasible, and SLSQP occasionally stalls on that floor
+// (status -1, about 0.3% of fits at s = 1 in simulation) at a point with an
+// event row on the boundary and standard errors near 1e-16.  Constraining the
+// quadrature pairs as well (`ineq_rescue`) avoids the stall but is a different
+// estimator, biased at s = 1 in the same simulation, so it is used only to
+// find a starting point: on failure, solve with both sets, then re-solve the
+// paper's problem from there.
+static FitResult fit_core(int n, int p, int gammap, double s, double h,
+                          double tau, const arma::mat &covariates,
+                          const arma::mat &bsmat, const arma::vec &X,
+                          const arma::vec &obs_times, const arma::vec &delta,
+                          const arma::vec &kerval, const arma::vec &lq_x,
+                          const arma::vec &lq_w, const arma::mat &bsmat_tt_all,
+                          const arma::mat &kerval_tt_all,
+                          const arma::mat &ineqmat,
+                          const arma::mat &ineq_rescue, int maxeval,
+                          double xtol_rel) {
+  const std::vector<double> cold;
+  FitResult fr = solve_once(n, p, gammap, s, h, tau, covariates, bsmat, X,
+                            obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all,
+                            kerval_tt_all, ineqmat, cold, maxeval, xtol_rel);
+  if (s == 0.0 || ineq_rescue.n_rows == 0) return fr;
+
+  // The stall also shows up with a success status: SLSQP stops with an event
+  // row within a whisker of 1 + s*eta = 0, where H^(1) = 1/(1 + s*eta) makes
+  // the bread explode and the SEs collapse to ~1e-4 (0.4% of fits at s = 1).
+  // Normal fits keep every event row well inside (min 1 + s*eta ~ 0.04-0.2).
+  auto min_event_base = [&](const std::vector<double> &x) {
+    const arma::vec b(x.data(), p), g(x.data() + p, gammap);
+    const arma::vec eta = bsmat * g + covariates * b;
+    double m = arma::datum::inf;
+    for (arma::uword i = 0; i < eta.n_elem; ++i) {
+      if (delta[i] == 1.0 && kerval[i] != 0) m = std::min(m, 1.0 + s * eta[i]);
+    }
+    return m;
+  };
+  constexpr double kBoundary = 1e-3;
+  if (fr.status >= 0 && min_event_base(fr.solution) >= kBoundary) return fr;
+
+  const arma::mat both = arma::join_cols(ineqmat, ineq_rescue);
+  FitResult warm = solve_once(n, p, gammap, s, h, tau, covariates, bsmat, X,
+                              obs_times, delta, kerval, lq_x, lq_w,
+                              bsmat_tt_all, kerval_tt_all, both, cold, maxeval,
+                              xtol_rel);
+  if (warm.status < 0) return fr;
+  FitResult again = solve_once(n, p, gammap, s, h, tau, covariates, bsmat, X,
+                               obs_times, delta, kerval, lq_x, lq_w,
+                               bsmat_tt_all, kerval_tt_all, ineqmat,
+                               warm.solution, maxeval, xtol_rel);
+  // Same objective either way: keep the restart only if it converged and is
+  // at least as good, so the restart can never make a fit worse.
+  if (again.status >= 0 && (fr.status < 0 || again.minimum <= fr.minimum))
+    return again;
+  return fr;
+}
+
 // [[Rcpp::export]]
 List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau,
                    const arma::mat &covariates, const arma::mat &bsmat,
@@ -285,12 +348,13 @@ List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau,
                    const arma::vec &lq_x, const arma::vec &lq_w,
                    const arma::mat &bsmat_tt_all,
                    const arma::mat &kerval_tt_all, const arma::mat &ineqmat,
-                   int maxeval, double xtol_rel) {
+                   const arma::mat &ineq_rescue, int maxeval,
+                   double xtol_rel) {
 
   FitResult fr =
       fit_core(n, p, gammap, s, h, tau, covariates, bsmat, X, obs_times, delta,
                kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, ineqmat,
-               maxeval, xtol_rel);
+               ineq_rescue, maxeval, xtol_rel);
 
   return List::create(Named("status") = fr.status,
                       Named("minimum") = fr.minimum,
@@ -299,10 +363,9 @@ List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau,
 
 // [[Rcpp::export]]
 arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
-                 double h, bool one_sided, const arma::mat &covariates,
-                 const arma::mat &bsmat,
-                 const arma::vec &X, const arma::vec &obs_times,
+                 const arma::mat &covariates, const arma::vec &X,
                  const arma::vec &delta, const arma::vec &kerval,
+                 const arma::ivec &ev_index, const arma::mat &K_ev,
                  const arma::mat &bsmat_XX, int n_subj) {
   int n = X.n_elem;
   int p = covariates.n_cols;
@@ -320,24 +383,25 @@ arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
       arma::vec S1_sum = arma::zeros<arma::vec>(p);
       arma::mat S2_sum = arma::zeros<arma::mat>(p, p);
 
+      // Risk set at t = X_i.  The weight is the caller's, at the lag
+      // X_i - r_k with the one-sided rule applied (risk_set_weights() in R),
+      // and the baseline is alpha(X_i), the time the risk set is formed at:
+      // S^(k)(theta, t) in Theorem 3.5 evaluates H^(2) at alpha(t) + beta'Z(u).
+      const int e = ev_index[i];
       for (int k = 0; k < n; ++k) {
         if (X[i] <= X[k]) {
-          double dist_XX = X[i] - obs_times[k];
-          if (!one_sided || dist_XX > 0) {
-            double kerval_XX =
-                std::max((1 - std::pow(dist_XX / h, 2)) * 0.75, 0.0) / h;
-            if (kerval_XX > 0) {
-              double inner = alpha_XX[k] + cov_beta[k];
-              double term = trans_fun_d12o1(inner, s) * kerval_XX;
-              S0_sum += term;
-              S1_sum += term * trans(covariates.row(k));
-              S2_sum += term * (trans(covariates.row(k)) * covariates.row(k));
-            }
+          double kerval_XX = K_ev(e, k);
+          if (kerval_XX != 0) {
+            double inner = alpha_XX[i] + cov_beta[k];
+            double term = trans_fun_d12o1(inner, s) * kerval_XX;
+            S0_sum += term;
+            S1_sum += term * trans(covariates.row(k));
+            S2_sum += term * (trans(covariates.row(k)) * covariates.row(k));
           }
         }
       }
 
-      if (S0_sum > 0) {
+      if (S0_sum != 0) {
         arma::vec S1 = S1_sum / S0_sum;
         arma::mat S2 = S2_sum / S0_sum;
         double inner_i = alpha_XX[i] + cov_beta[i];
@@ -352,10 +416,9 @@ arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
 
 // [[Rcpp::export]]
 arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
-                 double h, double tau, bool one_sided, const arma::mat &covariates,
-                 const arma::mat &bsmat,
-                 const arma::vec &X, const arma::vec &obs_times,
+                 double tau, const arma::mat &covariates, const arma::vec &X,
                  const arma::vec &delta, const arma::vec &kerval,
+                 const arma::ivec &ev_index, const arma::mat &K_ev,
                  const arma::vec &id, const arma::mat &bsmat_XX,
                  const arma::vec &lq_x, const arma::vec &lq_w,
                  const arma::mat &bsmat_tt_all, const arma::mat &kerval_tt_all,
@@ -368,37 +431,33 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
 
   // use vectors instead of maps keyed by id
   std::vector<arma::vec> id_to_bb1(n_subj, arma::zeros<arma::vec>(p));
-  std::vector<int> id_counts(n_subj, 0);
   for (int i = 0; i < n; ++i) {
     if (i % 100 == 0) Rcpp::checkUserInterrupt();
 
     int idx = static_cast<int>(std::round(id[i])) - 1;
     if (idx < 0 || idx >= n_subj)
       continue;
-    id_counts[idx] += 1;
 
-    // Nonzero WEIGHT, positive LAG.  The two tests are unrelated: the lag test
-    // is the one-sided restriction and stays `> 0`; the weight test only asks
-    // whether the row contributes at all.  See the note in nll_obj.
-    if (delta[i] == 1.0 && kerval[i] != 0 && (X[i] - obs_times[i]) > 0) {
+    // Same rows as nll_obj and calc_A.  The one-sided restriction is already
+    // in kerval, so no separate lag test here: one would drop rows under
+    // one_sided = FALSE that the objective and the bread keep.
+    if (delta[i] == 1.0 && kerval[i] != 0) {
       double S0_sum = 0.0;
       arma::vec S1_sum = arma::zeros<arma::vec>(p);
+      // Same risk-set weights and baseline as calc_A.
+      const int e = ev_index[i];
       for (int k = 0; k < n; ++k) {
         if (X[i] <= X[k]) {
-          double dist_XX = X[i] - obs_times[k];
-          if (!one_sided || dist_XX > 0) {
-            double kerval_XX =
-                std::max((1 - std::pow(dist_XX / h, 2)) * 0.75, 0.0) / h;
-            if (kerval_XX > 0) {
-              double inner = alpha_XX[k] + cov_beta[k];
-              double term = trans_fun_d12o1(inner, s) * kerval_XX;
-              S0_sum += term;
-              S1_sum += term * trans(covariates.row(k));
-            }
+          double kerval_XX = K_ev(e, k);
+          if (kerval_XX != 0) {
+            double inner = alpha_XX[i] + cov_beta[k];
+            double term = trans_fun_d12o1(inner, s) * kerval_XX;
+            S0_sum += term;
+            S1_sum += term * trans(covariates.row(k));
           }
         }
       }
-      if (S0_sum > 0) {
+      if (S0_sum != 0) {
         arma::vec S1 = S1_sum / S0_sum;
         double inner_i = alpha_XX[i] + cov_beta[i];
         double t_val = trans_fun_d1o1(inner_i, s);
@@ -422,22 +481,19 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
     // `k`-loop out of the i/j loops and precompute once per quadrature node.
     double S0_tt_q = 0.0;
     arma::vec S1_tt_q_vec = arma::zeros<arma::vec>(p);
+    // kerval_tt_all is the matrix the objective integrates against.
     for (int k = 0; k < n; ++k) {
       if (tt <= X[k]) {
-        double dist_k = tt - obs_times[k];
-        if (!one_sided || dist_k > 0) {
-          double k_tt_k =
-              std::max((1 - std::pow(dist_k / h, 2)) * 0.75, 0.0) / h;
-          if (k_tt_k > 0) {
-            double in_val = alpha_tt + dot(covariates.row(k), beta);
-            double td = trans_fun_d12o1(in_val, s) * k_tt_k;
-            S0_tt_q += td;
-            S1_tt_q_vec += td * trans(covariates.row(k));
-          }
+        double k_tt_k = kerval_tt_all(q, k);
+        if (k_tt_k != 0) {
+          double in_val = alpha_tt + dot(covariates.row(k), beta);
+          double td = trans_fun_d12o1(in_val, s) * k_tt_k;
+          S0_tt_q += td;
+          S1_tt_q_vec += td * trans(covariates.row(k));
         }
       }
     }
-    if (S0_tt_q <= 0) continue;
+    if (S0_tt_q == 0) continue;
 
     arma::vec S1_tt_q = S1_tt_q_vec / S0_tt_q;
 
@@ -448,7 +504,7 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
       if (idx < 0 || idx >= n_subj) continue;
       if (tt <= X[i]) {
         double k_tt = kerval_tt_all(q, i);
-        if (k_tt > 0) {
+        if (k_tt != 0) {
           double in_val = alpha_tt + dot(covariates.row(i), beta);
           double factor = trans_fun_d(in_val, s) * k_tt;
           id_to_r1_vec[idx] +=
@@ -457,12 +513,12 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
       }
     }
 
+    // Summed over the subject's observations, as dN_i(r) sums in the
+    // published Omega-hat and in the objective's own per-subject score.  A
+    // per-subject mean here (the R prototype's colMeans) puts the two terms
+    // of the score on different scales and understated the SE in simulation.
     for (int subj = 0; subj < n_subj; ++subj) {
-      int count = id_counts[subj];
-      if (count > 0) {
-        id_to_bb2[subj] +=
-            weight * id_to_r1_vec[subj] / static_cast<double>(count);
-      }
+      id_to_bb2[subj] += weight * id_to_r1_vec[subj];
     }
   }
 
@@ -580,7 +636,8 @@ arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau,
                        const arma::uvec &node_subj, const arma::mat &ev_bs,
                        const arma::uvec &ev_row, const arma::vec &ev_delta,
                        int n_subj, int maxeval, double xtol_rel, bool quiet,
-                       Rcpp::Function weight, bool one_sided) {
+                       Rcpp::Function weight, const arma::vec &support,
+                       bool one_sided) {
 
   const int n_h = h_grid.n_elem;
   const int n_row = X.n_elem;
@@ -631,13 +688,35 @@ arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau,
     }
     if (one_sided) kerval_tt %= arma::conv_to<arma::mat>::from(node_lag > 0);
 
-    // Same support the fit uses, so the constraint set matches the objective.
+    // Same rule as constraint_rows() in R, so the constraint set of each
+    // training fit is the one skmle() would build: every row the weight
+    // reaches, judged on its declared support or on a nonzero value.
     arma::uvec feasible;
     if (s != 0.0) {
       feasible = arma::zeros<arma::uvec>(n_row);
       for (int i = 0; i < n_row; ++i) {
         const double d = X[i] - obs_times[i];
-        feasible[i] = (std::fabs(d) <= h && (!one_sided || d > 0)) ? 1u : 0u;
+        const double u = d / h;
+        const bool reach =
+            (u >= support[0] && u <= support[1]) || kerval[i] != 0;
+        feasible[i] = (reach && (!one_sided || d > 0)) ? 1u : 0u;
+      }
+    }
+
+    // The (node, row) pairs the cumulative-hazard integral evaluates, by the
+    // same rule; each fold keeps the pairs whose row is in its training set.
+    // They are the rescue set of fit_core(), not constraints of the estimator.
+    std::vector<std::pair<int, int>> quad_pairs;
+    if (s != 0.0) {
+      for (int q = 0; q < n_quad; ++q) {
+        for (int i = 0; i < n_row; ++i) {
+          if (!(tts[q] < X[i])) continue;
+          const double d = node_lag(q, i);
+          const double u = d / h;
+          const bool reach =
+              (u >= support[0] && u <= support[1]) || kerval_tt(q, i) != 0;
+          if (reach && (!one_sided || d > 0)) quad_pairs.emplace_back(q, i);
+        }
       }
     }
 
@@ -651,9 +730,21 @@ arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau,
       const arma::uvec tr_idx = arma::find(tr);
 
       arma::mat ineqmat(0, p + gammap);
+      arma::mat rescue(0, p + gammap);
       if (s != 0.0) {
         const arma::uvec ci = arma::find(tr % feasible);
         if (!ci.is_empty()) ineqmat = Zbs.rows(ci);
+        std::vector<arma::uword> keep_q;
+        for (std::size_t j = 0; j < quad_pairs.size(); ++j) {
+          if (tr[quad_pairs[j].second]) keep_q.push_back(j);
+        }
+        rescue.set_size(keep_q.size(), p + gammap);
+        for (std::size_t j = 0; j < keep_q.size(); ++j) {
+          const int q = quad_pairs[keep_q[j]].first;
+          const int i = quad_pairs[keep_q[j]].second;
+          rescue.row(j) =
+              arma::join_rows(covariates.row(i), bsmat_tt_all.row(q));
+        }
       }
 
       // The objective divides by the number of training SUBJECTS, not rows.
@@ -663,8 +754,8 @@ arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau,
           static_cast<int>(tr_subj.n_elem), p, gammap, s, h, tau,
           covariates.rows(tr_idx), bsmat.rows(tr_idx), X.elem(tr_idx),
           obs_times.elem(tr_idx), delta.elem(tr_idx), kerval.elem(tr_idx), lq_x,
-          lq_w, bsmat_tt_all, kerval_tt.cols(tr_idx), ineqmat, maxeval,
-          xtol_rel);
+          lq_w, bsmat_tt_all, kerval_tt.cols(tr_idx), ineqmat, rescue,
+          maxeval, xtol_rel);
 
       // A training fit that failed cannot produce a trustworthy held-out
       // score: let this bandwidth lose the grid outright.

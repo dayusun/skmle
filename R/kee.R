@@ -116,8 +116,8 @@
 #' @importFrom stats model.frame model.matrix model.response
 #' @importFrom nleqslv nleqslv
 #' @export
-kee_cox <- function(formula, data, id, obs_times, h = NULL, weight = NULL,
-                    one_sided = TRUE) {
+kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE,
+                    weight = NULL) {
     weight <- resolve_weight(weight, one_sided)
     # basic input validation
     if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
@@ -174,18 +174,21 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, weight = NULL,
         announce_bandwidth(h, "skmle_cv")
     }
     kerval <- kernel_weights(X_time - obs_times_vec, h, weight, one_sided)
+    # The risk-set averages use the same weight; built once, since they do
+    # not depend on beta.
+    rs <- risk_set_weights(X_time, obs_times_vec, delta, kerval, h, weight,
+                           one_sided)
 
     estequ <- function(beta) {
         kee_cox_estequ(
             beta = beta,
             covariates = as.matrix(Z),
             X = as.numeric(X_time),
-            obs_times = as.numeric(obs_times_vec),
             delta = as.numeric(delta),
             kerval = as.numeric(kerval),
-            h = h,
-            n_subj = n,
-            one_sided = one_sided
+            ev_index = rs$index,
+            K_ev = rs$K,
+            n_subj = n
         )
     }
 
@@ -197,11 +200,10 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, weight = NULL,
         beta = beta_est,
         covariates = as.matrix(Z),
         X = as.numeric(X_time),
-        obs_times = as.numeric(obs_times_vec),
         delta = as.numeric(delta),
         kerval = as.numeric(kerval),
-        h = h,
-        one_sided = one_sided,
+        ev_index = rs$index,
+        K_ev = rs$K,
         id = as.numeric(id_vec),
         n_subj = n
     )
@@ -311,7 +313,7 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, weight = NULL,
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
 kee_additive <- function(formula, data, id, obs_times, h = NULL, lq_nodes = 64,
-                         weight = NULL, one_sided = TRUE) {
+                         one_sided = TRUE, weight = NULL) {
     weight <- resolve_weight(weight, one_sided)
     # basic validation
     if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
@@ -370,15 +372,24 @@ kee_additive <- function(formula, data, id, obs_times, h = NULL, lq_nodes = 64,
     lq_x <- lqrule$x
     lq_w <- lqrule$w
 
+    # Risk-set weights at the event times and at the quadrature nodes, from
+    # the same weight as the row weights.  The nodes are the ones the C++ side
+    # integrates over, [0, tau].
+    tau <- max(X_time)
+    rs <- risk_set_weights(X_time, obs_times_vec, delta, kerval, h, weight,
+                           one_sided)
+    K_tt <- kernel_weights(outer(0.5 * tau * (lq_x + 1), obs_times_vec, "-"),
+                           h, weight, one_sided)
+
     res <- kee_additive_est(
         covariates = as.matrix(Z),
         X = as.numeric(X_time),
-        obs_times = as.numeric(obs_times_vec),
         delta = as.numeric(delta),
         kerval = as.numeric(kerval),
-        h = h,
-        tau = max(X_time),
-        one_sided = one_sided,
+        ev_index = rs$index,
+        K_ev = rs$K,
+        K_tt = as.matrix(K_tt),
+        tau = tau,
         id = as.numeric(id_vec),
         lq_x = as.numeric(lq_x),
         lq_w = as.numeric(lq_w),

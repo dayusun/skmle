@@ -80,69 +80,67 @@ BEGIN_RCPP
 END_RCPP
 }
 // kee_cox_estequ
-arma::vec kee_cox_estequ(const arma::vec& beta, const arma::mat& covariates, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& kerval, double h, int n_subj, bool one_sided);
-RcppExport SEXP _skmle_kee_cox_estequ(SEXP betaSEXP, SEXP covariatesSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP hSEXP, SEXP n_subjSEXP, SEXP one_sidedSEXP) {
+arma::vec kee_cox_estequ(const arma::vec& beta, const arma::mat& covariates, const arma::vec& X, const arma::vec& delta, const arma::vec& kerval, const arma::ivec& ev_index, const arma::mat& K_ev, int n_subj);
+RcppExport SEXP _skmle_kee_cox_estequ(SEXP betaSEXP, SEXP covariatesSEXP, SEXP XSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP ev_indexSEXP, SEXP K_evSEXP, SEXP n_subjSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs_times(obs_timesSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type kerval(kervalSEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type ev_index(ev_indexSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type K_ev(K_evSEXP);
     Rcpp::traits::input_parameter< int >::type n_subj(n_subjSEXP);
-    Rcpp::traits::input_parameter< bool >::type one_sided(one_sidedSEXP);
-    rcpp_result_gen = Rcpp::wrap(kee_cox_estequ(beta, covariates, X, obs_times, delta, kerval, h, n_subj, one_sided));
+    rcpp_result_gen = Rcpp::wrap(kee_cox_estequ(beta, covariates, X, delta, kerval, ev_index, K_ev, n_subj));
     return rcpp_result_gen;
 END_RCPP
 }
 // kee_cox_var
-List kee_cox_var(const arma::vec& beta, const arma::mat& covariates, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& kerval, double h, bool one_sided, const arma::vec& id, int n_subj);
-RcppExport SEXP _skmle_kee_cox_var(SEXP betaSEXP, SEXP covariatesSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP hSEXP, SEXP one_sidedSEXP, SEXP idSEXP, SEXP n_subjSEXP) {
+List kee_cox_var(const arma::vec& beta, const arma::mat& covariates, const arma::vec& X, const arma::vec& delta, const arma::vec& kerval, const arma::ivec& ev_index, const arma::mat& K_ev, const arma::vec& id, int n_subj);
+RcppExport SEXP _skmle_kee_cox_var(SEXP betaSEXP, SEXP covariatesSEXP, SEXP XSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP ev_indexSEXP, SEXP K_evSEXP, SEXP idSEXP, SEXP n_subjSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs_times(obs_timesSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type kerval(kervalSEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
-    Rcpp::traits::input_parameter< bool >::type one_sided(one_sidedSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type ev_index(ev_indexSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type K_ev(K_evSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type id(idSEXP);
     Rcpp::traits::input_parameter< int >::type n_subj(n_subjSEXP);
-    rcpp_result_gen = Rcpp::wrap(kee_cox_var(beta, covariates, X, obs_times, delta, kerval, h, one_sided, id, n_subj));
+    rcpp_result_gen = Rcpp::wrap(kee_cox_var(beta, covariates, X, delta, kerval, ev_index, K_ev, id, n_subj));
     return rcpp_result_gen;
 END_RCPP
 }
 // kee_additive_est
-List kee_additive_est(const arma::mat& covariates, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& kerval, double h, double tau, bool one_sided, const arma::vec& id, const arma::vec& lq_x, const arma::vec& lq_w, int n_subj);
-RcppExport SEXP _skmle_kee_additive_est(SEXP covariatesSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP hSEXP, SEXP tauSEXP, SEXP one_sidedSEXP, SEXP idSEXP, SEXP lq_xSEXP, SEXP lq_wSEXP, SEXP n_subjSEXP) {
+List kee_additive_est(const arma::mat& covariates, const arma::vec& X, const arma::vec& delta, const arma::vec& kerval, const arma::ivec& ev_index, const arma::mat& K_ev, const arma::mat& K_tt, double tau, const arma::vec& id, const arma::vec& lq_x, const arma::vec& lq_w, int n_subj);
+RcppExport SEXP _skmle_kee_additive_est(SEXP covariatesSEXP, SEXP XSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP ev_indexSEXP, SEXP K_evSEXP, SEXP K_ttSEXP, SEXP tauSEXP, SEXP idSEXP, SEXP lq_xSEXP, SEXP lq_wSEXP, SEXP n_subjSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs_times(obs_timesSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type kerval(kervalSEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type ev_index(ev_indexSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type K_ev(K_evSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type K_tt(K_ttSEXP);
     Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
-    Rcpp::traits::input_parameter< bool >::type one_sided(one_sidedSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type id(idSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type lq_x(lq_xSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type lq_w(lq_wSEXP);
     Rcpp::traits::input_parameter< int >::type n_subj(n_subjSEXP);
-    rcpp_result_gen = Rcpp::wrap(kee_additive_est(covariates, X, obs_times, delta, kerval, h, tau, one_sided, id, lq_x, lq_w, n_subj));
+    rcpp_result_gen = Rcpp::wrap(kee_additive_est(covariates, X, delta, kerval, ev_index, K_ev, K_tt, tau, id, lq_x, lq_w, n_subj));
     return rcpp_result_gen;
 END_RCPP
 }
 // skmle_cpp_fit
-List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau, const arma::mat& covariates, const arma::mat& bsmat, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& kerval, const arma::vec& lq_x, const arma::vec& lq_w, const arma::mat& bsmat_tt_all, const arma::mat& kerval_tt_all, const arma::mat& ineqmat, int maxeval, double xtol_rel);
-RcppExport SEXP _skmle_skmle_cpp_fit(SEXP nSEXP, SEXP pSEXP, SEXP gammapSEXP, SEXP sSEXP, SEXP hSEXP, SEXP tauSEXP, SEXP covariatesSEXP, SEXP bsmatSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP lq_xSEXP, SEXP lq_wSEXP, SEXP bsmat_tt_allSEXP, SEXP kerval_tt_allSEXP, SEXP ineqmatSEXP, SEXP maxevalSEXP, SEXP xtol_relSEXP) {
+List skmle_cpp_fit(int n, int p, int gammap, double s, double h, double tau, const arma::mat& covariates, const arma::mat& bsmat, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& kerval, const arma::vec& lq_x, const arma::vec& lq_w, const arma::mat& bsmat_tt_all, const arma::mat& kerval_tt_all, const arma::mat& ineqmat, const arma::mat& ineq_rescue, int maxeval, double xtol_rel);
+RcppExport SEXP _skmle_skmle_cpp_fit(SEXP nSEXP, SEXP pSEXP, SEXP gammapSEXP, SEXP sSEXP, SEXP hSEXP, SEXP tauSEXP, SEXP covariatesSEXP, SEXP bsmatSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP lq_xSEXP, SEXP lq_wSEXP, SEXP bsmat_tt_allSEXP, SEXP kerval_tt_allSEXP, SEXP ineqmatSEXP, SEXP ineq_rescueSEXP, SEXP maxevalSEXP, SEXP xtol_relSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -163,53 +161,50 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type bsmat_tt_all(bsmat_tt_allSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type kerval_tt_all(kerval_tt_allSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type ineqmat(ineqmatSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type ineq_rescue(ineq_rescueSEXP);
     Rcpp::traits::input_parameter< int >::type maxeval(maxevalSEXP);
     Rcpp::traits::input_parameter< double >::type xtol_rel(xtol_relSEXP);
-    rcpp_result_gen = Rcpp::wrap(skmle_cpp_fit(n, p, gammap, s, h, tau, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, ineqmat, maxeval, xtol_rel));
+    rcpp_result_gen = Rcpp::wrap(skmle_cpp_fit(n, p, gammap, s, h, tau, covariates, bsmat, X, obs_times, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, ineqmat, ineq_rescue, maxeval, xtol_rel));
     return rcpp_result_gen;
 END_RCPP
 }
 // calc_A
-arma::mat calc_A(const arma::vec& beta, const arma::vec& gamma, double s, double h, bool one_sided, const arma::mat& covariates, const arma::mat& bsmat, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& kerval, const arma::mat& bsmat_XX, int n_subj);
-RcppExport SEXP _skmle_calc_A(SEXP betaSEXP, SEXP gammaSEXP, SEXP sSEXP, SEXP hSEXP, SEXP one_sidedSEXP, SEXP covariatesSEXP, SEXP bsmatSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP bsmat_XXSEXP, SEXP n_subjSEXP) {
+arma::mat calc_A(const arma::vec& beta, const arma::vec& gamma, double s, const arma::mat& covariates, const arma::vec& X, const arma::vec& delta, const arma::vec& kerval, const arma::ivec& ev_index, const arma::mat& K_ev, const arma::mat& bsmat_XX, int n_subj);
+RcppExport SEXP _skmle_calc_A(SEXP betaSEXP, SEXP gammaSEXP, SEXP sSEXP, SEXP covariatesSEXP, SEXP XSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP ev_indexSEXP, SEXP K_evSEXP, SEXP bsmat_XXSEXP, SEXP n_subjSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
-    Rcpp::traits::input_parameter< bool >::type one_sided(one_sidedSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type bsmat(bsmatSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs_times(obs_timesSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type kerval(kervalSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type ev_index(ev_indexSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type K_ev(K_evSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type bsmat_XX(bsmat_XXSEXP);
     Rcpp::traits::input_parameter< int >::type n_subj(n_subjSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_A(beta, gamma, s, h, one_sided, covariates, bsmat, X, obs_times, delta, kerval, bsmat_XX, n_subj));
+    rcpp_result_gen = Rcpp::wrap(calc_A(beta, gamma, s, covariates, X, delta, kerval, ev_index, K_ev, bsmat_XX, n_subj));
     return rcpp_result_gen;
 END_RCPP
 }
 // calc_B
-arma::mat calc_B(const arma::vec& beta, const arma::vec& gamma, double s, double h, double tau, bool one_sided, const arma::mat& covariates, const arma::mat& bsmat, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& kerval, const arma::vec& id, const arma::mat& bsmat_XX, const arma::vec& lq_x, const arma::vec& lq_w, const arma::mat& bsmat_tt_all, const arma::mat& kerval_tt_all, int n_subj);
-RcppExport SEXP _skmle_calc_B(SEXP betaSEXP, SEXP gammaSEXP, SEXP sSEXP, SEXP hSEXP, SEXP tauSEXP, SEXP one_sidedSEXP, SEXP covariatesSEXP, SEXP bsmatSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP idSEXP, SEXP bsmat_XXSEXP, SEXP lq_xSEXP, SEXP lq_wSEXP, SEXP bsmat_tt_allSEXP, SEXP kerval_tt_allSEXP, SEXP n_subjSEXP) {
+arma::mat calc_B(const arma::vec& beta, const arma::vec& gamma, double s, double tau, const arma::mat& covariates, const arma::vec& X, const arma::vec& delta, const arma::vec& kerval, const arma::ivec& ev_index, const arma::mat& K_ev, const arma::vec& id, const arma::mat& bsmat_XX, const arma::vec& lq_x, const arma::vec& lq_w, const arma::mat& bsmat_tt_all, const arma::mat& kerval_tt_all, int n_subj);
+RcppExport SEXP _skmle_calc_B(SEXP betaSEXP, SEXP gammaSEXP, SEXP sSEXP, SEXP tauSEXP, SEXP covariatesSEXP, SEXP XSEXP, SEXP deltaSEXP, SEXP kervalSEXP, SEXP ev_indexSEXP, SEXP K_evSEXP, SEXP idSEXP, SEXP bsmat_XXSEXP, SEXP lq_xSEXP, SEXP lq_wSEXP, SEXP bsmat_tt_allSEXP, SEXP kerval_tt_allSEXP, SEXP n_subjSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
     Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
-    Rcpp::traits::input_parameter< bool >::type one_sided(one_sidedSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type covariates(covariatesSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type bsmat(bsmatSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type obs_times(obs_timesSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type delta(deltaSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type kerval(kervalSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type ev_index(ev_indexSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type K_ev(K_evSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type id(idSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type bsmat_XX(bsmat_XXSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type lq_x(lq_xSEXP);
@@ -217,7 +212,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type bsmat_tt_all(bsmat_tt_allSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type kerval_tt_all(kerval_tt_allSEXP);
     Rcpp::traits::input_parameter< int >::type n_subj(n_subjSEXP);
-    rcpp_result_gen = Rcpp::wrap(calc_B(beta, gamma, s, h, tau, one_sided, covariates, bsmat, X, obs_times, delta, kerval, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj));
+    rcpp_result_gen = Rcpp::wrap(calc_B(beta, gamma, s, tau, covariates, X, delta, kerval, ev_index, K_ev, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -250,8 +245,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // skmle_cv_cpp
-arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau, const arma::vec& h_grid, int K, const arma::uvec& fold_id_subj, const arma::uvec& id_vec, const arma::mat& covariates, const arma::mat& bsmat, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& lq_x, const arma::vec& lq_w, const arma::mat& bsmat_tt_all, const arma::vec& tts, const arma::mat& node_bs, const arma::vec& node_w, const arma::uvec& node_row, const arma::uvec& node_subj, const arma::mat& ev_bs, const arma::uvec& ev_row, const arma::vec& ev_delta, int n_subj, int maxeval, double xtol_rel, bool quiet, Rcpp::Function weight, bool one_sided);
-RcppExport SEXP _skmle_skmle_cv_cpp(SEXP pSEXP, SEXP gammapSEXP, SEXP sSEXP, SEXP tauSEXP, SEXP h_gridSEXP, SEXP KSEXP, SEXP fold_id_subjSEXP, SEXP id_vecSEXP, SEXP covariatesSEXP, SEXP bsmatSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP lq_xSEXP, SEXP lq_wSEXP, SEXP bsmat_tt_allSEXP, SEXP ttsSEXP, SEXP node_bsSEXP, SEXP node_wSEXP, SEXP node_rowSEXP, SEXP node_subjSEXP, SEXP ev_bsSEXP, SEXP ev_rowSEXP, SEXP ev_deltaSEXP, SEXP n_subjSEXP, SEXP maxevalSEXP, SEXP xtol_relSEXP, SEXP quietSEXP, SEXP weightSEXP, SEXP one_sidedSEXP) {
+arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau, const arma::vec& h_grid, int K, const arma::uvec& fold_id_subj, const arma::uvec& id_vec, const arma::mat& covariates, const arma::mat& bsmat, const arma::vec& X, const arma::vec& obs_times, const arma::vec& delta, const arma::vec& lq_x, const arma::vec& lq_w, const arma::mat& bsmat_tt_all, const arma::vec& tts, const arma::mat& node_bs, const arma::vec& node_w, const arma::uvec& node_row, const arma::uvec& node_subj, const arma::mat& ev_bs, const arma::uvec& ev_row, const arma::vec& ev_delta, int n_subj, int maxeval, double xtol_rel, bool quiet, Rcpp::Function weight, const arma::vec& support, bool one_sided);
+RcppExport SEXP _skmle_skmle_cv_cpp(SEXP pSEXP, SEXP gammapSEXP, SEXP sSEXP, SEXP tauSEXP, SEXP h_gridSEXP, SEXP KSEXP, SEXP fold_id_subjSEXP, SEXP id_vecSEXP, SEXP covariatesSEXP, SEXP bsmatSEXP, SEXP XSEXP, SEXP obs_timesSEXP, SEXP deltaSEXP, SEXP lq_xSEXP, SEXP lq_wSEXP, SEXP bsmat_tt_allSEXP, SEXP ttsSEXP, SEXP node_bsSEXP, SEXP node_wSEXP, SEXP node_rowSEXP, SEXP node_subjSEXP, SEXP ev_bsSEXP, SEXP ev_rowSEXP, SEXP ev_deltaSEXP, SEXP n_subjSEXP, SEXP maxevalSEXP, SEXP xtol_relSEXP, SEXP quietSEXP, SEXP weightSEXP, SEXP supportSEXP, SEXP one_sidedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -284,8 +279,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type xtol_rel(xtol_relSEXP);
     Rcpp::traits::input_parameter< bool >::type quiet(quietSEXP);
     Rcpp::traits::input_parameter< Rcpp::Function >::type weight(weightSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type support(supportSEXP);
     Rcpp::traits::input_parameter< bool >::type one_sided(one_sidedSEXP);
-    rcpp_result_gen = Rcpp::wrap(skmle_cv_cpp(p, gammap, s, tau, h_grid, K, fold_id_subj, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, tts, node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, maxeval, xtol_rel, quiet, weight, one_sided));
+    rcpp_result_gen = Rcpp::wrap(skmle_cv_cpp(p, gammap, s, tau, h_grid, K, fold_id_subj, id_vec, covariates, bsmat, X, obs_times, delta, lq_x, lq_w, bsmat_tt_all, tts, node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, maxeval, xtol_rel, quiet, weight, support, one_sided));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -318,14 +314,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_skmle_async_pair_accum_cpp", (DL_FUNC) &_skmle_async_pair_accum_cpp, 5},
     {"_skmle_async_td_accum_cpp", (DL_FUNC) &_skmle_async_td_accum_cpp, 6},
     {"_skmle_async_solve_cpp", (DL_FUNC) &_skmle_async_solve_cpp, 9},
-    {"_skmle_kee_cox_estequ", (DL_FUNC) &_skmle_kee_cox_estequ, 9},
-    {"_skmle_kee_cox_var", (DL_FUNC) &_skmle_kee_cox_var, 10},
+    {"_skmle_kee_cox_estequ", (DL_FUNC) &_skmle_kee_cox_estequ, 8},
+    {"_skmle_kee_cox_var", (DL_FUNC) &_skmle_kee_cox_var, 9},
     {"_skmle_kee_additive_est", (DL_FUNC) &_skmle_kee_additive_est, 12},
-    {"_skmle_skmle_cpp_fit", (DL_FUNC) &_skmle_skmle_cpp_fit, 19},
-    {"_skmle_calc_A", (DL_FUNC) &_skmle_calc_A, 13},
-    {"_skmle_calc_B", (DL_FUNC) &_skmle_calc_B, 19},
+    {"_skmle_skmle_cpp_fit", (DL_FUNC) &_skmle_skmle_cpp_fit, 20},
+    {"_skmle_calc_A", (DL_FUNC) &_skmle_calc_A, 11},
+    {"_skmle_calc_B", (DL_FUNC) &_skmle_calc_B, 17},
     {"_skmle_skmle_eval_nll_cpp", (DL_FUNC) &_skmle_skmle_eval_nll_cpp, 18},
-    {"_skmle_skmle_cv_cpp", (DL_FUNC) &_skmle_skmle_cv_cpp, 30},
+    {"_skmle_skmle_cv_cpp", (DL_FUNC) &_skmle_skmle_cv_cpp, 31},
     {"_skmle_locf_nll_cpp_r", (DL_FUNC) &_skmle_locf_nll_cpp_r, 13},
     {NULL, NULL, 0}
 };

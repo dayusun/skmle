@@ -1,5 +1,58 @@
 # skmle 0.1.0
 
+## Bug fixes
+
+* **A custom `weight` now reaches the risk-set averages.** `kee_cox()`,
+  `kee_additive()` and the `skmle()` sandwich used the weight only for the row
+  weights and still built every risk-set average S^(k) from a
+  hardcoded Epanechnikov kernel. A weight other than the default therefore
+  gave a `kee_cox()` or `kee_additive()` estimate solving an equation that
+  belongs to no estimator, and `skmle()` standard errors for a different
+  estimator from the one fitted. The default kernels are unaffected: their
+  estimates are bit-identical to before.
+* **`one_sided = FALSE` now reaches the whole variance.** `calc_B()` (the
+  `skmle()` meat) and the risk set in `kee_additive()`'s B required a positive
+  lag whatever `one_sided` said. The full-kernel scheme drops the indicator in
+  every term (Sun et al. 2025, Remark 7; Cao et al. 2015, eqs. 3.8-3.9). With
+  the full kernel, `skmle()` standard errors and `kee_additive()` estimates
+  change.
+* **The `skmle()` sandwich evaluates the baseline at the risk-set time.** The
+  risk-set averages in `calc_A()` and `calc_B()` used
+  `alpha(X_k)`, the baseline at each risk-set member's own event time,
+  where Theorem 3.5 and the R prototype use `alpha(X_i)`, the time the
+  risk set is formed at. Standard errors change for every `s` except 0.5,
+  where `H''/H = 1` and the two agree. This had been present since
+  the first commit.
+* **The `skmle()` meat sums each subject's cumulative-hazard term.** The
+  second term of the meat averaged over a subject's observations, following
+  the R prototype, where the published Omega-hat and the objective's own
+  per-subject score sum over them. In a simulation with 2,000 replicates
+  per cell (s = 0, 0.5, 1; n = 200, 400), the averaged form gave SE/ESE of
+  0.90 to 0.96 and coverage of 91.5% to 94.2%; the summed form gave 0.93 to
+  0.98 and 92.5% to 95.0%, closer to 95% in all 12 comparisons.
+* **`skmle()` no longer returns a stalled optimisation.** With `s != 0`,
+  SLSQP occasionally stalled on the floor of the cumulative-hazard integrand
+  (0.3% of fits at s = 1 in simulation, nlopt status -1), or stopped with an
+  event row on the feasibility boundary under a success status (0.4%), and
+  `skmle()` returned those fits silently with standard errors between 1e-16
+  and 1e-3. Such a fit is now restarted: the problem is solved once with
+  the quadrature pairs also constrained, and the published problem is
+  re-solved from that point, in `skmle()` and in the cross-validation loop
+  alike. The restart is kept only if it reaches at least as good an
+  objective. The estimator is
+  unchanged; constraining the quadrature pairs outright removes the stalls
+  but biased beta by up to 0.35 empirical SDs at s = 1, n = 200. `skmle()`
+  warns if the optimiser still reports failure.
+* Rows with a negative weight are kept by the cumulative-hazard term of the
+  objective and by the meat, as they already were by the event term and the
+  bread.
+* For `s != 0` the feasibility constraints cover every row the weight
+  reaches, not only lags within `h`. For the Epanechnikov kernels the set is
+  unchanged.
+* `weight` now comes after `one_sided` in `skmle()`, `kee_cox()`,
+  `kee_additive()` and `skmle_cv()`, so positional calls written before
+  `weight` existed work again.
+
 ## Any weight function, not only the ones supplied
 
 * **`skmle()`, `kee_cox()`, `kee_additive()` and `skmle_cv()` take a `weight`

@@ -222,7 +222,7 @@ locf_score <- function(X_time, obs_times_vec, id_vec, delta, knots, tau,
 skmle_cv <- function(formula, data, id, obs_times, s = 0, K = 5, h_grid = NULL,
                      n_h = 10, nknots = 3, lq_nodes = 64,
                      maxeval = 10000, xtol_rel = 1e-6, seed = NULL,
-                     quiet = FALSE, weight = NULL, one_sided = TRUE) {
+                     quiet = FALSE, one_sided = TRUE, weight = NULL) {
   weight <- resolve_weight(weight, one_sided)
   if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
     stop("formula, data, id and obs_times must all be supplied")
@@ -347,7 +347,8 @@ skmle_cv <- function(formula, data, id, obs_times, s = 0, K = 5, h_grid = NULL,
     ev_delta = as.numeric(score$ev_delta), n_subj = as.integer(score$n_subj),
     maxeval = as.integer(maxeval), xtol_rel = as.numeric(xtol_rel),
     quiet = as.logical(quiet),
-    weight = weight, one_sided = as.logical(one_sided)
+    weight = weight, support = weight_support(weight),
+    one_sided = as.logical(one_sided)
   )
 
   cv_results <- tibble::tibble(

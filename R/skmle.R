@@ -100,7 +100,7 @@
 #' @importFrom splines ns
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
-skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, weight = NULL, one_sided = TRUE) {
+skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE, weight = NULL) {
   weight <- resolve_weight(weight, one_sided)
   # validate inputs --------------------------------------------------------
   if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
@@ -179,12 +179,21 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
 
   # inequality constraints matrix, may be empty if no rows satisfy the filter
   ineqmat <- matrix(numeric(0), nrow = 0, ncol = ncol(Z) + ncol(bsmat))
+  ineq_rescue <- ineqmat
   if (s != 0) {
     tmp <- cbind(Z, as.matrix(bsmat))
-    # Same support the weight uses: one-sided keeps only past observations.
-    rows <- (abs(X_time - obs_times_vec) <= h) &
-      (!one_sided | (X_time > obs_times_vec))
+    # Every row the weight reaches, not only lags within h: a weight with
+    # wider support evaluates the transform at rows that would otherwise
+    # carry no constraint.
+    rows <- constraint_rows(X_time - obs_times_vec, kerval, h, weight, one_sided)
     if (any(rows)) ineqmat <- tmp[rows, , drop = FALSE]
+    # The (node, row) pairs the cumulative-hazard integral evaluates. They are
+    # not constraints of the estimator, only a rescue for the optimiser when
+    # the paper's problem stalls; see fit_core() in src/skmle_cpp.cpp.
+    quad <- which(constraint_rows(dist_tt_mat, kerval_tt_all, h, weight, one_sided) &
+      outer(tts, X_time, "<"), arr.ind = TRUE)
+    ineq_rescue <- unique(cbind(Z[quad[, 2], , drop = FALSE],
+                                bsmat_tt_mat[quad[, 1], , drop = FALSE]))
   }
 
   res <- skmle_cpp_fit(
@@ -205,25 +214,36 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     bsmat_tt_all = bsmat_tt_mat,
     kerval_tt_all = as.matrix(kerval_tt_all),
     ineqmat = as.matrix(ineqmat),
+    ineq_rescue = as.matrix(ineq_rescue),
     maxeval = maxeval,
     xtol_rel = xtol_rel
   )
 
+  # A negative nlopt status is a failed optimisation, not a fit.  Returning it
+  # quietly produced finite-looking estimates with SEs near 1e-16.
+  if (res$status < 0) {
+    warning(sprintf(
+      "the optimiser failed (nlopt status %d); estimates and standard errors are not reliable",
+      res$status
+    ), call. = FALSE)
+  }
   beta_est <- res$solution[1:ncol(Z)]
   gamma_est <- res$solution[(ncol(Z) + 1):(ncol(Z) + ncol(bsmat))]
+
+  # The sandwich's risk-set averages use the same weight as the objective.
+  rs <- risk_set_weights(X_time, obs_times_vec, delta, kerval, h, weight,
+                         one_sided)
 
   A_est <- calc_A(
     beta = beta_est,
     gamma = gamma_est,
     s = s,
-    h = h,
-    one_sided = one_sided,
     covariates = as.matrix(Z),
-    bsmat = as.matrix(bsmat),
     X = as.numeric(X_time),
-    obs_times = as.numeric(obs_times_vec),
     delta = as.numeric(delta),
     kerval = as.numeric(kerval),
+    ev_index = rs$index,
+    K_ev = rs$K,
     bsmat_XX = as.matrix(bsmat),
     n_subj = n
   )
@@ -232,15 +252,13 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     beta = beta_est,
     gamma = gamma_est,
     s = s,
-    h = h,
     tau = tau,
-    one_sided = one_sided,
     covariates = as.matrix(Z),
-    bsmat = as.matrix(bsmat),
     X = as.numeric(X_time),
-    obs_times = as.numeric(obs_times_vec),
     delta = as.numeric(delta),
     kerval = as.numeric(kerval),
+    ev_index = rs$index,
+    K_ev = rs$K,
     id = as.numeric(id_vec),
     bsmat_XX = as.matrix(bsmat),
     lq_x = as.numeric(lq_x),
