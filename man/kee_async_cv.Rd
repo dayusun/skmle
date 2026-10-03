@@ -21,7 +21,7 @@ kee_async_cv(
   tol = 1e-08,
   seed = NULL,
   quiet = FALSE,
-  criterion = c("matched", "fixed"),
+  criterion = c("matched", "fixed", "locf", "eeq"),
   h_eval = NULL,
   repeats = 1L,
   select = c("min", "flat", "smooth", "unimodal")
@@ -74,11 +74,13 @@ strictly before the response.}
 
 \item{criterion}{\code{"matched"} (the default) scores each candidate at its own
 bandwidth; \code{"fixed"} scores every candidate on the same held-out pairs,
-formed at \code{h_eval}. See Details.}
+formed at \code{h_eval}; \code{"locf"} on nearest-prior pairs; \code{"eeq"} by the norm
+of the held-out estimating function at \code{h_eval}. See Details.}
 
 \item{h_eval}{Evaluation bandwidth for \code{criterion = "fixed"}: \code{"min"} (the
 default, the smallest candidate), \code{"lower"}, or a numeric vector whose
-losses are averaged. See Details.}
+losses are averaged, for \code{criterion = "fixed"} or \code{"eeq"}. For \code{"eeq"} the default
+is \code{"lower"}. See Details.}
 
 \item{repeats}{Number of independent random K-fold splits; the held-out
 loss is averaged over them.}
@@ -133,6 +135,21 @@ between candidates on a common evaluation set are small next to the
 fold-to-fold noise. Coverage of the sandwich interval at the selected
 bandwidth was below 95\% for every selector, including the oracle, because
 the estimator's bias is not negligible at these bandwidths.
+
+Two further criteria score the held-out subjects without a kernel window
+that moves with the candidate:
+\itemize{
+\item \code{"locf"} pairs each held-out response with the subject's last covariate
+observation at or before it (the first covariate observation when there
+is none that early), with unit weights, and scores the pairs with the
+same loss as \code{"fixed"}. It needs no evaluation bandwidth.
+\item \code{"eeq"} evaluates the held-out estimating function of \code{\link[=kee_async]{kee_async()}} at
+\code{h_eval} (default \code{"lower"}), divided by its total weight, at the
+training estimate, and scores its squared Euclidean norm, averaged over
+folds. To second order its expectation is a constant plus
+\eqn{(\hat\beta_h - \beta_e)^\top A^\top A (\hat\beta_h - \beta_e)},
+with \eqn{A} the derivative of the estimating function.
+}
 
 Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} from a plug-in estimate
 of bias and variance instead; that rule is not implemented here.
