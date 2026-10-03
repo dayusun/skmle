@@ -451,47 +451,43 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #'
 #' @description
 #' K-fold cross-validation over **subjects** for [kee_async()]. For each
-#' candidate bandwidth the estimator is fitted on the training subjects, and
-#' every candidate is scored on the held-out subjects against the **same**
-#' kernel-weighted set of response-covariate pairs, formed at one evaluation
-#' bandwidth `h_eval`:
-#' \deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_{h_e}(T_{ij} - S_{ik})
-#'        \, \ell\{Y_i(T_{ij}), X_i(S_{ik})^\top \hat\beta_h\}}
-#'       {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_{h_e}(T_{ij} - S_{ik})},}
-#' where \eqn{\ell} is the deviance of the canonical model for `link`:
-#' squared error for `"identity"`, \eqn{\mu - y\eta} for `"log"` and
-#' \eqn{\log(1 + e^\eta) - y\eta} for `"logistic"`.
+#' candidate bandwidth the estimator is fitted on the training subjects and
+#' scored on the held-out subjects by the kernel-weighted squared error of the
+#' fitted mean,
+#' \deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
+#'        [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
+#'       {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})},}
+#' formed at the candidate's own bandwidth (`criterion = "matched"`).
 #'
 #' @details
-#' # What the criterion estimates
+#' # The two criteria
 #'
-#' With the evaluation pairs held fixed, the only thing that changes across
-#' candidates is \eqn{\hat\beta_h}. For the identity link the expected loss is
-#' a constant plus \eqn{(\hat\beta_h - \beta_e)^\top \Sigma_e (\hat\beta_h -
-#' \beta_e)}, where \eqn{\beta_e} is the limit of the estimator at `h_eval` and
-#' \eqn{\Sigma_e} the weighted second moment of the covariates; for the other
-#' links the same holds to second order, because the loss is the one whose
-#' score is the estimating equation. Minimising it therefore minimises a
-#' weighted mean squared error of \eqn{\hat\beta_h}, bias and variance
-#' together, without estimating the bias. Taking `h_eval` small puts
-#' \eqn{\beta_e} close to the true coefficient; the default is the smallest
-#' candidate.
+#' Under `"matched"` the set of held-out pairs changes with the candidate, so
+#' the criterion measures prediction error at that window rather than the
+#' error of \eqn{\hat\beta_h}. `criterion = "fixed"` instead scores every
+#' candidate on the same held-out pairs, formed at `h_eval` (default: the
+#' smallest candidate), with the canonical deviance of the link; with the
+#' pairs fixed, only \eqn{\hat\beta_h} varies across candidates.
 #'
-#' `criterion = "matched"` scores each candidate at its own bandwidth, with
-#' squared error, as earlier versions did. That criterion compares
-#' different sets of pairs across candidates: a wider window admits pairs
-#' whose covariate was measured further from the response, whose error is
-#' larger whatever \eqn{\hat\beta_h} is, and the bias of \eqn{\hat\beta_h}
-#' does not enter it at all. It is kept for reproducibility.
+#' In a simulation with `sim_async_data()` (2,000 data sets per cell,
+#' n = 100, 200, 400, identity and logistic links, 12 bandwidths from 0.02 to
+#' 0.6), neither criterion dominated. Relative to the bandwidth with the
+#' smallest Monte Carlo MSE of the slope, `"matched"` gave 1.15 to 1.29 times
+#' the oracle MSE for the identity link and 1.79 to 3.42 for the logistic
+#' link; `"fixed"` gave 1.40 to 1.50 and 2.05 to 2.29. The fixed criterion
+#' spreads its choices almost uniformly over the grid: the differences
+#' between candidates on a common evaluation set are small next to the
+#' fold-to-fold noise. Coverage of the sandwich interval at the selected
+#' bandwidth was below 95% for every selector, including the oracle, because
+#' the estimator's bias is not negligible at these bandwidths.
 #'
-#' Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} differently, by
-#' minimising \eqn{\hat C^2 h^4 + \hat V(h)}, with \eqn{\hat C} the slope of a
-#' regression of \eqn{\hat\beta(h)} on \eqn{h^2} and \eqn{\hat V(h)} from one
-#' random half split. That rule is not implemented here: the \eqn{h^2} bias
-#' it assumes fails when the covariate path is not differentiable (an
-#' Ornstein-Uhlenbeck covariate gives bias of order \eqn{h}), and over the
-#' grid it is applied to the bias is smaller than the sampling noise in
-#' \eqn{\hat\beta(h)}, so \eqn{\hat C} is not estimable.
+#' Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} by minimising
+#' \eqn{\hat C^2 h^4 + \hat V(h)}, with \eqn{\hat C} the slope of
+#' \eqn{\hat\beta(h)} on \eqn{h^2} and \eqn{\hat V(h)} from one random half
+#' split. It is not implemented here. It assumes a bias proportional to
+#' \eqn{h^2} and reads its size from the drift of \eqn{\hat\beta(h)} across
+#' the grid. In the same simulation it gave 1.31 to 1.39 times the oracle MSE
+#' for the identity link and 1.55 to 1.75 for the logistic link.
 #'
 #' # How the folds are formed
 #'
@@ -520,9 +516,9 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #' @param seed Optional integer seed for the subject-to-fold assignment. Pass it
 #'   (or call [set.seed()] first) to make the selection reproducible.
 #' @param quiet Logical; suppress progress output.
-#' @param criterion `"fixed"` (the default) scores every candidate on the same
-#'   held-out pairs, formed at `h_eval`; `"matched"` scores each candidate at
-#'   its own bandwidth, as earlier versions did. See Details.
+#' @param criterion `"matched"` (the default) scores each candidate at its own
+#'   bandwidth; `"fixed"` scores every candidate on the same held-out pairs,
+#'   formed at `h_eval`. See Details.
 #' @param h_eval Evaluation bandwidth for `criterion = "fixed"`. Defaults to
 #'   the smallest candidate in `h_grid`.
 #'
@@ -560,7 +556,7 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
                          link = c("identity", "log", "logistic"),
                          intercept = TRUE, maxit = 50L, tol = 1e-8,
                          seed = NULL, quiet = FALSE,
-                         criterion = c("fixed", "matched"), h_eval = NULL) {
+                         criterion = c("matched", "fixed"), h_eval = NULL) {
     link <- match.arg(link)
     criterion <- match.arg(criterion)
     .async_check_one_sided(one_sided)

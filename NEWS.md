@@ -2,20 +2,16 @@
 
 ## Bandwidth selection for the asynchronous estimators
 
-* **`kee_async_cv()` scores every candidate on the same held-out pairs.** It
-  used to score each candidate bandwidth by the held-out kernel-weighted
-  squared error at that same bandwidth. A wider window admits pairs whose
-  covariate was measured further from the response, whose error is larger
-  whatever beta-hat is, and the bias of beta-hat does not enter the criterion
-  at all. The new default, `criterion = "fixed"`, forms the held-out pairs
-  once at an evaluation bandwidth `h_eval` (the smallest candidate by
-  default) and scores every candidate on them with the canonical deviance of
-  the link, which estimates a weighted mean squared error of beta-hat without
-  estimating its bias. `criterion = "matched"` restores the old behaviour.
-* Cao, Zeng and Fine's (2015) plug-in rule, which estimates the bias by
-  regressing beta-hat(h) on h^2, is documented and not implemented: the h^2
-  bias fails for non-differentiable covariate paths, and over its grid the
-  bias is below the sampling noise in beta-hat(h).
+* `kee_async_cv()` gains `criterion = "fixed"`, which scores every candidate
+  bandwidth on the same held-out pairs, formed at `h_eval`, with the
+  canonical deviance of the link. The default stays `criterion = "matched"`.
+  In a simulation (2,000 data sets per cell; n = 100, 200, 400; identity and
+  logistic links) the fixed criterion gave 1.40 to 2.29 times the oracle MSE
+  of the slope against 1.15 to 3.42 for the matched one, and was worse in
+  every identity-link cell.
+* The documentation describes Cao, Zeng and Fine's (2015) plug-in rule, which
+  is not implemented, and its performance in the same simulation (1.31 to
+  1.75 times the oracle MSE).
 
 ## Bug fixes
 

@@ -15,7 +15,8 @@ test_that("the fixed criterion scores every candidate on the same pairs", {
     # Two candidates: an endpoint minimum is certain and the warning expected.
     cv <- suppressWarnings(kee_async_cv(d$y, d$x,
         y ~ x, id = id, time = time,
-        h_grid = hs, K = K, seed = 11, quiet = TRUE, h_eval = he
+        h_grid = hs, K = K, seed = 11, quiet = TRUE, h_eval = he,
+        criterion = "fixed"
     ))
     expect_identical(cv$criterion, "fixed")
     expect_equal(cv$h_eval, he)
@@ -99,7 +100,8 @@ test_that("an evaluation bandwidth that admits no pair is refused", {
     expect_error(
         kee_async_cv(d$y, d$x, y ~ x,
             id = id, time = time,
-            h_grid = c(0.2, 0.3), K = 2, seed = 1, quiet = TRUE, h_eval = 1e-9
+            h_grid = c(0.2, 0.3), K = 2, seed = 1, quiet = TRUE, h_eval = 1e-9,
+            criterion = "fixed"
         ),
         "h_eval"
     )
