@@ -22,7 +22,9 @@ kee_async_cv(
   seed = NULL,
   quiet = FALSE,
   criterion = c("matched", "fixed"),
-  h_eval = NULL
+  h_eval = NULL,
+  repeats = 1L,
+  select = c("min", "flat", "smooth", "unimodal")
 )
 
 \method{print}{cv.kee_async}(x, ...)
@@ -74,8 +76,16 @@ strictly before the response.}
 bandwidth; \code{"fixed"} scores every candidate on the same held-out pairs,
 formed at \code{h_eval}. See Details.}
 
-\item{h_eval}{Evaluation bandwidth for \code{criterion = "fixed"}. Defaults to
-the smallest candidate in \code{h_grid}.}
+\item{h_eval}{Evaluation bandwidth for \code{criterion = "fixed"}: \code{"min"} (the
+default, the smallest candidate), \code{"lower"}, or a numeric vector whose
+losses are averaged. See Details.}
+
+\item{repeats}{Number of independent random K-fold splits; the held-out
+loss is averaged over them.}
+
+\item{select}{How a bandwidth is chosen from the cross-validation curve:
+\code{"min"} (the default), \code{"flat"} (fixed criterion only), \code{"smooth"} or
+\code{"unimodal"}. See Details.}
 
 \item{x}{A \code{cv.kee_async} object.}
 
@@ -86,11 +96,12 @@ An object of class \code{cv.kee_async}:
 \describe{
 \item{h_cv}{The selected bandwidth.}
 \item{fit}{The \code{\link[=kee_async]{kee_async()}} fit refitted on all subjects at \code{h_cv}.}
-\item{cv_results}{Data frame of \code{h}, the mean held-out loss \code{cvloss}, and
-\code{nfold_used}, the number of folds that produced a usable fit.}
+\item{cv_results}{Data frame of \code{h}, the held-out loss \code{cvloss},
+\code{nfold_used} (folds over all repeats that produced a usable fit),
+\code{diff_se} (fixed criterion: standard error of the paired difference
+from the minimum) and \code{fitted} (the smoothed or unimodal curve).}
 \item{h_grid, fold_id, seed, call}{Selection metadata.}
-\item{criterion, h_eval}{The criterion used and, for \code{"fixed"}, the
-evaluation bandwidth.}
+\item{criterion, h_eval, repeats, select}{The options used.}
 }
 }
 \description{
@@ -123,13 +134,35 @@ fold-to-fold noise. Coverage of the sandwich interval at the selected
 bandwidth was below 95\% for every selector, including the oracle, because
 the estimator's bias is not negligible at these bandwidths.
 
-Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} by minimising
-\eqn{\hat C^2 h^4 + \hat V(h)}, with \eqn{\hat C} the slope of
-\eqn{\hat\beta(h)} on \eqn{h^2} and \eqn{\hat V(h)} from one random half
-split. It is not implemented here. It assumes a bias proportional to
-\eqn{h^2} and reads its size from the drift of \eqn{\hat\beta(h)} across
-the grid. In the same simulation it gave 1.31 to 1.39 times the oracle MSE
-for the identity link and 1.55 to 1.75 for the logistic link.
+Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} from a plug-in estimate
+of bias and variance instead; that rule is not implemented here.
+}
+
+\section{Reducing the noise in the fixed criterion}{
+Under \code{"fixed"} every subject is held out once per split and the evaluation
+pairs do not change with the candidate, so the loss is an exact sum of
+per-subject terms and two candidates can be compared subject by subject.
+Three options use this:
+\itemize{
+\item \code{repeats} averages the loss over that many independent random splits.
+\item \code{select = "flat"} treats candidates whose loss exceeds the minimum by no
+more than the standard error of the paired, per-subject difference as
+indistinguishable, and takes the one at the centre, in \eqn{\log h}, of
+the contiguous run of such candidates around the minimum. Within that run
+the data do not separate the candidates, and the minimiser itself moves
+along it from sample to sample; the centre is the choice that does not
+lean towards either end. The standard error treats subjects as
+independent, which ignores that they share training fits.
+\item \code{select = "smooth"} minimises a cubic smoothing spline of the loss in
+\eqn{\log h} (smoothing chosen by generalised cross-validation), and
+\code{select = "unimodal"} the least-squares fit that falls and then rises,
+taking the centre of its lowest plateau. Both also apply to
+\code{"matched"}.
+}
+
+\code{h_eval} may be \code{"min"} (the smallest candidate, the default), \code{"lower"}
+(the lower end of the default grid, \eqn{2 (Q_3 - Q_1) n^{-0.7}}), or one
+or more numbers; with several, the loss is averaged over them.
 }
 
 \section{How the folds are formed}{
