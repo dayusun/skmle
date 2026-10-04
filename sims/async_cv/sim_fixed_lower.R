@@ -3,7 +3,8 @@
 ## the default grid (5-fold CV over 5 random splits, argmin). Output has the
 ## same structure as sim_acv4.R (picks holds only "fixed_lower") so that
 ## undersmooth.R reads either.
-## Usage: Rscript sim_fixed_lower.R <n> <link> <first_rep> <n_reps> <out.rds>
+## Usage: Rscript sim_fixed_lower.R <n> <link> <first_rep> <n_reps> <out.rds> [grid_min n_grid]
+## The default grid is 48 log-spaced points from 0.005 to 1.5.
 args <- commandArgs(TRUE)
 n <- as.integer(args[1]); link <- args[2]
 first <- as.integer(args[3]); nrep <- as.integer(args[4]); out <- args[5]
@@ -13,7 +14,9 @@ parse_ <- get(".async_parse", ns); subset_ <- get(".async_subset", ns)
 fit_ <- get(".async_fit_ti", ns); collapse_ <- get(".async_collapse", ns)
 lk <- c(identity = 0L, log = 1L, logistic = 2L)[[link]]
 beta0 <- if (link == "logistic") c(0.3, 1.0) else c(0.5, 1.5)
-grid <- exp(seq(log(0.005), log(1.5), length.out = 48)); G <- length(grid)
+gmin <- if (length(args) >= 7) as.numeric(args[6]) else 0.005
+ng <- if (length(args) >= 7) as.integer(args[7]) else 48L
+grid <- exp(seq(log(gmin), log(1.5), length.out = ng)); G <- length(grid)
 K <- 5L; R <- 5L
 kappa <- function(eta) if (lk == 0L) eta^2 else if (lk == 1L) exp(eta) else log1p(exp(-abs(eta))) + pmax(eta, 0)
 cterm <- function(eta) if (lk == 0L) 2 * eta else eta
