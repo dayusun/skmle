@@ -206,9 +206,12 @@ If the selected value lands on an endpoint of the grid, the function warns and
 you should widen the grid: a minimum on the boundary is an artefact of where you
 stopped looking.
 
-Leaving `h_grid` unset generates one from the data, log-spaced over
-$[2(Q_3 - Q_1)n^{-0.7},\, 2(Q_3 - Q_1)n^{-0.3}]$ where $Q_1, Q_3$ are quartiles
-of the pooled observation times. It adapts to whatever units `time` is in.
+Leaving `h_grid` unset generates `n_h` candidates (100 by default),
+log-spaced from the smallest to the largest lag between a response and a
+covariate observation of the same subject. Below the smallest lag no pair
+enters any window, and above the largest every pair already does, so the grid
+covers every bandwidth that can give a different fit. It is in the units of
+`time`.
 
 ## Check how much the answer moves with h
 

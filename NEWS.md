@@ -2,17 +2,17 @@
 
 ## Bandwidth selection for the asynchronous estimators
 
-* `kee_async_cv()` gains four held-out criteria besides the default
-  `"matched"`: `"fixed"` (every candidate scored on the same held-out pairs,
-  formed at `h_eval`, which may be `"min"`, `"lower"` or several values),
-  `"locf"` (nearest-prior pairs, no bandwidth) and `"eeq"` (norm of the
-  held-out estimating function). It also gains `repeats` (repeated K-fold)
-  and `select` (`"min"`, `"flat"`, `"smooth"`, `"unimodal"`).
-* In a simulation with 5 repeated 5-fold splits and a 48-point grid,
-  `criterion = "fixed", h_eval = "lower"` gave the smallest mean squared
-  error of the slope in all six cells (1.3 to 2.5 times that of the best
-  single bandwidth on the grid, against 2.1 to 23 times for `"matched"`).
-  The default is unchanged for now.
+* **`kee_async_cv()` builds its default grid from the data.** The candidates
+  are `n_h` (default 100) log-spaced bandwidths from the smallest to the
+  largest lag between a response and a covariate observation of the same
+  subject (positive lags only when `one_sided = TRUE`). The previous default,
+  log-spaced over 2(Q3 - Q1) n^-0.7 to 2(Q3 - Q1) n^-0.3 of the pooled
+  observation times, had no justification for this estimator and is removed.
+* `kee_async_cv()` is plain K-fold cross-validation over subjects: each
+  candidate is scored on the held-out subjects by the kernel-weighted
+  squared error at that bandwidth, divided by the held-out weight, and the
+  minimiser is selected. The new `repeats` argument averages the loss over
+  several random splits (default 1).
 
 ## Bug fixes
 

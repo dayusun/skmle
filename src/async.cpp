@@ -170,6 +170,9 @@ List async_solve_cpp(const arma::mat &Xs, const IntegerVector &x_sub,
       b += cc[k] * xr.t();
     }
     if (!solve(beta, A, b, solve_opts::no_approx)) {
+      // A failed solve leaves beta empty; restore its length before marking
+      // it, or the final pass below takes an empty beta for a finite one.
+      beta.set_size(p);
       beta.fill(NA_REAL);
       conv = 1;
     }

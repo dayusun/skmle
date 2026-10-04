@@ -12,19 +12,16 @@ kee_async_cv(
   id,
   time,
   h_grid = NULL,
-  n_h = 10L,
+  n_h = 100L,
   K = 5L,
+  repeats = 1L,
   one_sided = FALSE,
   link = c("identity", "log", "logistic"),
   intercept = TRUE,
   maxit = 50L,
   tol = 1e-08,
   seed = NULL,
-  quiet = FALSE,
-  criterion = c("matched", "fixed", "locf", "eeq"),
-  h_eval = NULL,
-  repeats = 1L,
-  select = c("min", "flat", "smooth", "unimodal")
+  quiet = FALSE
 )
 
 \method{print}{cv.kee_async}(x, ...)
@@ -50,11 +47,14 @@ Non-numeric identifiers are allowed.}
 Accepts the same three forms as \code{id}.}
 
 \item{h_grid}{Optional numeric vector of candidate bandwidths. When \code{NULL} a
-grid is generated from the observation times; see Details.}
+grid is built from the data; see Details.}
 
-\item{n_h}{Number of candidates to generate when \code{h_grid} is \code{NULL}.}
+\item{n_h}{Number of candidates in the default grid.}
 
 \item{K}{Number of folds. Reduced to the number of subjects if larger.}
+
+\item{repeats}{Number of independent random K-fold splits; the held-out
+loss is averaged over them.}
 
 \item{one_sided}{Logical. \code{FALSE} (default) is the full two-sided kernel of
 the paper; \code{TRUE} is the half kernel, admitting only covariate observations
@@ -72,23 +72,6 @@ strictly before the response.}
 
 \item{quiet}{Logical; suppress progress output.}
 
-\item{criterion}{\code{"matched"} (the default) scores each candidate at its own
-bandwidth; \code{"fixed"} scores every candidate on the same held-out pairs,
-formed at \code{h_eval}; \code{"locf"} on nearest-prior pairs; \code{"eeq"} by the norm
-of the held-out estimating function at \code{h_eval}. See Details.}
-
-\item{h_eval}{Evaluation bandwidth for \code{criterion = "fixed"}: \code{"min"} (the
-default, the smallest candidate), \code{"lower"}, or a numeric vector whose
-losses are averaged, for \code{criterion = "fixed"} or \code{"eeq"}. For \code{"eeq"} the default
-is \code{"lower"}. See Details.}
-
-\item{repeats}{Number of independent random K-fold splits; the held-out
-loss is averaged over them.}
-
-\item{select}{How a bandwidth is chosen from the cross-validation curve:
-\code{"min"} (the default), \code{"flat"} (fixed criterion only), \code{"smooth"} or
-\code{"unimodal"}. See Details.}
-
 \item{x}{A \code{cv.kee_async} object.}
 
 \item{...}{Ignored.}
@@ -98,94 +81,23 @@ An object of class \code{cv.kee_async}:
 \describe{
 \item{h_cv}{The selected bandwidth.}
 \item{fit}{The \code{\link[=kee_async]{kee_async()}} fit refitted on all subjects at \code{h_cv}.}
-\item{cv_results}{Data frame of \code{h}, the held-out loss \code{cvloss},
-\code{nfold_used} (folds over all repeats that produced a usable fit),
-\code{diff_se} (fixed criterion: standard error of the paired difference
-from the minimum) and \code{fitted} (the smoothed or unimodal curve).}
-\item{h_grid, fold_id, seed, call}{Selection metadata.}
-\item{criterion, h_eval, repeats, select}{The options used.}
+\item{cv_results}{Data frame of \code{h}, the held-out loss \code{cvloss}, and
+\code{nfold_used}, the number of folds over all repeats that produced a
+usable loss.}
+\item{h_grid, fold_id, repeats, seed, call}{Selection metadata.}
 }
 }
 \description{
 K-fold cross-validation over \strong{subjects} for \code{\link[=kee_async]{kee_async()}}. For each
 candidate bandwidth the estimator is fitted on the training subjects and
 scored on the held-out subjects by the kernel-weighted squared error of the
-fitted mean,
+fitted mean at that bandwidth,
 \deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
        [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
-      {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})},}
-formed at the candidate's own bandwidth (\code{criterion = "matched"}).
+      {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.}
+The per-fold losses are averaged over folds (and over \code{repeats} random
+splits), and the candidate with the smallest average is selected.
 }
-\section{The two criteria}{
-Under \code{"matched"} the set of held-out pairs changes with the candidate, so
-the criterion measures prediction error at that window rather than the
-error of \eqn{\hat\beta_h}. \code{criterion = "fixed"} instead scores every
-candidate on the same held-out pairs, formed at \code{h_eval} (default: the
-smallest candidate), with the canonical deviance of the link; with the
-pairs fixed, only \eqn{\hat\beta_h} varies across candidates.
-
-In a simulation with \code{sim_async_data()} (2,000 data sets per cell;
-n = 100, 200, 400; identity and logistic links; 48 bandwidths from 0.005
-to 1.5; 5-fold cross-validation repeated over 5 random splits; the
-minimiser of the mean held-out loss), \code{criterion = "fixed"} with
-\code{h_eval = "lower"} had the smallest mean squared error of the slope in
-every cell: 1.3 to 1.5 times that of the best single bandwidth on the grid
-for the identity link and 1.8 to 2.5 times for the logistic link, against
-2.1 to 2.5 and 8 to 23 times for \code{"matched"}, which chose the smallest
-bandwidths on the grid. With \code{h_eval} at the smallest candidate, \code{"fixed"}
-was worse than \code{"matched"} for the identity link: an evaluation window
-that admits few pairs makes the criterion noisy. The best single bandwidth
-is a yardstick computed from the known coefficient, not a selector.
-Coverage of the sandwich interval at the selected bandwidth was below 95\%
-for every criterion (66\% to 85\% for \code{"fixed"} at \code{"lower"}), because the
-estimator's bias is not negligible at the bandwidths chosen.
-
-Two further criteria score the held-out subjects without a kernel window
-that moves with the candidate:
-\itemize{
-\item \code{"locf"} pairs each held-out response with the subject's last covariate
-observation at or before it (the first covariate observation when there
-is none that early), with unit weights, and scores the pairs with the
-same loss as \code{"fixed"}. It needs no evaluation bandwidth.
-\item \code{"eeq"} evaluates the held-out estimating function of \code{\link[=kee_async]{kee_async()}} at
-\code{h_eval} (default \code{"lower"}), divided by its total weight, at the
-training estimate, and scores its squared Euclidean norm, averaged over
-folds. To second order its expectation is a constant plus
-\eqn{(\hat\beta_h - \beta_e)^\top A^\top A (\hat\beta_h - \beta_e)},
-with \eqn{A} the derivative of the estimating function.
-}
-
-Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} from a plug-in estimate
-of bias and variance instead; that rule is not implemented here.
-}
-
-\section{Reducing the noise in the fixed criterion}{
-Under \code{"fixed"} every subject is held out once per split and the evaluation
-pairs do not change with the candidate, so the loss is an exact sum of
-per-subject terms and two candidates can be compared subject by subject.
-Three options use this:
-\itemize{
-\item \code{repeats} averages the loss over that many independent random splits.
-\item \code{select = "flat"} treats candidates whose loss exceeds the minimum by no
-more than the standard error of the paired, per-subject difference as
-indistinguishable, and takes the one at the centre, in \eqn{\log h}, of
-the contiguous run of such candidates around the minimum. Within that run
-the data do not separate the candidates, and the minimiser itself moves
-along it from sample to sample; the centre is the choice that does not
-lean towards either end. The standard error treats subjects as
-independent, which ignores that they share training fits.
-\item \code{select = "smooth"} minimises a cubic smoothing spline of the loss in
-\eqn{\log h} (smoothing chosen by generalised cross-validation), and
-\code{select = "unimodal"} the least-squares fit that falls and then rises,
-taking the centre of its lowest plateau. Both also apply to
-\code{"matched"}.
-}
-
-\code{h_eval} may be \code{"min"} (the smallest candidate, the default), \code{"lower"}
-(the lower end of the default grid, \eqn{2 (Q_3 - Q_1) n^{-0.7}}), or one
-or more numbers; with several, the loss is averaged over them.
-}
-
 \section{How the folds are formed}{
 Folds are formed over subjects, never over rows. Rows within a subject come
 from one trajectory, so splitting by row would put a subject on both sides of
@@ -193,16 +105,18 @@ the split and leak the answer into the held-out score.
 }
 
 \section{The default grid}{
-When \code{h_grid} is \code{NULL} the grid is log-spaced over
-\eqn{[2 (Q_3 - Q_1) n^{-0.7},\, 2 (Q_3 - Q_1) n^{-0.3}]}, where
-\eqn{Q_1, Q_3} are quartiles of the pooled observation times of both tables
-and \eqn{n} is the number of subjects. This is the range used by the
-authors' reference implementation, and it adapts to the scale of \code{time} on
-its own.
+When \code{h_grid} is \code{NULL} the candidates are \code{n_h} log-spaced bandwidths from
+the smallest to the largest lag \eqn{|T_{ij} - S_{ik}|} between a response
+and a covariate observation of the same subject (positive lags
+\eqn{T_{ij} - S_{ik}} only when \code{one_sided = TRUE}; exact zeros are
+excluded). Below the smallest lag no pair enters any window and above the
+largest every pair already does, so the grid covers every bandwidth that
+can give a different fit. Candidates near the small end admit few pairs and
+often fail on some fold; a candidate is dropped only when it fails on every
+fold.
 
 Always look at \code{cv_results}. If the minimum sits at an endpoint of the grid a
-warning is issued, and the grid should be widened by hand: the selected value
-is then a boundary artefact rather than a minimum.
+warning is issued.
 }
 
 \examples{
@@ -211,15 +125,10 @@ d <- sim_async_data(n = 150, beta = c(0.5, 1.5))
 cv <- d$y |>
   kee_async_cv(d$x, y ~ x,
     id = id, time = time,
-    h_grid = c(0.15, 0.25, 0.40), K = 3, seed = 1, quiet = TRUE
+    n_h = 20, K = 3, seed = 1, quiet = TRUE
   )
 cv
 cv$cv_results
-}
-\references{
-Cao, H., Zeng, D. and Fine, J. P. (2015). Regression analysis of sparse
-asynchronous longitudinal data. \emph{Journal of the Royal Statistical
-Society, Series B} 77, 755-776.
 }
 \seealso{
 \code{\link[=kee_async]{kee_async()}}

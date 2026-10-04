@@ -193,24 +193,6 @@
     num / den
 }
 
-# Weighted mean deviance of the canonical model for the link, from the same
-# collapsed quantities: sum_m w_m l(Y_m, eta_k) with l = (y - mu)^2,
-# mu - y eta, or log(1 + e^eta) - y eta.  Its score in beta is the estimating
-# equation, so its minimiser over beta is the estimator's own limit.
-.async_deviance <- function(ac, X, beta, lk) {
-    if (lk == 0L) {
-        return(.async_loss(ac, X, beta, lk))
-    }
-    eta <- as.numeric(X %*% beta)
-    kappa <- if (lk == 1L) exp(eta) else log1p(exp(-abs(eta))) + pmax(eta, 0)
-    num <- sum(ac$omega * kappa) - sum(ac$c * eta)
-    den <- sum(ac$omega)
-    if (!is.finite(num) || !is.finite(den) || den <= 0) {
-        return(NA_real_)
-    }
-    num / den
-}
-
 .async_fit_ti <- function(d, h, one_sided, lk, maxit, tol, start = NULL) {
     ac <- .async_collapse(d, h, one_sided)
     if (is.null(ac)) {
@@ -447,107 +429,45 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 }
 
 
-# Resolve h_eval for criterion = "fixed": NULL or "min" is the smallest
-# candidate, "lower" the lower end of the default grid, a number (or several,
-# averaged) is used as given.
-.async_resolve_h_eval <- function(h_eval, h_grid, d) {
-    if (is.null(h_eval) || identical(h_eval, "min")) {
-        return(min(h_grid))
+# The default candidate grid: n_h log-spaced bandwidths from the smallest to
+# the largest within-subject lag |T_ij - S_ik| (exact zeros excluded; with
+# one_sided = TRUE only positive lags T_ij - S_ik count, since no other pair is
+# ever weighted). Below the smallest lag no pair enters any window; above the
+# largest every pair already does, so nothing outside this range changes the
+# fit.
+.async_lag_grid <- function(d, n_h, one_sided) {
+    xs <- split(d$xt, d$xi)
+    ys <- split(d$yt, d$yi)
+    ids <- intersect(names(xs), names(ys))
+    lg <- unlist(lapply(ids, function(i) outer(ys[[i]], xs[[i]], "-")),
+                 use.names = FALSE)
+    lg <- if (one_sided) lg[lg > 0] else abs(lg[lg != 0])
+    if (!length(lg)) {
+        stop("no response and covariate observation of the same subject are ",
+             "at different times", if (one_sided) " in the required order", "; ",
+             "supply 'h' or 'h_grid'", call. = FALSE)
     }
-    if (identical(h_eval, "lower")) {
-        pooled <- c(d$yt, d$xt)
-        iqr <- diff(stats::quantile(pooled, c(0.25, 0.75), names = FALSE))
-        if (!is.finite(iqr) || iqr <= 0) iqr <- diff(range(pooled))
-        return(2 * iqr * d$n^(-0.7))
-    }
-    if (!is.numeric(h_eval) || !length(h_eval) || anyNA(h_eval) ||
-        any(h_eval <= 0)) {
-        stop("'h_eval' must be \"min\", \"lower\", or positive numbers",
-             call. = FALSE)
-    }
-    sort(unique(as.numeric(h_eval)))
+    lo <- min(lg)
+    hi <- max(lg)
+    if (hi <= lo) return(lo)
+    exp(seq(log(lo), log(hi), length.out = max(2L, as.integer(n_h))))
 }
 
-# Held-out losses for every candidate, over every repeat of the K-fold split.
-#
-# criterion = "matched": each fold's loss at the candidate's own bandwidth,
-# averaged over folds and then over repeats, as before.
-#
-# criterion = "fixed": every subject is held out once per repeat, and the
-# evaluation pairs at h_eval do not depend on the candidate or the folds, so
-# the denominator D_e (total evaluation weight) is one number per h_e.  The
-# loss is then an exact sum of per-subject terms,
-#     L(h) = sum_i U_i(h) + const,   U_i(h) = mean_e sum_{k in i} u_k^e(h) / D_e,
-# with u_k = omega_k mu_k^2 - 2 c_k mu_k (identity) or omega_k kappa(eta_k) -
-# c_k eta_k (log, logistic); the y^2 term does not depend on h and is the
-# constant.  U is returned (averaged over repeats) so that paired differences
-# between candidates can be formed subject by subject.
-.async_cv_core <- function(d, h_grid, folds, criterion, h_eval, one_sided,
-                           lk, maxit, tol, quiet) {
+# Plain K-fold cross-validation over subjects, repeated over `repeats` random
+# splits. Each candidate h is fitted on the training subjects and scored on the
+# held-out subjects by the kernel-weighted squared error of the fitted mean at
+# that same h, divided by the held-out weight at h; the per-fold losses are
+# averaged over folds and then over splits. A candidate is dropped when no fold
+# produced a usable loss for it.
+.async_cv_plain <- function(d, h_grid, K, repeats, one_sided, lk, maxit, tol,
+                            quiet) {
     G <- length(h_grid)
-    R <- ncol(folds)
-    K <- max(folds)
+    folds <- matrix(replicate(repeats, sample(rep_len(seq_len(K), d$n))),
+                    nrow = d$n)
     nfold_used <- integer(G)
-    if (criterion == "matched") {
-        Lr <- matrix(NA_real_, R, G)
-        for (r in seq_len(R)) {
-            losses <- matrix(NA_real_, K, G)
-            for (m in seq_len(G)) {
-                if (!quiet && r == 1L) cat(sprintf("Evaluating bandwidth h = %g\n", h_grid[m]))
-                for (f in seq_len(K)) {
-                    tr <- which(folds[, r] != f)
-                    te <- which(folds[, r] == f)
-                    if (!length(tr) || !length(te)) next
-                    fit <- .async_fit_ti(.async_subset(d, tr), h_grid[m],
-                                         one_sided, lk, maxit, tol)
-                    if (is.null(fit) || fit$convergence == 1L ||
-                        !all(is.finite(fit$beta))) next
-                    dte <- .async_subset(d, te)
-                    ac <- .async_collapse(dte, h_grid[m], one_sided)
-                    if (is.null(ac)) next
-                    losses[f, m] <- .async_loss(ac, dte$X, as.numeric(fit$beta), lk)
-                }
-            }
-            nfold_used <- nfold_used + colSums(!is.na(losses))
-            Lr[r, ] <- colMeans(losses, na.rm = TRUE)
-            Lr[r, colSums(!is.na(losses)) == 0L] <- NA_real_
-        }
-        cvloss <- colMeans(Lr, na.rm = TRUE)
-        cvloss[colSums(is.finite(Lr)) == 0L] <- NA_real_
-        return(list(cvloss = cvloss, nfold_used = nfold_used, U = NULL))
-    }
-
-    # Evaluation weights over all subjects: one collapsed object per h_e, or
-    # the single nearest-prior pairing for "locf".  Pairs never cross
-    # subjects, so a fold's rows of these objects are exactly what collapsing
-    # the held-out subjects alone would give.
-    ac_all <- if (criterion == "locf") {
-        list(.async_locf_pairs(d))
-    } else {
-        lapply(h_eval, function(he) .async_collapse(d, he, one_sided))
-    }
-    E <- length(ac_all)
-    if (any(vapply(ac_all, is.null, logical(1)))) {
-        stop("no held-out pair falls within 'h_eval' = ",
-             format(h_eval[vapply(ac_all, is.null, logical(1))][1]),
-             "; choose a larger 'h_eval'", call. = FALSE)
-    }
-    if (criterion == "eeq") {
-        return(.async_cv_eeq(d, h_grid, folds, ac_all, one_sided, lk, maxit,
-                             tol, quiet))
-    }
-    D <- vapply(ac_all, function(a) sum(a$omega), numeric(1))
-    const <- if (lk == 0L) mean(vapply(ac_all, `[[`, numeric(1), "sy2") / D) else 0
-    # Per covariate row, the evaluation omega and c for each h_e (rows of d$X).
-    om <- vapply(ac_all, `[[`, numeric(nrow(d$X)), "omega")
-    cc <- vapply(ac_all, `[[`, numeric(nrow(d$X)), "c")
-    om <- matrix(om, ncol = E); cc <- matrix(cc, ncol = E)
-    wt_om <- om %*% (1 / D) / E
-    wt_cc <- cc %*% (1 / D) / E
-
-    U_sum <- matrix(0, d$n, G)
-    U_cnt <- matrix(0L, d$n, G)
-    for (r in seq_len(R)) {
+    Lr <- matrix(NA_real_, repeats, G)
+    for (r in seq_len(repeats)) {
+        losses <- matrix(NA_real_, K, G)
         for (m in seq_len(G)) {
             if (!quiet && r == 1L) cat(sprintf("Evaluating bandwidth h = %g\n", h_grid[m]))
             for (f in seq_len(K)) {
@@ -558,171 +478,28 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
                                      one_sided, lk, maxit, tol)
                 if (is.null(fit) || fit$convergence == 1L ||
                     !all(is.finite(fit$beta))) next
-                nfold_used[m] <- nfold_used[m] + 1L
-                rows <- which(d$xi %in% te)
-                eta <- as.numeric(d$X[rows, , drop = FALSE] %*% fit$beta)
-                u <- if (lk == 0L) {
-                    wt_om[rows] * eta^2 - 2 * wt_cc[rows] * eta
-                } else {
-                    kap <- if (lk == 1L) exp(eta) else log1p(exp(-abs(eta))) + pmax(eta, 0)
-                    wt_om[rows] * kap - wt_cc[rows] * eta
-                }
-                ui <- rowsum(u, d$xi[rows], reorder = TRUE)
-                idx <- as.integer(rownames(ui))
-                U_sum[idx, m] <- U_sum[idx, m] + ui[, 1]
-                U_cnt[idx, m] <- U_cnt[idx, m] + 1L
-                # Subjects held out here with no covariate rows contribute 0.
-                none <- setdiff(te, idx)
-                U_cnt[none, m] <- U_cnt[none, m] + 1L
+                dte <- .async_subset(d, te)
+                ac <- .async_collapse(dte, h_grid[m], one_sided)
+                if (is.null(ac)) next
+                losses[f, m] <- .async_loss(ac, dte$X, as.numeric(fit$beta), lk)
             }
         }
-    }
-    U <- U_sum / U_cnt
-    U[U_cnt < R] <- NA_real_
-    cvloss <- colSums(U) + const
-    list(cvloss = cvloss, nfold_used = nfold_used, U = U)
-}
-
-# Nearest-prior pairing (last observation carried forward): each response is
-# paired with its subject's last covariate observation at or before the
-# response time, or, when the subject has none that early, with the subject's
-# first covariate observation. Unit weights, no kernel and no bandwidth.
-# Returned in the collapsed form of .async_collapse(): per covariate row, the
-# number of responses paired with it (omega) and the sum of their values (c).
-.async_locf_pairs <- function(d) {
-    nx <- nrow(d$X)
-    omega <- numeric(nx)
-    cc <- numeric(nx)
-    sy2 <- 0
-    lo <- findInterval(seq_len(d$n) - 1L, d$xi) + 1L
-    hi <- findInterval(seq_len(d$n), d$xi)
-    for (j in seq_along(d$yt)) {
-        i <- d$yi[j]
-        if (hi[i] < lo[i]) next
-        rows <- lo[i]:hi[i]
-        before <- rows[d$xt[rows] <= d$yt[j]]
-        k <- if (length(before)) {
-            before[which.max(d$xt[before])]
-        } else {
-            rows[which.min(d$xt[rows])]
-        }
-        omega[k] <- omega[k] + 1
-        cc[k] <- cc[k] + d$y[j]
-        sy2 <- sy2 + d$y[j]^2
-    }
-    if (sum(omega) == 0) {
-        return(NULL)
-    }
-    list(omega = omega, c = cc, sy2 = sy2)
-}
-
-# Held-out estimating-equation norm. For each fold, the kernel-weighted
-# estimating function of the held-out subjects at h_e, evaluated at the
-# training estimate and divided by the fold's total weight,
-#     Ubar_f(b) = sum_{k in test} X_k (c_k - omega_k mu(X_k' b)) / sum omega_k,
-# scored as Ubar_f' Ubar_f, averaged over folds, h_e values and splits.
-# Ubar_f at the limit beta_e is independent of the training estimate, so the
-# expected score is a constant plus (b - beta_e)' A' A (b - beta_e) to second
-# order. The identity weight W = I is used: a held-out variance estimate would
-# only change the metric, and it adds noise of its own.
-.async_cv_eeq <- function(d, h_grid, folds, ac_all, one_sided, lk, maxit,
-                          tol, quiet) {
-    G <- length(h_grid)
-    R <- ncol(folds)
-    K <- max(folds)
-    nfold_used <- integer(G)
-    Lr <- matrix(NA_real_, R, G)
-    for (r in seq_len(R)) {
-        S <- matrix(NA_real_, K, G)
-        for (m in seq_len(G)) {
-            if (!quiet && r == 1L) cat(sprintf("Evaluating bandwidth h = %g\n", h_grid[m]))
-            for (f in seq_len(K)) {
-                tr <- which(folds[, r] != f)
-                te <- which(folds[, r] == f)
-                if (!length(tr) || !length(te)) next
-                fit <- .async_fit_ti(.async_subset(d, tr), h_grid[m],
-                                     one_sided, lk, maxit, tol)
-                if (is.null(fit) || fit$convergence == 1L ||
-                    !all(is.finite(fit$beta))) next
-                rows <- which(d$xi %in% te)
-                mu <- .async_mu(as.numeric(d$X[rows, , drop = FALSE] %*% fit$beta), lk)
-                nrm <- vapply(ac_all, function(ac) {
-                    D <- sum(ac$omega[rows])
-                    if (D <= 0) return(NA_real_)
-                    u <- crossprod(d$X[rows, , drop = FALSE],
-                                   ac$c[rows] - ac$omega[rows] * mu) / D
-                    sum(u^2)
-                }, numeric(1))
-                if (all(is.na(nrm))) next
-                S[f, m] <- mean(nrm, na.rm = TRUE)
-                nfold_used[m] <- nfold_used[m] + 1L
-            }
-        }
-        Lr[r, ] <- colMeans(S, na.rm = TRUE)
-        Lr[r, colSums(!is.na(S)) == 0L] <- NA_real_
+        nfold_used <- nfold_used + colSums(!is.na(losses))
+        Lr[r, ] <- colMeans(losses, na.rm = TRUE)
+        Lr[r, colSums(!is.na(losses)) == 0L] <- NA_real_
     }
     cvloss <- colMeans(Lr, na.rm = TRUE)
     cvloss[colSums(is.finite(Lr)) == 0L] <- NA_real_
-    list(cvloss = cvloss, nfold_used = nfold_used, U = NULL)
-}
-
-# Choose a candidate from the CV curve.
-#   "min"      the minimiser.
-#   "flat"     candidates whose loss exceeds the minimum by no more than the
-#              standard error of the paired difference are ties; take the
-#              centre, in log h, of the contiguous tied run around the minimum.
-#   "smooth"   minimiser of a cubic smoothing spline in log h (GCV).
-#   "unimodal" minimiser of the least-squares valley-shaped (non-increasing
-#              then non-decreasing) fit, centre of its lowest plateau.
-.async_select <- function(cvloss, U, select, h_grid) {
-    G <- length(cvloss)
-    lh <- log(h_grid)
-    ok <- is.finite(cvloss)
-    out <- list(diff_se = rep(NA_real_, G), fitted = rep(NA_real_, G))
-    gmin <- which(ok)[which.min(cvloss[ok])]
-    if (!is.null(U)) {
-        n_i <- nrow(U)
-        out$diff_se <- vapply(seq_len(G), function(g) {
-            dd <- U[, g] - U[, gmin]
-            dd <- dd[is.finite(dd)]
-            if (length(dd) < 2L || g == gmin) return(0)
-            sqrt(length(dd)) * stats::sd(dd)
-        }, numeric(1))
+    if (all(is.na(cvloss))) {
+        stop(
+            "no candidate bandwidth produced a usable fit on any fold; widen ",
+            "'h_grid' or check that it is on the same scale as 'time'",
+            call. = FALSE
+        )
     }
-    # The candidate nearest, in log h, to the middle of the contiguous run of
-    # members containing `at`.
-    centre_of_run <- function(member, at) {
-        lo <- at; hi <- at
-        while (lo > 1L && member[lo - 1L]) lo <- lo - 1L
-        while (hi < G && member[hi + 1L]) hi <- hi + 1L
-        run <- lo:hi
-        run[which.min(abs(lh[run] - (lh[lo] + lh[hi]) / 2))]
-    }
-    if (select == "min" || sum(ok) < 3L) {
-        out$index <- gmin
-    } else if (select == "flat") {
-        tie <- ok & (cvloss - cvloss[gmin] <= out$diff_se)
-        out$index <- centre_of_run(tie, gmin)
-    } else if (select == "smooth") {
-        x <- which(ok)
-        sp <- stats::smooth.spline(lh[x], cvloss[x])
-        out$fitted[x] <- stats::predict(sp, lh[x])$y
-        out$index <- x[which.min(out$fitted[x])]
-    } else {
-        x <- which(ok); y <- cvloss[ok]; m <- length(y)
-        best <- Inf; fit <- NULL
-        for (j in 0:m) {
-            left <- if (j > 0) rev(stats::isoreg(rev(y[seq_len(j)]))$yf) else numeric(0)
-            right <- if (j < m) stats::isoreg(y[(j + 1):m])$yf else numeric(0)
-            f <- c(left, right)
-            sse <- sum((y - f)^2)
-            if (sse < best) { best <- sse; fit <- f }
-        }
-        out$fitted[x] <- fit
-        low <- rep(FALSE, G); low[x] <- abs(fit - min(fit)) <= 1e-12 * max(1, abs(min(fit)))
-        out$index <- centre_of_run(low, x[which(low[x])[1]])
-    }
-    out
+    list(cvloss = cvloss, nfold_used = nfold_used,
+         index = which.min(replace(cvloss, is.na(cvloss), Inf)),
+         folds = folds)
 }
 
 #' Choose the bandwidth for an asynchronous longitudinal fit
@@ -731,81 +508,14 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #' K-fold cross-validation over **subjects** for [kee_async()]. For each
 #' candidate bandwidth the estimator is fitted on the training subjects and
 #' scored on the held-out subjects by the kernel-weighted squared error of the
-#' fitted mean,
+#' fitted mean at that bandwidth,
 #' \deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
 #'        [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
-#'       {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})},}
-#' formed at the candidate's own bandwidth (`criterion = "matched"`).
+#'       {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.}
+#' The per-fold losses are averaged over folds (and over `repeats` random
+#' splits), and the candidate with the smallest average is selected.
 #'
 #' @details
-#' # The two criteria
-#'
-#' Under `"matched"` the set of held-out pairs changes with the candidate, so
-#' the criterion measures prediction error at that window rather than the
-#' error of \eqn{\hat\beta_h}. `criterion = "fixed"` instead scores every
-#' candidate on the same held-out pairs, formed at `h_eval` (default: the
-#' smallest candidate), with the canonical deviance of the link; with the
-#' pairs fixed, only \eqn{\hat\beta_h} varies across candidates.
-#'
-#' In a simulation with `sim_async_data()` (2,000 data sets per cell;
-#' n = 100, 200, 400; identity and logistic links; 48 bandwidths from 0.005
-#' to 1.5; 5-fold cross-validation repeated over 5 random splits; the
-#' minimiser of the mean held-out loss), `criterion = "fixed"` with
-#' `h_eval = "lower"` had the smallest mean squared error of the slope in
-#' every cell: 1.3 to 1.5 times that of the best single bandwidth on the grid
-#' for the identity link and 1.8 to 2.5 times for the logistic link, against
-#' 2.1 to 2.5 and 8 to 23 times for `"matched"`, which chose the smallest
-#' bandwidths on the grid. With `h_eval` at the smallest candidate, `"fixed"`
-#' was worse than `"matched"` for the identity link: an evaluation window
-#' that admits few pairs makes the criterion noisy. The best single bandwidth
-#' is a yardstick computed from the known coefficient, not a selector.
-#' Coverage of the sandwich interval at the selected bandwidth was below 95%
-#' for every criterion (66% to 85% for `"fixed"` at `"lower"`), because the
-#' estimator's bias is not negligible at the bandwidths chosen.
-#'
-#' Two further criteria score the held-out subjects without a kernel window
-#' that moves with the candidate:
-#'
-#' * `"locf"` pairs each held-out response with the subject's last covariate
-#'   observation at or before it (the first covariate observation when there
-#'   is none that early), with unit weights, and scores the pairs with the
-#'   same loss as `"fixed"`. It needs no evaluation bandwidth.
-#' * `"eeq"` evaluates the held-out estimating function of [kee_async()] at
-#'   `h_eval` (default `"lower"`), divided by its total weight, at the
-#'   training estimate, and scores its squared Euclidean norm, averaged over
-#'   folds. To second order its expectation is a constant plus
-#'   \eqn{(\hat\beta_h - \beta_e)^\top A^\top A (\hat\beta_h - \beta_e)},
-#'   with \eqn{A} the derivative of the estimating function.
-#'
-#' Cao, Zeng and Fine (2015, Section 2) choose \eqn{h} from a plug-in estimate
-#' of bias and variance instead; that rule is not implemented here.
-#'
-#' # Reducing the noise in the fixed criterion
-#'
-#' Under `"fixed"` every subject is held out once per split and the evaluation
-#' pairs do not change with the candidate, so the loss is an exact sum of
-#' per-subject terms and two candidates can be compared subject by subject.
-#' Three options use this:
-#'
-#' * `repeats` averages the loss over that many independent random splits.
-#' * `select = "flat"` treats candidates whose loss exceeds the minimum by no
-#'   more than the standard error of the paired, per-subject difference as
-#'   indistinguishable, and takes the one at the centre, in \eqn{\log h}, of
-#'   the contiguous run of such candidates around the minimum. Within that run
-#'   the data do not separate the candidates, and the minimiser itself moves
-#'   along it from sample to sample; the centre is the choice that does not
-#'   lean towards either end. The standard error treats subjects as
-#'   independent, which ignores that they share training fits.
-#' * `select = "smooth"` minimises a cubic smoothing spline of the loss in
-#'   \eqn{\log h} (smoothing chosen by generalised cross-validation), and
-#'   `select = "unimodal"` the least-squares fit that falls and then rises,
-#'   taking the centre of its lowest plateau. Both also apply to
-#'   `"matched"`.
-#'
-#' `h_eval` may be `"min"` (the smallest candidate, the default), `"lower"`
-#' (the lower end of the default grid, \eqn{2 (Q_3 - Q_1) n^{-0.7}}), or one
-#' or more numbers; with several, the loss is averaged over them.
-#'
 #' # How the folds are formed
 #'
 #' Folds are formed over subjects, never over rows. Rows within a subject come
@@ -814,55 +524,39 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #'
 #' # The default grid
 #'
-#' When `h_grid` is `NULL` the grid is log-spaced over
-#' \eqn{[2 (Q_3 - Q_1) n^{-0.7},\, 2 (Q_3 - Q_1) n^{-0.3}]}, where
-#' \eqn{Q_1, Q_3} are quartiles of the pooled observation times of both tables
-#' and \eqn{n} is the number of subjects. This is the range used by the
-#' authors' reference implementation, and it adapts to the scale of `time` on
-#' its own.
+#' When `h_grid` is `NULL` the candidates are `n_h` log-spaced bandwidths from
+#' the smallest to the largest lag \eqn{|T_{ij} - S_{ik}|} between a response
+#' and a covariate observation of the same subject (positive lags
+#' \eqn{T_{ij} - S_{ik}} only when `one_sided = TRUE`; exact zeros are
+#' excluded). Below the smallest lag no pair enters any window and above the
+#' largest every pair already does, so the grid covers every bandwidth that
+#' can give a different fit. Candidates near the small end admit few pairs and
+#' often fail on some fold; a candidate is dropped only when it fails on every
+#' fold.
 #'
 #' Always look at `cv_results`. If the minimum sits at an endpoint of the grid a
-#' warning is issued, and the grid should be widened by hand: the selected value
-#' is then a boundary artefact rather than a minimum.
+#' warning is issued.
 #'
 #' @inheritParams kee_async
 #' @param h_grid Optional numeric vector of candidate bandwidths. When `NULL` a
-#'   grid is generated from the observation times; see Details.
-#' @param n_h Number of candidates to generate when `h_grid` is `NULL`.
+#'   grid is built from the data; see Details.
+#' @param n_h Number of candidates in the default grid.
 #' @param K Number of folds. Reduced to the number of subjects if larger.
+#' @param repeats Number of independent random K-fold splits; the held-out
+#'   loss is averaged over them.
 #' @param seed Optional integer seed for the subject-to-fold assignment. Pass it
 #'   (or call [set.seed()] first) to make the selection reproducible.
 #' @param quiet Logical; suppress progress output.
-#' @param criterion `"matched"` (the default) scores each candidate at its own
-#'   bandwidth; `"fixed"` scores every candidate on the same held-out pairs,
-#'   formed at `h_eval`; `"locf"` on nearest-prior pairs; `"eeq"` by the norm
-#'   of the held-out estimating function at `h_eval`. See Details.
-#' @param h_eval Evaluation bandwidth for `criterion = "fixed"`: `"min"` (the
-#'   default, the smallest candidate), `"lower"`, or a numeric vector whose
-#'   losses are averaged, for `criterion = "fixed"` or `"eeq"`. For `"eeq"` the default
-#'   is `"lower"`. See Details.
-#' @param repeats Number of independent random K-fold splits; the held-out
-#'   loss is averaged over them.
-#' @param select How a bandwidth is chosen from the cross-validation curve:
-#'   `"min"` (the default), `"flat"` (fixed criterion only), `"smooth"` or
-#'   `"unimodal"`. See Details.
 #'
 #' @return An object of class `cv.kee_async`:
 #' \describe{
 #'   \item{h_cv}{The selected bandwidth.}
 #'   \item{fit}{The [kee_async()] fit refitted on all subjects at `h_cv`.}
-#'   \item{cv_results}{Data frame of `h`, the held-out loss `cvloss`,
-#'     `nfold_used` (folds over all repeats that produced a usable fit),
-#'     `diff_se` (fixed criterion: standard error of the paired difference
-#'     from the minimum) and `fitted` (the smoothed or unimodal curve).}
-#'   \item{h_grid, fold_id, seed, call}{Selection metadata.}
-#'   \item{criterion, h_eval, repeats, select}{The options used.}
+#'   \item{cv_results}{Data frame of `h`, the held-out loss `cvloss`, and
+#'     `nfold_used`, the number of folds over all repeats that produced a
+#'     usable loss.}
+#'   \item{h_grid, fold_id, repeats, seed, call}{Selection metadata.}
 #' }
-#'
-#' @references
-#' Cao, H., Zeng, D. and Fine, J. P. (2015). Regression analysis of sparse
-#' asynchronous longitudinal data. \emph{Journal of the Royal Statistical
-#' Society, Series B} 77, 755-776.
 #'
 #' @seealso [kee_async()]
 #'
@@ -872,21 +566,17 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #' cv <- d$y |>
 #'   kee_async_cv(d$x, y ~ x,
 #'     id = id, time = time,
-#'     h_grid = c(0.15, 0.25, 0.40), K = 3, seed = 1, quiet = TRUE
+#'     n_h = 20, K = 3, seed = 1, quiet = TRUE
 #'   )
 #' cv
 #' cv$cv_results
 #' @export
 kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
-                         n_h = 10L, K = 5L, one_sided = FALSE,
+                         n_h = 100L, K = 5L, repeats = 1L, one_sided = FALSE,
                          link = c("identity", "log", "logistic"),
                          intercept = TRUE, maxit = 50L, tol = 1e-8,
-                         seed = NULL, quiet = FALSE,
-                         criterion = c("matched", "fixed", "locf", "eeq"), h_eval = NULL,
-                         repeats = 1L,
-                         select = c("min", "flat", "smooth", "unimodal")) {
+                         seed = NULL, quiet = FALSE) {
     link <- match.arg(link)
-    criterion <- match.arg(criterion)
     .async_check_one_sided(one_sided)
     call <- match.call()
     d <- .async_parse(
@@ -895,39 +585,15 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
     )
     lk <- .async_link_code(link)
 
-    if (is.null(h_grid)) {
-        pooled <- c(d$yt, d$xt)
-        iqr <- diff(stats::quantile(pooled, c(0.25, 0.75), names = FALSE))
-        if (!is.finite(iqr) || iqr <= 0) iqr <- diff(range(pooled))
-        if (!is.finite(iqr) || iqr <= 0) {
-            stop("observation times are constant; supply 'h_grid'", call. = FALSE)
-        }
-        h_grid <- exp(seq(
-            log(2 * iqr * d$n^(-0.7)), log(2 * iqr * d$n^(-0.3)),
-            length.out = max(2L, as.integer(n_h))
-        ))
-    }
+    if (is.null(h_grid)) h_grid <- .async_lag_grid(d, n_h, one_sided)
     h_grid <- sort(unique(as.numeric(h_grid)))
     if (!length(h_grid) || anyNA(h_grid) || any(h_grid <= 0)) {
         stop("'h_grid' must be positive and free of NA", call. = FALSE)
-    }
-
-    select <- match.arg(select)
-    if (select == "flat" && !criterion %in% c("fixed", "locf")) {
-        stop("select = \"flat\" needs criterion = \"fixed\" or \"locf\": the paired ",
-             "differences it uses exist only when every candidate is scored ",
-             "on the same pairs", call. = FALSE)
     }
     repeats <- as.integer(repeats)
     if (length(repeats) != 1L || is.na(repeats) || repeats < 1L) {
         stop("'repeats' must be a positive integer", call. = FALSE)
     }
-    h_eval <- switch(criterion,
-        fixed = .async_resolve_h_eval(h_eval, h_grid, d),
-        eeq = .async_resolve_h_eval(if (is.null(h_eval)) "lower" else h_eval, h_grid, d),
-        NULL
-    )
-
     K <- as.integer(K)
     if (K > d$n) {
         if (!quiet) {
@@ -941,24 +607,8 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
     if (K < 2L) stop("'K' must be at least 2", call. = FALSE)
 
     if (!is.null(seed)) set.seed(seed)
-    folds <- replicate(repeats, sample(rep_len(seq_len(K), d$n)))
-    folds <- matrix(folds, nrow = d$n)
-    fold_id <- if (repeats == 1L) folds[, 1L] else folds
-
-    core <- .async_cv_core(
-        d, h_grid, folds, criterion, h_eval, one_sided, lk, maxit, tol, quiet
-    )
-    cvloss <- core$cvloss
-    nfold_used <- core$nfold_used
-    if (all(is.na(cvloss))) {
-        stop(
-            "no candidate bandwidth produced a usable fit on any fold; widen ",
-            "'h_grid' or check that it is on the same scale as 'time'",
-            call. = FALSE
-        )
-    }
-    sel <- .async_select(cvloss, core$U, select, h_grid)
-    best_h <- h_grid[sel$index]
+    cv <- .async_cv_plain(d, h_grid, K, repeats, one_sided, lk, maxit, tol, quiet)
+    best_h <- h_grid[cv$index]
     if (!quiet) cat(sprintf("Selected h = %g\n", best_h))
     if (length(h_grid) > 1L && best_h %in% range(h_grid)) {
         warning(
@@ -974,28 +624,21 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
     fit_call$h_grid <- NULL
     fit_call$n_h <- NULL
     fit_call$K <- NULL
+    fit_call$repeats <- NULL
     fit_call$seed <- NULL
     fit_call$quiet <- NULL
-    fit_call$criterion <- NULL
-    fit_call$repeats <- NULL
-    fit_call$select <- NULL
-    fit_call$h_eval <- NULL
     fit <- eval(fit_call, parent.frame())
 
     out <- list(
         h_cv = best_h,
         fit = fit,
         cv_results = tibble::tibble(
-            h = h_grid, cvloss = cvloss, nfold_used = nfold_used,
-            diff_se = sel$diff_se, fitted = sel$fitted
+            h = h_grid, cvloss = cv$cvloss, nfold_used = cv$nfold_used
         ),
         h_grid = h_grid,
-        fold_id = fold_id,
-        seed = seed,
-        criterion = criterion,
-        h_eval = h_eval,
+        fold_id = if (repeats == 1L) cv$folds[, 1L] else cv$folds,
         repeats = repeats,
-        select = select,
+        seed = seed,
         call = call
     )
     class(out) <- "cv.kee_async"
@@ -1009,14 +652,10 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
 print.cv.kee_async <- function(x, ...) {
   cat("Call:\n")
   print(x$call)
-  cat("\n", length(unique(x$fold_id)),
-    "-fold subject-level cross-validation, ",
-    if (identical(x$criterion, "matched")) {
-      "each candidate scored at its own bandwidth"
-    } else {
-      paste0("scored at h_eval = ", format(x$h_eval, digits = 4))
-    },
-    "\n\n",
+  K <- length(unique(as.vector(x$fold_id)))
+  R <- if (is.null(x$repeats)) 1L else x$repeats
+  cat("\n", K, "-fold subject-level cross-validation",
+    if (R > 1L) sprintf(", %d random splits", R), "\n\n",
     sep = ""
   )
   print(x$cv_results, row.names = FALSE, digits = 5)
