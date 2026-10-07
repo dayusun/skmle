@@ -22,7 +22,8 @@ kee_async_cv(
   tol = 1e-08,
   seed = NULL,
   quiet = FALSE,
-  method = c("sync", "plain")
+  method = c("sync", "plain"),
+  correct = c("pairs", "gaussian")
 )
 
 \method{print}{cv.kee_async}(x, ...)
@@ -67,7 +68,7 @@ strictly before the response.}
 \item{intercept}{Logical, include an intercept.}
 
 \item{maxit, tol}{Newton-Raphson controls, ignored when \code{link = "identity"}
-and \code{correct = FALSE}.}
+and \code{correct = "none"}.}
 
 \item{seed}{Optional integer seed for the subject-to-fold assignment. Pass it
 (or call \code{\link[=set.seed]{set.seed()}} first) to make the selection reproducible.}
@@ -75,8 +76,11 @@ and \code{correct = FALSE}.}
 \item{quiet}{Logical; suppress progress output.}
 
 \item{method}{\code{"sync"} (default): synchronous-loss cross-validation of the
-asynchrony-corrected fit, implemented for one covariate. \code{"plain"}:
-kernel-weighted cross-validation of the uncorrected fit. See Details.}
+asynchrony-corrected fit. \code{"plain"}: kernel-weighted cross-validation of
+the uncorrected fit. See Details.}
+
+\item{correct}{The correction used with \code{method = "sync"}: \code{"pairs"}
+(default) or \code{"gaussian"}; see \code{\link[=kee_async]{kee_async()}}.}
 
 \item{x}{A \code{cv.kee_async} object.}
 
@@ -87,46 +91,57 @@ An object of class \code{cv.kee_async}:
 \describe{
 \item{h_cv}{The selected bandwidth.}
 \item{fit}{The \code{\link[=kee_async]{kee_async()}} fit refitted on all subjects at \code{h_cv},
-with \code{correct = TRUE} when \code{method = "sync"}.}
+with the chosen \code{correct} when \code{method = "sync"}.}
 \item{cv_results}{Data frame of \code{h}, the criterion \code{cvloss} (the
 intercept for \code{"sync"}, the weighted held-out loss for \code{"plain"}), and
 \code{nfold_used}, the number of folds over all repeats that produced a
 usable loss.}
-\item{h_grid, fold_id, repeats, method, seed, call}{Selection metadata.}
+\item{h_grid, fold_id, repeats, method, correct, seed, call}{Selection
+metadata.}
 }
 }
 \description{
 K-fold cross-validation over \strong{subjects} for \code{\link[=kee_async]{kee_async()}}. The default,
-\code{method = "sync"}, selects the bandwidth for the asynchrony-corrected fit
-(\code{kee_async(correct = TRUE)}) and returns that fit. \code{method = "plain"} is
-ordinary cross-validation of the uncorrected fit.
+\code{method = "sync"}, selects the bandwidth for an asynchrony-corrected fit
+(\code{kee_async(correct = "pairs")} by default) and returns that fit.
+\code{method = "plain"} is ordinary cross-validation of the uncorrected fit.
 }
 \section{Synchronous-loss cross-validation (\code{method = "sync"})}{
 For each candidate \eqn{h} and fold, the corrected equation is fitted on
 the training subjects. Every within-subject pair \eqn{(T, S)} of the
 held-out subjects gets the unweighted loss of \eqn{Y(T)} against the fitted
 mean at \eqn{X(S)}: squared error (identity), Poisson deviance (log) or
-Bernoulli log loss (logistic). The losses are regressed on
-\eqn{(1, \hat\gamma(|T - S|))}, with \eqn{\hat\gamma} the isotonic
-variogram of \code{\link[=kee_async]{kee_async()}}, and the intercept, the held-out loss at zero
-asynchrony, is retained. For the identity link its expectation is
+Bernoulli log loss (logistic). The losses are regressed on an intercept and
+the entries of the estimated variogram matrix \eqn{\hat\Gamma(|T - S|)},
+\eqn{\Gamma(u) = E[\{x(t) - x(t-u)\}\{x(t) - x(t-u)\}^\top]}, of the
+covariates that vary within subjects. The intercept, the held-out loss at
+zero asynchrony, is retained. Each entry of
+\eqn{\hat\Gamma} comes from isotonic regressions of squared increments of
+\eqn{x_j} and \eqn{x_j + x_k} on the lag. For the identity link and a
+stationary covariate the intercept's expectation is
 \eqn{\sigma^2 + \delta_h^\top \Sigma_X \delta_h}, with \eqn{\delta_h} the
 error of the training fit, because the asynchrony part of the loss is
-exactly linear in \eqn{\gamma(u)}. Intercepts are averaged over folds (and
-over \code{repeats} splits) and the minimiser is selected. A candidate is
-retained only when every fold produces a fit.
+exactly linear in \eqn{\Gamma(u)}. Intercepts are averaged over folds (and
+over \code{repeats} splits) and the minimiser is selected.
+
+A candidate is retained only when every fold produces a fit whose
+intercept is at least the mean saturated loss of the held-out pairs
+(\eqn{\min_\eta} of the loss: 0 for squared error and log loss,
+\eqn{y - y \log y} for the Poisson loss). An intercept below it comes from a
+degenerate fold fit.
 
 The default grid is \code{n_h} log-spaced bandwidths up to the largest
 within-subject lag \eqn{|T_{ij} - S_{ik}|}, starting at the smallest
 \eqn{h} at which every training fold has at least
 \eqn{\lceil n_{\mathrm{train}}^{1/2} \rceil} subjects with a pair inside the
-kernel. Below that, a fold fit uses a handful of pairs, its error does not
-shrink with \eqn{n}, and the intercept extrapolation can be arbitrarily
-negative.
+kernel (for \code{correct = "pairs"}, both a response-covariate pair and a
+covariate pair). Below that, a fold fit uses a handful of pairs and its
+error does not shrink with \eqn{n}.
 
-In simulation with a stationary Gaussian covariate (1000 replicates,
-\eqn{n} = 400 to 8000, identity, log and logistic links) the Wald interval
-of the returned fit covered at 94.9\% to 97.5\%.
+The guarantee is consistency: the selected \eqn{h} lies on a finite grid on
+which every corrected fit is consistent. Because the same subjects choose
+\eqn{h} and fit \eqn{\beta}, the Wald interval at the selected \eqn{h} has
+no exact coverage guarantee.
 }
 
 \section{Plain cross-validation (\code{method = "plain"})}{

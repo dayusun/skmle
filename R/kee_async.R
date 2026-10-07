@@ -300,24 +300,45 @@
 #'
 #' # Asynchrony correction
 #'
-#' `correct = TRUE` removes the asynchrony bias instead of shrinking it with
-#' \eqn{h}. For a single covariate that is second-order stationary with
-#' variogram \eqn{\gamma(u) = E\{x(t) - x(t - u)\}^2}, mean \eqn{m} and
-#' variance \eqn{s^2}, the link value \eqn{g\{X(S)^\top\beta\}} in the
-#' equation is replaced by \eqn{E[g\{X(T)^\top\beta\} \mid x(S)]}, computed
-#' as if \eqn{x(T) \mid x(S)} were normal with mean
+#' `correct` removes the asynchrony bias instead of shrinking it with \eqn{h}.
+#'
+#' `correct = "pairs"` uses each subject's own covariate pairs in place of the
+#' unobserved covariate at the response time. For two covariate occasions
+#' \eqn{S_{ik} \ne S_{ik'}} of the same subject,
+#' \eqn{(X_i(S_{ik}), X_i(S_{ik'}))} has the distribution of
+#' \eqn{(X(S), X(T))} at the same two times, so the equation
+#' \deqn{\frac{\sum W_h(T_{ij} - S_{ik}) X_i(S_{ik}) Y_i(T_{ij})}
+#'            {\sum W_h(T_{ij} - S_{ik})}
+#'     - \frac{\sum_{k \ne k'} W_h(S_{ik'} - S_{ik}) r(S_{ik'}) X_i(S_{ik})
+#'              g\{X_i(S_{ik'})^\top \beta\}}
+#'            {\sum_{k \ne k'} W_h(S_{ik'} - S_{ik}) r(S_{ik'})} = 0}
+#' has mean zero at the true \eqn{\beta} for every \eqn{h}. Here
+#' \eqn{r = \lambda_T / \lambda_S} is the ratio of the response and covariate
+#' visit intensities, estimated from the observation times alone by a logistic
+#' regression of the occasion type on a natural spline of time (4 degrees of
+#' freedom). No model is assumed for the covariate process: it need not be
+#' Gaussian or stationary, and any number of covariates, including ones
+#' constant within a subject, is allowed. At least one covariate must vary
+#' within a subject. The fit needs subjects with two or more covariate
+#' occasions and assumes visit processes whose second-order intensity
+#' factorises (for example Poisson visits).
+#'
+#' `correct = "gaussian"` replaces \eqn{g\{X(S)^\top\beta\}} by
+#' \eqn{E[g\{X(T)^\top\beta\} \mid x(S)]} for a single covariate that is
+#' second-order stationary with variogram
+#' \eqn{\gamma(u) = E\{x(t) - x(t - u)\}^2}, mean \eqn{m} and variance
+#' \eqn{s^2}, computed as if \eqn{x(T) \mid x(S)} were normal with mean
 #' \eqn{m + \rho(u)\{x(S) - m\}} and variance \eqn{s^2\{1 - \rho(u)^2\}},
 #' \eqn{\rho(u) = 1 - \gamma(u)/(2s^2)}. The variogram is estimated by
 #' isotonic regression of \eqn{\{x(S_{ik}) - x(S_{ik'})\}^2} on
-#' \eqn{|S_{ik} - S_{ik'}|} over the covariate pairs within subjects, and
-#' \eqn{m}, \eqn{s^2} by the sample mean and variance of the covariate.
+#' \eqn{|S_{ik} - S_{ik'}|}. With the identity link it needs only
+#' stationarity; with the log and logistic links it also needs normality. It
+#' has a smaller variance than `"pairs"` when these assumptions hold and a bias
+#' that grows with \eqn{h} when they do not.
 #'
-#' With the identity link the correction needs only stationarity; with the log
-#' and logistic links it also uses the normal conditional distribution. Under
-#' these assumptions the corrected equation is unbiased at every \eqn{h}, so
-#' the fit is \eqn{n^{1/2}}-consistent at a fixed bandwidth and \eqn{h} affects
-#' only the variance. If they fail, a bias remains that grows with \eqn{h}. The
-#' standard errors are the sandwich with the variogram treated as known.
+#' Both corrected equations are unbiased at every fixed \eqn{h} under their
+#' assumptions, so \eqn{h} affects only the variance. The standard errors are
+#' the sandwich with the intensity ratio or the variogram treated as known.
 #'
 #' @param data_y Data frame of response occasions: one row per time the
 #'   response was recorded. First argument, so the function pipes.
@@ -343,9 +364,11 @@
 #'   (Newton-Raphson).
 #' @param intercept Logical, include an intercept.
 #' @param maxit,tol Newton-Raphson controls, ignored when `link = "identity"`
-#'   and `correct = FALSE`.
-#' @param correct Logical. `TRUE` fits the asynchrony-corrected equation; see
-#'   Details. Implemented for one covariate.
+#'   and `correct = "none"`.
+#' @param correct `"none"` (default): the kernel equation of Cao, Zeng and
+#'   Fine. `"pairs"`: the pair-moment correction, with no model for the
+#'   covariates. `"gaussian"`: the correction for one stationary Gaussian
+#'   covariate. See Details.
 #'
 #' @return An object of class `kee` with components
 #' \describe{
@@ -355,7 +378,7 @@
 #'   \item{n}{Number of subjects, the unit the asymptotics are in.}
 #'   \item{npair}{Number of weighted (response, covariate) pairs contributing.}
 #'   \item{h, one_sided, link, correct}{Fit settings.}
-#'   \item{variogram}{With `correct = TRUE`, a list holding the estimated
+#'   \item{variogram}{With `correct = "gaussian"`, a list holding the estimated
 #'     variogram `gamma` (a function of the lag), the covariate mean `m` and
 #'     variance `s2`; otherwise `NULL`.}
 #'   \item{convergence}{`0` converged, `1` singular, `2` hit `maxit`.}
@@ -396,8 +419,9 @@
 kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = FALSE,
                       link = c("identity", "log", "logistic"),
                       intercept = TRUE, maxit = 50L, tol = 1e-8,
-                      correct = FALSE) {
+                      correct = c("none", "pairs", "gaussian")) {
     link <- match.arg(link)
+    correct <- match.arg(correct)
     .async_check_one_sided(one_sided)
     d <- .async_parse(
         formula, data_y, data_x,
@@ -409,14 +433,20 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
     }
     .async_check_h(h)
 
-    if (!is.logical(correct) || length(correct) != 1L || is.na(correct)) {
-        stop("'correct' must be TRUE or FALSE", call. = FALSE)
-    }
-
     lk <- .async_link_code(link)
     fit <- .async_fit_ti(d, h, one_sided, lk, maxit, tol)
     vg <- NULL
-    if (correct && !is.null(fit) && fit$convergence != 1L) {
+    if (correct == "pairs" && !is.null(fit) && fit$convergence != 1L) {
+        .async_time_varying(d)
+        nresp <- fit$nresp
+        fit <- .async_fit_pairs(
+            .async_ts_pairs(d, one_sided), .async_cov_pairs(d, one_sided), h, d,
+            lk, .async_intensity_ratio(d), as.numeric(fit$beta), maxit, tol,
+            one_sided
+        )
+        if (!is.null(fit)) fit$nresp <- nresp
+    }
+    if (correct == "gaussian" && !is.null(fit) && fit$convergence != 1L) {
         xcol <- .async_corr_col(d)
         vg <- .async_variogram(d, xcol)
         P <- .async_all_pairs(d, xcol, one_sided)
@@ -466,7 +496,8 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
         model = sprintf(
             "Asynchronous longitudinal regression (%s link, %s kernel%s)",
             link, if (one_sided) "half" else "full",
-            if (correct) ", asynchrony-corrected" else ""
+            switch(correct, none = "", pairs = ", pair-moment correction",
+                   gaussian = ", Gaussian correction")
         ),
         call = match.call()
     )
@@ -554,9 +585,9 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #'
 #' @description
 #' K-fold cross-validation over **subjects** for [kee_async()]. The default,
-#' `method = "sync"`, selects the bandwidth for the asynchrony-corrected fit
-#' (`kee_async(correct = TRUE)`) and returns that fit. `method = "plain"` is
-#' ordinary cross-validation of the uncorrected fit.
+#' `method = "sync"`, selects the bandwidth for an asynchrony-corrected fit
+#' (`kee_async(correct = "pairs")` by default) and returns that fit.
+#' `method = "plain"` is ordinary cross-validation of the uncorrected fit.
 #'
 #' @details
 #' # Synchronous-loss cross-validation (`method = "sync"`)
@@ -565,27 +596,37 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #' the training subjects. Every within-subject pair \eqn{(T, S)} of the
 #' held-out subjects gets the unweighted loss of \eqn{Y(T)} against the fitted
 #' mean at \eqn{X(S)}: squared error (identity), Poisson deviance (log) or
-#' Bernoulli log loss (logistic). The losses are regressed on
-#' \eqn{(1, \hat\gamma(|T - S|))}, with \eqn{\hat\gamma} the isotonic
-#' variogram of [kee_async()], and the intercept, the held-out loss at zero
-#' asynchrony, is retained. For the identity link its expectation is
+#' Bernoulli log loss (logistic). The losses are regressed on an intercept and
+#' the entries of the estimated variogram matrix \eqn{\hat\Gamma(|T - S|)},
+#' \eqn{\Gamma(u) = E[\{x(t) - x(t-u)\}\{x(t) - x(t-u)\}^\top]}, of the
+#' covariates that vary within subjects. The intercept, the held-out loss at
+#' zero asynchrony, is retained. Each entry of
+#' \eqn{\hat\Gamma} comes from isotonic regressions of squared increments of
+#' \eqn{x_j} and \eqn{x_j + x_k} on the lag. For the identity link and a
+#' stationary covariate the intercept's expectation is
 #' \eqn{\sigma^2 + \delta_h^\top \Sigma_X \delta_h}, with \eqn{\delta_h} the
 #' error of the training fit, because the asynchrony part of the loss is
-#' exactly linear in \eqn{\gamma(u)}. Intercepts are averaged over folds (and
-#' over `repeats` splits) and the minimiser is selected. A candidate is
-#' retained only when every fold produces a fit.
+#' exactly linear in \eqn{\Gamma(u)}. Intercepts are averaged over folds (and
+#' over `repeats` splits) and the minimiser is selected.
+#'
+#' A candidate is retained only when every fold produces a fit whose
+#' intercept is at least the mean saturated loss of the held-out pairs
+#' (\eqn{\min_\eta} of the loss: 0 for squared error and log loss,
+#' \eqn{y - y \log y} for the Poisson loss). An intercept below it comes from a
+#' degenerate fold fit.
 #'
 #' The default grid is `n_h` log-spaced bandwidths up to the largest
 #' within-subject lag \eqn{|T_{ij} - S_{ik}|}, starting at the smallest
 #' \eqn{h} at which every training fold has at least
 #' \eqn{\lceil n_{\mathrm{train}}^{1/2} \rceil} subjects with a pair inside the
-#' kernel. Below that, a fold fit uses a handful of pairs, its error does not
-#' shrink with \eqn{n}, and the intercept extrapolation can be arbitrarily
-#' negative.
+#' kernel (for `correct = "pairs"`, both a response-covariate pair and a
+#' covariate pair). Below that, a fold fit uses a handful of pairs and its
+#' error does not shrink with \eqn{n}.
 #'
-#' In simulation with a stationary Gaussian covariate (1000 replicates,
-#' \eqn{n} = 400 to 8000, identity, log and logistic links) the Wald interval
-#' of the returned fit covered at 94.9% to 97.5%.
+#' The guarantee is consistency: the selected \eqn{h} lies on a finite grid on
+#' which every corrected fit is consistent. Because the same subjects choose
+#' \eqn{h} and fit \eqn{\beta}, the Wald interval at the selected \eqn{h} has
+#' no exact coverage guarantee.
 #'
 #' # Plain cross-validation (`method = "plain"`)
 #'
@@ -622,19 +663,22 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #'   (or call [set.seed()] first) to make the selection reproducible.
 #' @param quiet Logical; suppress progress output.
 #' @param method `"sync"` (default): synchronous-loss cross-validation of the
-#'   asynchrony-corrected fit, implemented for one covariate. `"plain"`:
-#'   kernel-weighted cross-validation of the uncorrected fit. See Details.
+#'   asynchrony-corrected fit. `"plain"`: kernel-weighted cross-validation of
+#'   the uncorrected fit. See Details.
+#' @param correct The correction used with `method = "sync"`: `"pairs"`
+#'   (default) or `"gaussian"`; see [kee_async()].
 #'
 #' @return An object of class `cv.kee_async`:
 #' \describe{
 #'   \item{h_cv}{The selected bandwidth.}
 #'   \item{fit}{The [kee_async()] fit refitted on all subjects at `h_cv`,
-#'     with `correct = TRUE` when `method = "sync"`.}
+#'     with the chosen `correct` when `method = "sync"`.}
 #'   \item{cv_results}{Data frame of `h`, the criterion `cvloss` (the
 #'     intercept for `"sync"`, the weighted held-out loss for `"plain"`), and
 #'     `nfold_used`, the number of folds over all repeats that produced a
 #'     usable loss.}
-#'   \item{h_grid, fold_id, repeats, method, seed, call}{Selection metadata.}
+#'   \item{h_grid, fold_id, repeats, method, correct, seed, call}{Selection
+#'     metadata.}
 #' }
 #'
 #' @seealso [kee_async()]
@@ -655,9 +699,11 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
                          link = c("identity", "log", "logistic"),
                          intercept = TRUE, maxit = 50L, tol = 1e-8,
                          seed = NULL, quiet = FALSE,
-                         method = c("sync", "plain")) {
+                         method = c("sync", "plain"),
+                         correct = c("pairs", "gaussian")) {
     link <- match.arg(link)
     method <- match.arg(method)
+    correct <- match.arg(correct)
     .async_check_one_sided(one_sided)
     call <- match.call()
     d <- .async_parse(
@@ -692,25 +738,50 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
     if (method == "plain") {
         cv <- .async_cv_plain(d, h_grid, K, repeats, one_sided, lk, maxit, tol, quiet)
     } else {
-        xcol <- .async_corr_col(d)
-        vg <- .async_variogram(d, xcol)
-        P <- .async_all_pairs(d, xcol, one_sided)
         folds <- matrix(replicate(repeats, sample(rep_len(seq_len(K), d$n))),
                         nrow = d$n)
-        if (default_grid) {
+        if (correct == "pairs") {
+            tv <- .async_time_varying(d)
+            P <- .async_ts_pairs(d, one_sided)
+            Q <- .async_cov_pairs(d, one_sided)
+            r <- .async_intensity_ratio(d)
+            gdes <- .async_gamma_design(d, tv)
+            design_of <- function(H) d$X[H[, "k"], , drop = FALSE]
+            fitter <- function(te, h, st) {
+                .async_fit_pairs(P[!P[, "sid"] %in% te, , drop = FALSE],
+                                 Q[!Q[, "sid"] %in% te, , drop = FALSE],
+                                 h, d, lk, r, st, maxit, tol, one_sided)
+            }
+            lo <- max(.async_grid_floor(P, d$n, folds),
+                      .async_grid_floor(cbind(u = Q[, "v"], sid = Q[, "sid"]),
+                                        d$n, folds))
+        } else {
+            xcol <- .async_corr_col(d)
+            vg <- .async_variogram(d, xcol)
+            P <- .async_all_pairs(d, xcol, one_sided)
+            gdes <- function(u) vg$gamma(u)
+            design_of <- function(H) {
+                Hx <- matrix(0, nrow(H), d$p)
+                if (d$p == 2L) Hx[, 1L] <- 1
+                Hx[, xcol] <- H[, "x"]
+                Hx
+            }
+            fitter <- function(te, h, st) {
+                .async_fit_corr(P[!P[, "sid"] %in% te, , drop = FALSE], h, d$n,
+                                d$p, xcol, lk, vg, st, maxit, tol, one_sided)
+            }
+            lo <- .async_grid_floor(P, d$n, folds)
+        }
+        if (default_grid && lo > h_grid[1L] && lo < max(h_grid)) {
             # Start the default grid where every training fold has enough
             # subjects inside the kernel; see Details.
-            lo <- .async_grid_floor(P, d$n, folds)
-            if (lo > h_grid[1L] && lo < max(h_grid)) {
-                h_grid <- exp(seq(log(lo), log(max(h_grid)),
-                                  length.out = length(h_grid)))
-            }
+            h_grid <- exp(seq(log(lo), log(max(h_grid)), length.out = length(h_grid)))
         }
         start <- .async_fit_ti(d, max(h_grid), one_sided, lk, maxit, tol)
         start <- if (is.null(start) || start$convergence == 1L) NULL else
             as.numeric(start$beta)
-        cv <- .async_cv_sync(d, P, vg, xcol, h_grid, folds, one_sided, lk,
-                             start, maxit, tol, quiet)
+        cv <- .async_cv_sync(P, design_of, gdes, fitter, h_grid, folds, lk,
+                             start, quiet)
     }
     best_h <- h_grid[cv$index]
     if (!quiet) cat(sprintf("Selected h = %g\n", best_h))
@@ -732,7 +803,7 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
     fit_call$seed <- NULL
     fit_call$quiet <- NULL
     fit_call$method <- NULL
-    fit_call$correct <- method == "sync"
+    fit_call$correct <- if (method == "sync") correct else "none"
     fit <- eval(fit_call, parent.frame())
 
     out <- list(
@@ -745,6 +816,7 @@ kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
         fold_id = if (repeats == 1L) cv$folds[, 1L] else cv$folds,
         repeats = repeats,
         method = method,
+        correct = if (method == "sync") correct else "none",
         seed = seed,
         call = call
     )
@@ -762,7 +834,8 @@ print.cv.kee_async <- function(x, ...) {
   K <- length(unique(as.vector(x$fold_id)))
   R <- if (is.null(x$repeats)) 1L else x$repeats
   cat("\n", K, "-fold subject-level cross-validation",
-    if (identical(x$method, "sync")) " (synchronous loss, corrected fits)",
+    if (identical(x$method, "sync")) sprintf(" (synchronous loss, %s-corrected fits)",
+                                             if (is.null(x$correct)) "pairs" else x$correct),
     if (R > 1L) sprintf(", %d random splits", R), "\n\n",
     sep = ""
   )

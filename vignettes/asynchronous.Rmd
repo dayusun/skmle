@@ -172,7 +172,7 @@ Because the rate is $(nh)^{1/2}$, `h` trades variance against bias directly:
 small `h` admits few pairs, large `h` admits pairs whose times are far apart and
 so pulls in a bias. `kee_async_cv()` chooses it by cross-validation over
 **subjects** and, by default, returns the asynchrony-corrected fit
-`kee_async(correct = TRUE)` at the selected bandwidth.
+`kee_async(correct = "pairs")` at the selected bandwidth.
 
 ```{r cv}
 cv <- d$y |>
@@ -190,19 +190,27 @@ cv
 cv$cv_results
 ```
 
-The corrected fit replaces the link value at the covariate time $S$ by its
-expectation at the response time $T$ given $x(S)$, using an isotonic estimate
-of the covariate variogram $\gamma(u) = E\{x(t) - x(t-u)\}^2$. For a
-stationary covariate (and, for the log and logistic links, a Gaussian one) the
-corrected equation is unbiased at every `h`, so the bandwidth affects only
-the variance.
+The corrected fit uses each subject's own covariate pairs in place of the
+covariate at the response time. Two covariate occasions $S_k \ne S_{k'}$ of
+the same subject give $(X(S_k), X(S_{k'}))$ with the distribution of
+$(X(S), X(T))$ at the same two times, so the kernel-weighted moment
+$\sum W_h(T - S) X(S) Y(T)$ is matched by
+$\sum W_h(S_{k'} - S_k) X(S_k) g\{X(S_{k'})^\top \beta\}$, each normalised
+by its total weight and the covariate pairs reweighted by the ratio of the
+response and covariate visit intensities. The resulting equation has mean
+zero at the true $\beta$ for every `h`, with no model for the covariate
+process, so the bandwidth affects only the variance.
+`kee_async(correct = "gaussian")` is an alternative for one stationary
+Gaussian covariate.
 
 The criterion (`method = "sync"`) scores each held-out pair by the unweighted
-loss of $Y(T)$ against the fitted mean at $X(S)$, regresses these losses on
-$(1, \hat\gamma(|T - S|))$, and retains the intercept, which is the held-out
-loss at zero asynchrony. For the identity link the asynchrony part of the loss
-is exactly linear in $\gamma(u)$, so the intercept ranks bandwidths by the
-error of the training fit.
+loss of $Y(T)$ against the fitted mean at $X(S)$, regresses these losses on an
+intercept and the estimated variogram matrix $\hat\Gamma(|T - S|)$,
+$\Gamma(u) = E[\{x(t) - x(t-u)\}\{x(t) - x(t-u)\}^\top]$, and retains the
+intercept, which is the held-out loss at zero asynchrony. For the identity
+link and a stationary covariate the asynchrony part of the loss is exactly
+linear in $\Gamma(u)$, so the intercept ranks bandwidths by the error of the
+training fit.
 
 Folds are formed from subjects, never from rows. Rows within a subject come
 from one trajectory. Splitting by row would place the same subject in both the

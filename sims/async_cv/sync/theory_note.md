@@ -154,3 +154,51 @@ n = 400 and none at n >= 2000; h-hat at the floor in at most 0.7% of reps (ident
 none at n = 8000. cvc+corr at n = 8000, CP% (SE/ESE, RMSE): identity 96.8 (1.03, 0.0146), logistic
 97.5 (1.00, 0.0190), log 96.1 (0.99, 0.0061), probit 96.0 (0.96, 0.0113), cloglog 96.3 (0.97,
 0.0123). cv+corr 96.5-97.8 with SE/ESE 1.07-1.12; plain cv 88.1-91.0; LVCF 0.0.
+
+## 7. Several covariates (job 8471301, 1000 reps per cell, 0 errors; `cov7.R`, `agg7.R`, `summary7.csv`)
+
+Time-varying x in R^q, jointly stationary with symmetric cross-covariance C(u) = C(u)'
+(holds for x = L c(t) with independent stationary c); time-invariant covariates z enter the
+mean of x and need no correction. With Gamma(u) = E[dx dx'] = 2 Sigma - 2 C(u):
+x_T | x_S, z ~ N(m(z) + R(u)(x_S - m(z)), Sigma - C Sigma^-1 C), R = C Sigma^-1, C = Sigma - Gamma/2.
+Identity link uses only the conditional mean (second moments); log has a closed form; other links
+need one Gauss-Hermite integral because b'x_T is scalar normal. Gamma-hat by polarisation:
+isotonic variograms of x_j and x_j + x_k, Gamma_jk = (gamma_{j+k} - gamma_jj - gamma_kk)/2.
+CV: E[loss | u] = L0(h) + sum_jk beta0_j beta_hk Gamma_jk(u) (identity, exact), so the held-out
+losses are regressed on (1, vech Gamma-hat(u)) and the intercept is minimised.
+
+DGP: x = A z + L c(t), c two independent OU paths (rates 1 and 3), L = [1 0; 0.6 0.8],
+A = (0.5, -0.3), z ~ Bernoulli(0.5). cvc+corr over 4 links x 3 n x 3 coefficients (36 cells):
+CP 94.1-96.7% (one cell q < 0.05: identity n = 8000 x2, 96.7%), SE/ESE 0.91-1.08, |bias| <= 0.014.
+cv+corr CP 94.3-97.2%; plain cv 69.8-93.7%; LVCF 0-81.7% (z is biased too, through cor(x, z)).
+RMSE of cvc+corr / cv+corr: 0.71-1.06.
+
+## 8. Pair-moment estimator: no distributional model for x (cov8-cov11, job 8478458)
+
+Estimating equation, with u = T - S on response-covariate pairs and v = S_k' - S_k on ordered
+within-subject covariate pairs (k != k'):
+  U_h(b) = sum w_h(u) X_S Y_T / sum w_h(u) - sum w_h(v) r(S_k') X_k g(X_k' b) / sum w_h(v) r(S_k'),
+r = lambda_T / lambda_S, estimated from the observation times alone (logistic regression of
+"response occasion" on ns(time, 4)). Under (A2), (A3) and Poisson-type visit processes,
+E U_h(beta_0) = 0 for every h: (x(S_k), x(S_k')) has the law of (x(S), x(T)) at the same pair of
+times. No normality, no stationarity, any number of covariates (time-invariant ones included).
+
+Guarantee claimed: consistency only. h-hat lies on a finite grid whose floor gives every training
+fold at least ceil(sqrt(n_train)) subjects with a pair in the kernel, so
+|b(h-hat) - beta_0| <= max_grid |b(h) - beta_0| -> 0 whatever the selection. Interval coverage is
+reported from simulation, not proved: h-hat and b use the same data.
+
+Findings:
+- Fixed h (96 reps, n = 8000): no bias in any coefficient, SE/ESE 0.86-1.09, including
+  front-loaded covariate visits (Beta(1,3)) with the estimated ratio.
+- Full-sample sync-loss CV (job 8478458, 3 scenarios x 4 links x n = 400/2000/8000, 1000 reps,
+  252 of 108000 coefficient fits failed): CP 94.5-99.9%; SE/ESE 1.0-1.5 (conservative);
+  max |bias|/ESE 0.09 (Gaussian x), 0.17 (skewed x), 0.54 (skewed x, front-loaded covariate
+  visits, rising with n). Plain CV 36-94%, LVCF 0-82%.
+- Cross-fitted h (h_k from the other folds): removes the selection bias but SE/ESE falls to
+  0.65-1.0 because h_j depends on fold k's data and h-hat does not converge. Not used.
+- Log link: 3% of reps picked h at the floor with |error| > 0.5. Rule added: drop a candidate
+  whose fold intercept is below that fold's mean saturated loss (min_eta loss; 0 for squared and
+  log loss, y - y log y for Poisson). Removed all 24 inspected cases, changed no ordinary rep.
+- Stacking the ratio-model score into the sandwich changes the SE in the second decimal at most
+  (48 reps x 2 scenarios x 2 links x 2 h); not needed.

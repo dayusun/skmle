@@ -2,20 +2,22 @@
 
 ## Bandwidth selection for the asynchronous estimators
 
-* **`kee_async(correct = TRUE)` fits the asynchrony-corrected equation.** The
-  link value at the covariate time is replaced by its conditional expectation
-  at the response time, using an isotonic estimate of the covariate variogram
-  and, for the log and logistic links, a Gaussian conditional distribution.
-  Under stationarity the corrected equation is unbiased at every bandwidth.
-  Implemented for one covariate.
+* **`kee_async(correct = "pairs")` fits the pair-moment equation.** Each
+  subject's own covariate pairs stand in for the covariate at the response
+  time, reweighted by the ratio of response and covariate visit intensities
+  estimated from the observation times. The equation has mean zero at the
+  true coefficients for every bandwidth, with no model for the covariate
+  process (no normality, no stationarity), and takes any number of
+  covariates. `correct = "gaussian"` is the conditional-expectation correction
+  for one stationary Gaussian covariate.
 * **`kee_async_cv()` now selects the bandwidth for the corrected fit by
   synchronous-loss cross-validation (`method = "sync"`, the default) and
   returns the corrected fit.** Held-out pair losses are regressed on the
-  estimated variogram at the pair's lag and the intercept is minimised. The
-  default grid starts where every training fold has at least
-  ceiling(sqrt(n_train)) subjects inside the kernel. In simulation (1000
-  replicates per cell, n = 400 to 8000, identity, log and logistic links) the
-  Wald interval covered at 94.9% to 97.5%. The previous criterion is available
+  estimated variogram matrix at the pair's lag and the intercept is
+  minimised; a candidate whose intercept falls below the saturated loss on a
+  fold is dropped. The default grid starts where every training fold has at
+  least ceiling(sqrt(n_train)) subjects inside the kernel. The selected
+  bandwidth gives a consistent estimate. The previous criterion is available
   as `method = "plain"`.
 * **`kee_async_cv()` builds its default grid from the data.** The candidates
   are `n_h` (default 100) log-spaced bandwidths from the smallest to the
