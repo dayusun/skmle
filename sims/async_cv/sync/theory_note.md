@@ -202,3 +202,10 @@ Findings:
   log loss, y - y log y for Poisson). Removed all 24 inspected cases, changed no ordinary rep.
 - Stacking the ratio-model score into the sandwich changes the SE in the second decimal at most
   (48 reps x 2 scenarios x 2 links x 2 h); not needed.
+
+Log link with the saturated-loss rule (job 8485871; `cov12.R`, `agg12.R`, `summary12.csv`; same
+seeds as job 8478458; 3 scenarios x n = 400/2000/8000 x 1000 reps, 0 errors, 0 missing):
+reps with any |error| > 0.5 fell from 267 to 1 of 9000; h-hat at the floor in 0.02% of reps;
+ESE fell 2-8x (skew n = 8000 x1: 0.104 -> 0.018); SE/ESE 1.06-1.28 (was 0.18-1.28);
+CP 96.4-99.1%. The selection bias with front-loaded covariate visits remains
+(skew_early n = 8000: x2 bias 0.014 = 0.48 ESE).
