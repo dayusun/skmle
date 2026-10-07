@@ -277,7 +277,7 @@ test_that("kee_async_cv selects a bandwidth and refits there", {
     # endpoint warning is for, so accept it rather than letting it leak.
     cv <- suppressWarnings(kee_async_cv(d$y, d$x,
         y ~ x, id = id, time = time,
-        h_grid = c(0.10, 0.20, 0.35), K = 4, seed = 1, quiet = TRUE
+        h_grid = c(0.10, 0.20, 0.35), K = 4, seed = 1, quiet = TRUE, method = "plain"
     ))
     expect_s3_class(cv, "cv.kee_async")
     expect_true(cv$h_cv %in% cv$h_grid)
@@ -305,7 +305,7 @@ test_that("kee_async_cv reproduces a hand-computed held-out loss", {
     K <- 2
     cv <- kee_async_cv(d$y, d$x,
         y ~ x, id = id, time = time,
-        h_grid = h, K = K, seed = 7, quiet = TRUE
+        h_grid = h, K = K, seed = 7, quiet = TRUE, method = "plain"
     )
 
     # Rebuild fold 1's contribution from scratch.
@@ -346,7 +346,7 @@ test_that("kee_async_cv builds a default grid and flags endpoint minima", {
     d <- sim_async_data(n = 120)
     cv <- suppressWarnings(kee_async_cv(d$y, d$x,
         y ~ x, id = id, time = time,
-        n_h = 6, K = 3, seed = 2, quiet = TRUE
+        n_h = 6, K = 3, seed = 2, quiet = TRUE, method = "plain"
     ))
     expect_length(cv$h_grid, 6L)
     expect_true(all(diff(cv$h_grid) > 0))
@@ -357,7 +357,7 @@ test_that("kee_async_cv builds a default grid and flags endpoint minima", {
     expect_warning(
         kee_async_cv(d$y, d$x,
             y ~ x, id = id, time = time,
-            h_grid = c(0.25, 5), K = 3, seed = 2, quiet = TRUE
+            h_grid = c(0.25, 5), K = 3, seed = 2, quiet = TRUE, method = "plain"
         ),
         "endpoint"
     )

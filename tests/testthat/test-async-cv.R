@@ -1,5 +1,6 @@
 ## Bandwidth selection for the asynchronous estimators: plain K-fold
-## cross-validation over subjects on a grid built from the data.
+## cross-validation over subjects on a grid built from the data
+## (method = "plain"). The synchronous-loss method is in test-async-sync.R.
 
 # Held-out loss by hand: for every split, refit without each fold and score its
 # subjects at the candidate's own bandwidth; mean over folds, then splits.
@@ -48,14 +49,15 @@ test_that("the default grid runs from the smallest to the largest within-subject
     lg <- all_lags(d)
 
     cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x,
-        id = id, time = time, n_h = 12, K = 2, seed = 1, quiet = TRUE
+        id = id, time = time, n_h = 12, K = 2, seed = 1, quiet = TRUE,
+        method = "plain"
     ))
     two <- abs(lg[lg != 0])
     expect_equal(cv$h_grid, exp(seq(log(min(two)), log(max(two)), length.out = 12)))
 
     cv1 <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x,
         id = id, time = time, n_h = 12, K = 2, seed = 1, quiet = TRUE,
-        one_sided = TRUE
+        one_sided = TRUE, method = "plain"
     ))
     pos <- lg[lg > 0]
     expect_equal(cv1$h_grid, exp(seq(log(min(pos)), log(max(pos)), length.out = 12)))
@@ -68,7 +70,8 @@ test_that("repeats average the plain held-out loss over independent splits", {
     hs <- c(0.12, 0.3)
     cv <- suppressWarnings(kee_async_cv(d$y, d$x,
         y ~ x, id = id, time = time,
-        h_grid = hs, K = 2, seed = 5, quiet = TRUE, repeats = 3
+        h_grid = hs, K = 2, seed = 5, quiet = TRUE, repeats = 3,
+        method = "plain"
     ))
     expect_equal(dim(cv$fold_id), c(50L, 3L))
     set.seed(5)

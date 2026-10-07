@@ -21,7 +21,8 @@ kee_async_cv(
   maxit = 50L,
   tol = 1e-08,
   seed = NULL,
-  quiet = FALSE
+  quiet = FALSE,
+  method = c("sync", "plain")
 )
 
 \method{print}{cv.kee_async}(x, ...)
@@ -65,12 +66,17 @@ strictly before the response.}
 
 \item{intercept}{Logical, include an intercept.}
 
-\item{maxit, tol}{Newton-Raphson controls, ignored when \code{link = "identity"}.}
+\item{maxit, tol}{Newton-Raphson controls, ignored when \code{link = "identity"}
+and \code{correct = FALSE}.}
 
 \item{seed}{Optional integer seed for the subject-to-fold assignment. Pass it
 (or call \code{\link[=set.seed]{set.seed()}} first) to make the selection reproducible.}
 
 \item{quiet}{Logical; suppress progress output.}
+
+\item{method}{\code{"sync"} (default): synchronous-loss cross-validation of the
+asynchrony-corrected fit, implemented for one covariate. \code{"plain"}:
+kernel-weighted cross-validation of the uncorrected fit. See Details.}
 
 \item{x}{A \code{cv.kee_async} object.}
 
@@ -80,40 +86,68 @@ strictly before the response.}
 An object of class \code{cv.kee_async}:
 \describe{
 \item{h_cv}{The selected bandwidth.}
-\item{fit}{The \code{\link[=kee_async]{kee_async()}} fit refitted on all subjects at \code{h_cv}.}
-\item{cv_results}{Data frame of \code{h}, the held-out loss \code{cvloss}, and
+\item{fit}{The \code{\link[=kee_async]{kee_async()}} fit refitted on all subjects at \code{h_cv},
+with \code{correct = TRUE} when \code{method = "sync"}.}
+\item{cv_results}{Data frame of \code{h}, the criterion \code{cvloss} (the
+intercept for \code{"sync"}, the weighted held-out loss for \code{"plain"}), and
 \code{nfold_used}, the number of folds over all repeats that produced a
 usable loss.}
-\item{h_grid, fold_id, repeats, seed, call}{Selection metadata.}
+\item{h_grid, fold_id, repeats, method, seed, call}{Selection metadata.}
 }
 }
 \description{
-K-fold cross-validation over \strong{subjects} for \code{\link[=kee_async]{kee_async()}}. For each
-candidate bandwidth the estimator is fitted on the training subjects and
-scored on the held-out subjects by the kernel-weighted squared error of the
-fitted mean at that bandwidth,
+K-fold cross-validation over \strong{subjects} for \code{\link[=kee_async]{kee_async()}}. The default,
+\code{method = "sync"}, selects the bandwidth for the asynchrony-corrected fit
+(\code{kee_async(correct = TRUE)}) and returns that fit. \code{method = "plain"} is
+ordinary cross-validation of the uncorrected fit.
+}
+\section{Synchronous-loss cross-validation (\code{method = "sync"})}{
+For each candidate \eqn{h} and fold, the corrected equation is fitted on
+the training subjects. Every within-subject pair \eqn{(T, S)} of the
+held-out subjects gets the unweighted loss of \eqn{Y(T)} against the fitted
+mean at \eqn{X(S)}: squared error (identity), Poisson deviance (log) or
+Bernoulli log loss (logistic). The losses are regressed on
+\eqn{(1, \hat\gamma(|T - S|))}, with \eqn{\hat\gamma} the isotonic
+variogram of \code{\link[=kee_async]{kee_async()}}, and the intercept, the held-out loss at zero
+asynchrony, is retained. For the identity link its expectation is
+\eqn{\sigma^2 + \delta_h^\top \Sigma_X \delta_h}, with \eqn{\delta_h} the
+error of the training fit, because the asynchrony part of the loss is
+exactly linear in \eqn{\gamma(u)}. Intercepts are averaged over folds (and
+over \code{repeats} splits) and the minimiser is selected. A candidate is
+retained only when every fold produces a fit.
+
+The default grid is \code{n_h} log-spaced bandwidths up to the largest
+within-subject lag \eqn{|T_{ij} - S_{ik}|}, starting at the smallest
+\eqn{h} at which every training fold has at least
+\eqn{\lceil n_{\mathrm{train}}^{1/2} \rceil} subjects with a pair inside the
+kernel. Below that, a fold fit uses a handful of pairs, its error does not
+shrink with \eqn{n}, and the intercept extrapolation can be arbitrarily
+negative.
+
+In simulation with a stationary Gaussian covariate (1000 replicates,
+\eqn{n} = 400 to 8000, identity, log and logistic links) the Wald interval
+of the returned fit covered at 94.9\% to 97.5\%.
+}
+
+\section{Plain cross-validation (\code{method = "plain"})}{
+Each candidate is fitted without correction and scored on the held-out
+subjects by the kernel-weighted squared error of the fitted mean at that
+bandwidth,
 \deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
        [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
       {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.}
-The per-fold losses are averaged over folds (and over \code{repeats} random
-splits), and the candidate with the smallest average is selected.
+The default grid runs from the smallest to the largest within-subject lag
+(positive lags \eqn{T_{ij} - S_{ik}} only when \code{one_sided = TRUE}; exact
+zeros excluded). A candidate is dropped only when it fails on every fold.
+This criterion is minimised at a bandwidth much smaller than the
+MSE-optimal one, and the uncorrected fit keeps a bias of the order of its
+standard error there.
 }
+
 \section{How the folds are formed}{
 Folds are formed over subjects, never over rows. Rows within a subject come
 from one trajectory, so splitting by row would put a subject on both sides of
 the split and leak the answer into the held-out score.
-}
-
-\section{The default grid}{
-When \code{h_grid} is \code{NULL} the candidates are \code{n_h} log-spaced bandwidths from
-the smallest to the largest lag \eqn{|T_{ij} - S_{ik}|} between a response
-and a covariate observation of the same subject (positive lags
-\eqn{T_{ij} - S_{ik}} only when \code{one_sided = TRUE}; exact zeros are
-excluded). Below the smallest lag no pair enters any window and above the
-largest every pair already does, so the grid covers every bandwidth that
-can give a different fit. Candidates near the small end admit few pairs and
-often fail on some fold; a candidate is dropped only when it fails on every
-fold.
 
 Always look at \code{cv_results}. If the minimum sits at an endpoint of the grid a
 warning is issued.

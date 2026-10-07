@@ -15,7 +15,8 @@ kee_async(
   link = c("identity", "log", "logistic"),
   intercept = TRUE,
   maxit = 50L,
-  tol = 1e-08
+  tol = 1e-08,
+  correct = FALSE
 )
 }
 \arguments{
@@ -51,7 +52,11 @@ strictly before the response.}
 
 \item{intercept}{Logical, include an intercept.}
 
-\item{maxit, tol}{Newton-Raphson controls, ignored when \code{link = "identity"}.}
+\item{maxit, tol}{Newton-Raphson controls, ignored when \code{link = "identity"}
+and \code{correct = FALSE}.}
+
+\item{correct}{Logical. \code{TRUE} fits the asynchrony-corrected equation; see
+Details. Implemented for one covariate.}
 }
 \value{
 An object of class \code{kee} with components
@@ -61,7 +66,10 @@ An object of class \code{kee} with components
 \item{A, Sigma}{The bread and the meat of the sandwich.}
 \item{n}{Number of subjects, the unit the asymptotics are in.}
 \item{npair}{Number of weighted (response, covariate) pairs contributing.}
-\item{h, one_sided, link}{Fit settings.}
+\item{h, one_sided, link, correct}{Fit settings.}
+\item{variogram}{With \code{correct = TRUE}, a list holding the estimated
+variogram \code{gamma} (a function of the lag), the covariate mean \code{m} and
+variance \code{s2}; otherwise \code{NULL}.}
 \item{convergence}{\code{0} converged, \code{1} singular, \code{2} hit \code{maxit}.}
 \item{call}{The matched call.}
 }
@@ -136,6 +144,27 @@ before trusting one number.
 
 Observation times are assumed independent of the response and covariate
 processes. Informative observation times need a different estimator.
+}
+
+\section{Asynchrony correction}{
+\code{correct = TRUE} removes the asynchrony bias instead of shrinking it with
+\eqn{h}. For a single covariate that is second-order stationary with
+variogram \eqn{\gamma(u) = E\{x(t) - x(t - u)\}^2}, mean \eqn{m} and
+variance \eqn{s^2}, the link value \eqn{g\{X(S)^\top\beta\}} in the
+equation is replaced by \eqn{E[g\{X(T)^\top\beta\} \mid x(S)]}, computed
+as if \eqn{x(T) \mid x(S)} were normal with mean
+\eqn{m + \rho(u)\{x(S) - m\}} and variance \eqn{s^2\{1 - \rho(u)^2\}},
+\eqn{\rho(u) = 1 - \gamma(u)/(2s^2)}. The variogram is estimated by
+isotonic regression of \eqn{\{x(S_{ik}) - x(S_{ik'})\}^2} on
+\eqn{|S_{ik} - S_{ik'}|} over the covariate pairs within subjects, and
+\eqn{m}, \eqn{s^2} by the sample mean and variance of the covariate.
+
+With the identity link the correction needs only stationarity; with the log
+and logistic links it also uses the normal conditional distribution. Under
+these assumptions the corrected equation is unbiased at every \eqn{h}, so
+the fit is \eqn{n^{1/2}}-consistent at a fixed bandwidth and \eqn{h} affects
+only the variance. If they fail, a bias remains that grows with \eqn{h}. The
+standard errors are the sandwich with the variogram treated as known.
 }
 
 \examples{

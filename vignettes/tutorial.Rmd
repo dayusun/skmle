@@ -303,8 +303,8 @@ confint(fit_a)
 ```
 
 The bandwidth is the one consequential choice. `kee_async_cv()` selects it by
-cross-validation over subjects, scoring each candidate by the kernel-weighted
-squared error on the held-out subjects:
+cross-validation over subjects and returns the asynchrony-corrected fit at the
+selected bandwidth:
 
 ```{r async-cv}
 cv <- kee_async_cv(d$y, d$x,

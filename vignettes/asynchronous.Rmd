@@ -171,8 +171,8 @@ would mean inventing it. The fit does not retain its data, so `augment()` needs
 Because the rate is $(nh)^{1/2}$, `h` trades variance against bias directly:
 small `h` admits few pairs, large `h` admits pairs whose times are far apart and
 so pulls in a bias. `kee_async_cv()` chooses it by cross-validation over
-**subjects**, scoring each candidate by the kernel-weighted squared error on the
-held-out subjects.
+**subjects** and, by default, returns the asynchrony-corrected fit
+`kee_async(correct = TRUE)` at the selected bandwidth.
 
 ```{r cv}
 cv <- d$y |>
@@ -190,28 +190,41 @@ cv
 cv$cv_results
 ```
 
-Two details of that criterion are worth knowing, because they determine whether
-it is meaningful at all.
+The corrected fit replaces the link value at the covariate time $S$ by its
+expectation at the response time $T$ given $x(S)$, using an isotonic estimate
+of the covariate variogram $\gamma(u) = E\{x(t) - x(t-u)\}^2$. For a
+stationary covariate (and, for the log and logistic links, a Gaussian one) the
+corrected equation is unbiased at every `h`, so the bandwidth affects only
+the variance.
 
-*Folds are over subjects, never rows.* Rows within a subject come from one
-trajectory. Splitting by row would put the same subject on both sides and leak
-the answer into the held-out score.
+The criterion (`method = "sync"`) scores each held-out pair by the unweighted
+loss of $Y(T)$ against the fitted mean at $X(S)$, regresses these losses on
+$(1, \hat\gamma(|T - S|))$, and retains the intercept, which is the held-out
+loss at zero asynchrony. For the identity link the asynchrony part of the loss
+is exactly linear in $\gamma(u)$, so the intercept ranks bandwidths by the
+error of the training fit.
 
-*The loss is divided by the total weight.* A wider bandwidth admits more pairs
-and so accumulates more total squared error regardless of fit quality. Without
-the denominator the criterion would select the smallest candidate every time,
-which is not a bandwidth selection rule but a fixed point.
+Folds are formed from subjects, never from rows. Rows within a subject come
+from one trajectory. Splitting by row would place the same subject in both the
+training and the held-out sets, so the held-out score would not be computed on
+independent data.
 
-If the selected value lands on an endpoint of the grid, the function warns and
-you should widen the grid: a minimum on the boundary is an artefact of where you
-stopped looking.
+`method = "plain"` scores the uncorrected fit by the kernel-weighted squared
+error on the held-out subjects, divided by the total weight. It selects a much
+smaller bandwidth than the corrected fit needs, and the uncorrected fit at that
+bandwidth keeps a bias of the order of its standard error.
 
-Leaving `h_grid` unset generates `n_h` candidates (100 by default),
-log-spaced from the smallest to the largest lag between a response and a
-covariate observation of the same subject. Below the smallest lag no pair
-enters any window, and above the largest every pair already does, so the grid
-covers every bandwidth that can give a different fit. It is in the units of
-`time`.
+If the selected value is an endpoint of the grid, the function issues a
+warning. A minimum on the boundary reflects the range of the grid rather than
+the criterion, and the grid should then be widened.
+
+Leaving `h_grid` unset generates `n_h` candidates (100 by default), log-spaced
+up to the largest lag between a response and a covariate observation of the
+same subject; at larger bandwidths the kernel already contains every pair. For
+`method = "sync"` the grid starts at the smallest `h` at which every training
+fold has at least $\lceil n_{\text{train}}^{1/2} \rceil$ subjects with a pair
+inside the kernel; for `method = "plain"` it starts at the smallest lag. The
+grid is in the units of `time`.
 
 ## Check how much the answer moves with h
 
