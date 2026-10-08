@@ -371,7 +371,23 @@ skmle_cv <- function(formula, data, id, obs_times, s = 0, K = 5, h_grid = NULL,
     # -- that rule was measured here and made beta worse, see ?skmle_cv.
     se = as.numeric(cv_losses[2, ])
   )
-  best_h <- cv_results$h[which.min(cv_results$cvloss)]
+  # A candidate scores +Inf when a training fit failed or a held-out score
+  # overflowed on any fold. which.min() would return the first of an all-Inf
+  # grid as though it had won, so refuse instead and say why.
+  ok <- is.finite(cv_results$cvloss)
+  if (!any(ok)) {
+    stop(
+      "no bandwidth in 'h_grid' gave a finite cross-validation loss on every ",
+      "fold: each candidate had a training fit fail or a held-out score ",
+      "overflow. Supply a grid of larger bandwidths, or fewer folds.",
+      call. = FALSE
+    )
+  }
+  if (!all(ok) && !quiet) {
+    message(sum(!ok), " of ", length(ok), " candidate bandwidths had a fold ",
+            "fail or overflow and were not eligible.")
+  }
+  best_h <- cv_results$h[ok][which.min(cv_results$cvloss[ok])]
 
   if (length(h_grid) > 1 && best_h %in% range(h_grid)) {
     warning(

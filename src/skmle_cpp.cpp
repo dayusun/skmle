@@ -781,10 +781,17 @@ arma::mat skmle_cv_cpp(int p, int gammap, double s, double tau,
       }
 
       const arma::vec sol(fr.solution);
-      fold_losses[k] = locf_nll_cpp(
+      const double loss = locf_nll_cpp(
           node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta,
           n_subj, covariates, sol.head(p), sol.tail(gammap), s,
           keep_by_fold[k]);
+      // A held-out score that overflows (exp of a large linear predictor gives
+      // Inf, and Inf - Inf gives NaN) is a fit that predicts the held-out
+      // subjects infinitely badly. Score it +Inf, like a failed training fit,
+      // so the bandwidth loses the grid. Left as NaN it propagated into the
+      // mean, which.min() skipped it, and a grid with no finite candidate
+      // crashed in R on an NA condition.
+      fold_losses[k] = std::isfinite(loss) ? loss : arma::datum::inf;
     }
 
     out(0, hi) = arma::mean(fold_losses);

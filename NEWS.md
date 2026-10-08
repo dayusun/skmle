@@ -88,6 +88,16 @@
 
 ## Bug fixes
 
+* **`skmle_cv()` scores a failed or overflowing fold as `+Inf`, and refuses a
+  grid with no finite candidate.** A held-out score whose linear predictor
+  overflowed returned `Inf - Inf = NaN`, which propagated into the candidate's
+  mean loss; `which.min()` skipped it, and a grid on which every candidate was
+  NaN crashed on an NA condition. Worse, a grid on which every candidate was
+  `+Inf` (every training fit failed) selected its first entry. Both cases now
+  count as a lost candidate, a grid with none finite stops with a message, and
+  `quiet = FALSE` reports how many candidates were ineligible. Finite losses
+  are unchanged to the bit. Found on ADNI MCI-to-dementia data, where the
+  smaller default-grid bandwidths overflowed on some folds.
 * **A custom `weight` now reaches the risk-set averages.** `kee_cox()`,
   `kee_additive()` and the `skmle()` sandwich used the weight only for the row
   weights and still built every risk-set average S^(k) from a
