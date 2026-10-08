@@ -145,19 +145,26 @@ confint.kee_td <- function(object, parm, level = 0.95, ...) {
 #' @importFrom graphics abline points
 #' @name plot.cv.skmle
 #' @export
-plot.cv.kee_async <- function(x, ...) .plot_cv(x$cv_results, x$h_cv, ...)
+plot.cv.kee_async <- function(x, ...) {
+  if (identical(x$method, "variance")) {
+    res <- x$cv_results
+    return(.plot_cv(data.frame(h = res$h, cvloss = res$trSV), x$h_cv,
+                    ylab = "tr{Sigma_X V(h)}", main = "Minimum-variance bandwidth", ...))
+  }
+  .plot_cv(x$cv_results, x$h_cv, ...)
+}
 
 #' @rdname plot.cv.skmle
 #' @export
 plot.cv.skmle <- function(x, ...) .plot_cv(x$cv_results, x$h_cv, ...)
 
-.plot_cv <- function(res, h_cv, ...) {
+.plot_cv <- function(res, h_cv, ylab = "held-out loss", main = "Cross-validation", ...) {
   ok <- is.finite(res$cvloss)
   if (!any(ok)) stop("no candidate bandwidth produced a loss to plot", call. = FALSE)
   plot(res$h[ok], res$cvloss[ok],
     type = "b", pch = 19, log = "x",
-    xlab = "bandwidth h (log scale)", ylab = "held-out loss",
-    main = "Cross-validation", ...
+    xlab = "bandwidth h (log scale)", ylab = ylab,
+    main = main, ...
   )
   abline(v = h_cv, col = "#1f5aa6", lty = 2)
   points(h_cv, res$cvloss[which.min(abs(res$h - h_cv))],

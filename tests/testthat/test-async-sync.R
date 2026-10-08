@@ -1,6 +1,7 @@
 ## The asynchrony-corrected fits (kee_async(correct = "pairs" / "gaussian")) and
-## the synchronous-loss cross-validation that selects their bandwidth
-## (kee_async_cv(method = "sync")).
+## the two rules that select their bandwidth: the minimum-variance default
+## (kee_async_cv(method = "variance")) and synchronous-loss cross-validation
+## (method = "sync").
 
 # Every within-subject pair of response and covariate, built by hand.
 hand_pairs <- function(d) {
@@ -100,7 +101,7 @@ test_that("the synchronous-loss criterion is the held-out intercept on gamma-hat
     K <- 2
     cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x, id = id, time = time,
                                         h_grid = hs, K = K, seed = 3, quiet = TRUE,
-                                        correct = "gaussian"))
+                                        correct = "gaussian", method = "sync"))
     expect_identical(cv$method, "sync")
 
     set.seed(3)
@@ -138,7 +139,7 @@ test_that("the Gaussian default grid starts where every training fold has sqrt(n
     d <- sim_async_data(n = 100)
     cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x, id = id, time = time,
                                         n_h = 8, K = 4, seed = 2, quiet = TRUE,
-                                        correct = "gaussian"))
+                                        correct = "gaussian", method = "sync"))
     P <- hand_pairs(d)
     subj <- sort(unique(c(as.character(d$y$id), as.character(d$x$id))))
     mi <- tapply(abs(P$u), factor(as.character(P$id), levels = subj), min)
@@ -256,14 +257,15 @@ test_that("the saturated loss bounds the held-out intercept from below", {
     expect_equal(sat(c(0, 1, 3), 1L), c(0, 1, 3 - 3 * log(3)))
 })
 
-test_that("the default sync CV selects h for the pair-moment fit by the held-out intercept", {
+test_that("sync CV selects h for the pair-moment fit by the held-out intercept", {
     skip_on_cran()
     set.seed(24)
     d <- sim_async_data(n = 80)
     hs <- c(0.15, 0.4)
     K <- 2
     cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x, id = id, time = time,
-                                        h_grid = hs, K = K, seed = 4, quiet = TRUE))
+                                        h_grid = hs, K = K, seed = 4, quiet = TRUE,
+                                        method = "sync"))
     expect_identical(cv$correct, "pairs")
 
     set.seed(4)
@@ -298,7 +300,8 @@ test_that("the pair-moment default grid floor covers both kinds of pair", {
     set.seed(25)
     d <- sim_async_data(n = 100)
     cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x, id = id, time = time,
-                                        n_h = 8, K = 4, seed = 2, quiet = TRUE))
+                                        n_h = 8, K = 4, seed = 2, quiet = TRUE,
+                                        method = "sync"))
     P <- hand_pairs(d)
     Q <- hand_cov_pairs(d)
     subj <- sort(unique(c(as.character(d$y$id), as.character(d$x$id))))
@@ -312,4 +315,70 @@ test_that("the pair-moment default grid floor covers both kinds of pair", {
     }
     expect_equal(cv$h_grid[1], max(fl(P$u, P$id), fl(Q$v, Q$id)), tolerance = 1e-6)
     expect_length(cv$h_grid, 8L)
+})
+
+test_that("the default selects the h minimising tr(Sigma_X V) of the pair-moment fit", {
+    skip_on_cran()
+    set.seed(26)
+    d <- sim_async_data(n = 90)
+    hs <- c(0.1, 0.25, 0.6)
+    cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x, id = id, time = time,
+                                        h_grid = hs, quiet = TRUE))
+    expect_identical(cv$method, "variance")
+    expect_identical(cv$correct, "pairs")
+    expect_null(cv$fold_id)
+
+    # Second moment of X at the response times: covariate rows weighted by the
+    # intensity ratio at their own time.
+    rx <- hand_ratio(d, d$x$time)
+    X <- cbind(1, d$x$x)
+    Sx <- crossprod(X * sqrt(rx)) / sum(rx)
+    hand <- vapply(hs, function(h) {
+        V <- vcov(kee_async(d$y, d$x, y ~ x, id = id, time = time, h = h, correct = "pairs"))
+        sum(Sx * V)
+    }, 1)
+    expect_equal(cv$cv_results$trSV, hand, tolerance = 1e-6)
+    expect_equal(cv$h_cv, hs[which.min(hand)])
+    ref <- kee_async(d$y, d$x, y ~ x, id = id, time = time, h = cv$h_cv, correct = "pairs")
+    expect_equal(coef(cv$fit), coef(ref))
+    expect_equal(vcov(cv$fit), vcov(ref))
+    expect_match(paste(capture.output(print(cv)), collapse = "\n"), "Minimum-variance")
+    pdf(NULL)
+    on.exit(dev.off(), add = TRUE)
+    expect_invisible(plot(cv))
+})
+
+test_that("the minimum-variance default grid starts where sqrt(n) subjects have both kinds of pair", {
+    skip_on_cran()
+    set.seed(27)
+    d <- sim_async_data(n = 100)
+    cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x, id = id, time = time,
+                                        n_h = 8, quiet = TRUE))
+    P <- hand_pairs(d)
+    Q <- hand_cov_pairs(d)
+    subj <- sort(unique(c(as.character(d$y$id), as.character(d$x$id))))
+    fl <- function(lag, id) {
+        mi <- tapply(abs(lag), factor(as.character(id), levels = subj), min)
+        mi[is.na(mi)] <- Inf
+        sort(mi)[ceiling(sqrt(length(subj)))]
+    }
+    expect_equal(cv$h_grid[1], max(fl(P$u, P$id), fl(Q$v, Q$id)), tolerance = 1e-6)
+    expect_length(cv$h_grid, 8L)
+})
+
+test_that("the minimum-variance rule takes the Gaussian correction", {
+    skip_on_cran()
+    set.seed(28)
+    d <- sim_async_data(n = 90)
+    hs <- c(0.1, 0.25, 0.6)
+    cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x, id = id, time = time,
+                                        h_grid = hs, quiet = TRUE, correct = "gaussian"))
+    X <- cbind(1, d$x$x)
+    Sx <- crossprod(X) / nrow(X)
+    hand <- vapply(hs, function(h) {
+        sum(Sx * vcov(kee_async(d$y, d$x, y ~ x, id = id, time = time, h = h,
+                                correct = "gaussian")))
+    }, 1)
+    expect_equal(cv$cv_results$trSV, hand, tolerance = 1e-6)
+    expect_identical(cv$fit$correct, "gaussian")
 })

@@ -164,6 +164,11 @@
 .async_grid_floor <- function(P, n, folds) {
     mi <- tapply(abs(P[, "u"]), factor(P[, "sid"], levels = seq_len(n)), min)
     mi[is.na(mi)] <- Inf
+    if (is.null(folds)) {
+        # Whole sample: ceiling(sqrt(n)) subjects.
+        m <- sort(mi)
+        return(m[min(ceiling(sqrt(n)), length(m))] * (1 + 1e-8))
+    }
     fl <- 0
     for (r in seq_len(ncol(folds))) {
         for (f in sort(unique(folds[, r]))) {
@@ -238,6 +243,33 @@
     list(cvloss = cvloss, nfold_used = nfold_used,
          index = which.min(replace(cvloss, is.na(cvloss), Inf)),
          folds = folds)
+}
+
+# Minimum-variance bandwidth. Fit the corrected equation on all subjects at
+# every candidate (largest h first, each fit starting from the previous
+# estimate) and return tr{Sx V(h)}, V the sandwich. The corrected fit is
+# unbiased at every h, so this is the MSE criterion; V-hat(h) converges at
+# every grid point, so the minimiser converges to the minimiser of V.
+.async_select_var <- function(fitter, Sx, h_grid, nms, start, quiet) {
+    G <- length(h_grid)
+    crit <- rep(NA_real_, G)
+    st <- start
+    for (m in rev(seq_len(G))) {
+        if (!quiet) cat(sprintf("Evaluating bandwidth h = %g\n", h_grid[m]))
+        fit <- fitter(h_grid[m], st)
+        if (is.null(fit) || fit$convergence != 0L || !all(is.finite(fit$beta))) next
+        st <- fit$beta
+        V <- .async_sandwich(fit$bread, fit$U, nms)
+        if (all(is.finite(V))) crit[m] <- sum(Sx * V)
+    }
+    if (all(is.na(crit))) {
+        stop(
+            "no candidate bandwidth produced a usable fit; widen 'h_grid' or ",
+            "check that it is on the same scale as 'time'",
+            call. = FALSE
+        )
+    }
+    list(crit = crit, index = which.min(replace(crit, is.na(crit), Inf)))
 }
 
 # The single covariate the Gaussian correction is defined for; errors otherwise.

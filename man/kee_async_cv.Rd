@@ -22,7 +22,7 @@ kee_async_cv(
   tol = 1e-08,
   seed = NULL,
   quiet = FALSE,
-  method = c("sync", "plain"),
+  method = c("variance", "sync", "plain"),
   correct = c("pairs", "gaussian")
 )
 
@@ -53,10 +53,11 @@ grid is built from the data; see Details.}
 
 \item{n_h}{Number of candidates in the default grid.}
 
-\item{K}{Number of folds. Reduced to the number of subjects if larger.}
+\item{K}{Number of folds. Reduced to the number of subjects if larger.
+Cross-validation methods only.}
 
 \item{repeats}{Number of independent random K-fold splits; the held-out
-loss is averaged over them.}
+loss is averaged over them. Cross-validation methods only.}
 
 \item{one_sided}{Logical. \code{FALSE} (default) is the full two-sided kernel of
 the paper; \code{TRUE} is the half kernel, admitting only covariate observations
@@ -71,16 +72,18 @@ strictly before the response.}
 and \code{correct = "none"}.}
 
 \item{seed}{Optional integer seed for the subject-to-fold assignment. Pass it
-(or call \code{\link[=set.seed]{set.seed()}} first) to make the selection reproducible.}
+(or call \code{\link[=set.seed]{set.seed()}} first) to make the selection reproducible.
+Cross-validation methods only.}
 
 \item{quiet}{Logical; suppress progress output.}
 
-\item{method}{\code{"sync"} (default): synchronous-loss cross-validation of the
-asynchrony-corrected fit. \code{"plain"}: kernel-weighted cross-validation of
-the uncorrected fit. See Details.}
+\item{method}{\code{"variance"} (default): the bandwidth minimising the estimated
+variance of the asynchrony-corrected fit. \code{"sync"}: synchronous-loss
+cross-validation of the corrected fit. \code{"plain"}: kernel-weighted
+cross-validation of the uncorrected fit. See Details.}
 
-\item{correct}{The correction used with \code{method = "sync"}: \code{"pairs"}
-(default) or \code{"gaussian"}; see \code{\link[=kee_async]{kee_async()}}.}
+\item{correct}{The correction used with \code{method = "variance"} or
+\code{"sync"}: \code{"pairs"} (default) or \code{"gaussian"}; see \code{\link[=kee_async]{kee_async()}}.}
 
 \item{x}{A \code{cv.kee_async} object.}
 
@@ -90,22 +93,55 @@ the uncorrected fit. See Details.}
 An object of class \code{cv.kee_async}:
 \describe{
 \item{h_cv}{The selected bandwidth.}
-\item{fit}{The \code{\link[=kee_async]{kee_async()}} fit refitted on all subjects at \code{h_cv},
-with the chosen \code{correct} when \code{method = "sync"}.}
-\item{cv_results}{Data frame of \code{h}, the criterion \code{cvloss} (the
-intercept for \code{"sync"}, the weighted held-out loss for \code{"plain"}), and
-\code{nfold_used}, the number of folds over all repeats that produced a
-usable loss.}
+\item{fit}{The \code{\link[=kee_async]{kee_async()}} fit on all subjects at \code{h_cv}, with the
+chosen \code{correct} unless \code{method = "plain"}.}
+\item{cv_results}{Data frame of \code{h} and the criterion. For \code{"variance"},
+\code{trSV}, \eqn{\mathrm{tr}\{\hat\Sigma_X \hat V(h)\}}. For the
+cross-validation methods, \code{cvloss} (the intercept for \code{"sync"}, the
+weighted held-out loss for \code{"plain"}) and \code{nfold_used}, the number of
+folds over all repeats that produced a usable loss.}
 \item{h_grid, fold_id, repeats, method, correct, seed, call}{Selection
-metadata.}
+metadata; \code{fold_id} and \code{repeats} are \code{NULL} for \code{"variance"}.}
 }
 }
 \description{
-K-fold cross-validation over \strong{subjects} for \code{\link[=kee_async]{kee_async()}}. The default,
-\code{method = "sync"}, selects the bandwidth for an asynchrony-corrected fit
-(\code{kee_async(correct = "pairs")} by default) and returns that fit.
+Select the bandwidth for \code{\link[=kee_async]{kee_async()}} and return the fit at it. The
+default, \code{method = "variance"}, selects the bandwidth that minimises the
+estimated variance of an asynchrony-corrected fit
+(\code{kee_async(correct = "pairs")} by default). \code{method = "sync"} selects it
+for the same fit by K-fold cross-validation over subjects, and
 \code{method = "plain"} is ordinary cross-validation of the uncorrected fit.
 }
+\section{Minimum-variance bandwidth (\code{method = "variance"})}{
+The corrected equation has mean zero at the true coefficients for every
+\eqn{h} (see \code{\link[=kee_async]{kee_async()}}), so the bandwidth affects only the variance and
+the mean squared error of \eqn{\hat\beta(h)} is its variance. The corrected
+equation is solved on all subjects at every candidate, and the selected
+\eqn{h} minimises
+\deqn{\mathrm{tr}\{\hat\Sigma_X \hat V(h)\},}
+with \eqn{\hat V(h)} the sandwich variance of \eqn{\hat\beta(h)} and
+\eqn{\hat\Sigma_X} the second moment of \eqn{X} at the response times:
+the covariate rows weighted by the estimated intensity ratio
+\eqn{\lambda_T / \lambda_S} for \code{correct = "pairs"}, unweighted for
+\code{correct = "gaussian"}. The criterion is \eqn{n} times the expected squared
+prediction error \eqn{E[\{X(T)^\top(\hat\beta - \beta_0)\}^2]}, and it
+does not depend on the scale of the covariates.
+
+\eqn{\hat V(h)} converges at every point of the finite grid, so when
+\eqn{V} has a unique minimiser \eqn{h^*} on the grid the selected bandwidth
+equals \eqn{h^*} with probability tending to one. The estimate at the
+selected bandwidth is then asymptotically normal with variance
+\eqn{V(h^*)}, and the Wald interval has its nominal level asymptotically.
+No assumption on the distribution of the covariates is involved beyond
+those of the corrected equation.
+
+The default grid is \code{n_h} log-spaced bandwidths up to the largest
+within-subject lag \eqn{|T_{ij} - S_{ik}|}, starting at the smallest
+\eqn{h} at which at least \eqn{\lceil n^{1/2} \rceil} subjects have a pair
+inside the kernel (for \code{correct = "pairs"}, both a response-covariate pair
+and a covariate pair). \code{K}, \code{repeats} and \code{seed} are not used.
+}
+
 \section{Synchronous-loss cross-validation (\code{method = "sync"})}{
 For each candidate \eqn{h} and fold, the corrected equation is fitted on
 the training subjects. Every within-subject pair \eqn{(T, S)} of the
@@ -139,9 +175,11 @@ covariate pair). Below that, a fold fit uses a handful of pairs and its
 error does not shrink with \eqn{n}.
 
 The guarantee is consistency: the selected \eqn{h} lies on a finite grid on
-which every corrected fit is consistent. Because the same subjects choose
-\eqn{h} and fit \eqn{\beta}, the Wald interval at the selected \eqn{h} has
-no exact coverage guarantee.
+which every corrected fit is consistent. The criterion's differences between
+candidates are of the same order as its noise, so the selected \eqn{h} does
+not converge. Because the same subjects choose \eqn{h} and fit \eqn{\beta},
+the estimate at the selected \eqn{h} can carry a selection bias of the order
+of its standard error, and the Wald interval has no coverage guarantee.
 }
 
 \section{Plain cross-validation (\code{method = "plain"})}{

@@ -10,15 +10,24 @@
   process (no normality, no stationarity), and takes any number of
   covariates. `correct = "gaussian"` is the conditional-expectation correction
   for one stationary Gaussian covariate.
-* **`kee_async_cv()` now selects the bandwidth for the corrected fit by
-  synchronous-loss cross-validation (`method = "sync"`, the default) and
-  returns the corrected fit.** Held-out pair losses are regressed on the
+* **`kee_async_cv()` now selects the bandwidth for the corrected fit and
+  returns the corrected fit.** The default, `method = "variance"`, selects the
+  `h` minimising tr{Sigma_X V(h)}, with V(h) the sandwich variance of the
+  corrected fit on all subjects and Sigma_X the second moment of X at the
+  response times. The corrected fit is unbiased at every `h`, so this is its
+  mean squared error; the selected `h` converges to the minimiser of the true
+  variance and the Wald interval at it has its nominal level asymptotically.
+  The default grid starts where at least ceiling(sqrt(n)) subjects have a pair
+  inside the kernel.
+* `method = "sync"` selects the same fit's bandwidth by synchronous-loss
+  cross-validation. Held-out pair losses are regressed on the
   estimated variogram matrix at the pair's lag and the intercept is
   minimised; a candidate whose intercept falls below the saturated loss on a
   fold is dropped. The default grid starts where every training fold has at
   least ceiling(sqrt(n_train)) subjects inside the kernel. The selected
-  bandwidth gives a consistent estimate. The previous criterion is available
-  as `method = "plain"`.
+  bandwidth gives a consistent estimate but does not converge, and the
+  estimate can carry a selection bias of the order of its standard error. The
+  previous criterion is available as `method = "plain"`.
 * **`kee_async_cv()` builds its default grid from the data.** The candidates
   are `n_h` (default 100) log-spaced bandwidths from the smallest to the
   largest lag between a response and a covariate observation of the same

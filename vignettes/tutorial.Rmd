@@ -302,14 +302,14 @@ summary(fit_a)
 confint(fit_a)
 ```
 
-The bandwidth is the one consequential choice. `kee_async_cv()` selects it by
-cross-validation over subjects and returns the asynchrony-corrected fit at the
-selected bandwidth:
+The bandwidth is the one consequential choice. `kee_async_cv()` returns the
+asynchrony-corrected fit at the bandwidth that minimises its estimated
+variance:
 
 ```{r async-cv}
 cv <- kee_async_cv(d$y, d$x,
   y ~ x, id = id, time = time,
-  h_grid = c(0.10, 0.15, 0.25, 0.40), K = 5, seed = 1, quiet = TRUE
+  h_grid = c(0.10, 0.15, 0.25, 0.40), quiet = TRUE
 )
 cv
 ```

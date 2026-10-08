@@ -168,18 +168,19 @@ would mean inventing it. The fit does not retain its data, so `augment()` needs
 
 ## Choosing the bandwidth
 
-Because the rate is $(nh)^{1/2}$, `h` trades variance against bias directly:
-small `h` admits few pairs, large `h` admits pairs whose times are far apart and
-so pulls in a bias. `kee_async_cv()` chooses it by cross-validation over
-**subjects** and, by default, returns the asynchrony-corrected fit
-`kee_async(correct = "pairs")` at the selected bandwidth.
+For the uncorrected fit, `h` trades variance against bias directly: small `h`
+admits few pairs, large `h` admits pairs whose times are far apart and so pulls
+in a bias. `kee_async_cv()` removes that bias first and then chooses `h` for
+variance alone. By default it returns the asynchrony-corrected fit
+`kee_async(correct = "pairs")` at the bandwidth that minimises its estimated
+variance.
 
 ```{r cv}
 cv <- d$y |>
   kee_async_cv(d$x, y ~ x,
     id = id, time = time,
     h_grid = c(0.05, 0.10, 0.15, 0.25, 0.40, 0.60),
-    K = 5, seed = 1, quiet = TRUE
+    quiet = TRUE
   )
 cv
 ```
@@ -203,7 +204,16 @@ process, so the bandwidth affects only the variance.
 `kee_async(correct = "gaussian")` is an alternative for one stationary
 Gaussian covariate.
 
-The criterion (`method = "sync"`) scores each held-out pair by the unweighted
+Since the corrected estimate is unbiased at every `h`, its mean squared error
+is its variance. The default criterion (`method = "variance"`) solves the
+corrected equation on all subjects at each candidate and selects the `h` that
+minimises $\mathrm{tr}\{\hat\Sigma_X \hat V(h)\}$, where $\hat V(h)$ is the
+sandwich variance of $\hat\beta(h)$ and $\hat\Sigma_X$ is the second moment of
+$X$ at the response times. $\hat V(h)$ converges at every candidate, so the
+selected `h` converges to the minimiser of the true variance, and the Wald
+interval at it has its nominal level in large samples. No folds are involved.
+
+Two cross-validation criteria are also available. `method = "sync"` scores each held-out pair by the unweighted
 loss of $Y(T)$ against the fitted mean at $X(S)$, regresses these losses on an
 intercept and the estimated variogram matrix $\hat\Gamma(|T - S|)$,
 $\Gamma(u) = E[\{x(t) - x(t-u)\}\{x(t) - x(t-u)\}^\top]$, and retains the
@@ -212,7 +222,12 @@ link and a stationary covariate the asynchrony part of the loss is exactly
 linear in $\Gamma(u)$, so the intercept ranks bandwidths by the error of the
 training fit.
 
-Folds are formed from subjects, never from rows. Rows within a subject come
+Its differences between candidates are as noisy as the differences themselves,
+so the selected `h` stays random as $n$ grows. Because the same subjects
+choose `h` and fit $\beta$, the estimate can then carry a bias of the order of
+its standard error.
+
+In both cross-validation methods, folds are formed from subjects, never from rows. Rows within a subject come
 from one trajectory. Splitting by row would place the same subject in both the
 training and the held-out sets, so the held-out score would not be computed on
 independent data.
@@ -229,9 +244,11 @@ the criterion, and the grid should then be widened.
 Leaving `h_grid` unset generates `n_h` candidates (100 by default), log-spaced
 up to the largest lag between a response and a covariate observation of the
 same subject; at larger bandwidths the kernel already contains every pair. For
-`method = "sync"` the grid starts at the smallest `h` at which every training
-fold has at least $\lceil n_{\text{train}}^{1/2} \rceil$ subjects with a pair
-inside the kernel; for `method = "plain"` it starts at the smallest lag. The
+`method = "variance"` the grid starts at the smallest `h` at which at least
+$\lceil n^{1/2} \rceil$ subjects have a pair inside the kernel, and for
+`method = "sync"` at the smallest `h` at which every training fold has at least
+$\lceil n_{\text{train}}^{1/2} \rceil$ such subjects; for `method = "plain"`
+it starts at the smallest lag. The
 grid is in the units of `time`.
 
 ## Check how much the answer moves with h
@@ -358,7 +375,7 @@ statement from evidence that $\beta(t)$ is flat.
 
 `link = "log"` and `link = "logistic"` fit the corresponding generalised linear
 models by Newton-Raphson on the same estimating equation. Everything above
-applies unchanged; the cross-validation loss stays on the response scale.
+applies unchanged, including the bandwidth selection.
 
 ```{r logistic}
 set.seed(11)

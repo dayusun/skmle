@@ -244,7 +244,8 @@ n = 8000 (27 cells each):
 - RMSE pm_var / oracle 0.97-1.03 (median 1.00); pm_sat / oracle 0.75-1.26 (median 0.92: CV reps that
   land near the truth are the same reps whose SE is too large).
 - h_V concentrates: 10th-90th percentile width shrinks with n in every cell; within a factor 2 of h*
-  in >= 97.8% of reps at n = 8000 (gauss identity 25-61% of reps at n = 400 -> 35-43% at n = 8000, h* = 0.38).
+  in 97.8-100% of reps at n = 8000 (gauss identity: 10th-90th percentile 0.25-0.61 at n = 400,
+  0.35-0.43 at n = 8000, h* = 0.38).
 
 n = 2000: pm_var CP 91.1-96.4%, SE/ESE 0.92-1.02, |bias|/ESE <= 0.21; 3 cells significantly low, all
 logistic or skew_early (x1 in skew logistic 92.2%, skew_early logistic 91.1%, skew_early log 93.1%),
@@ -259,4 +260,6 @@ in the same cells: the small-sample downward bias of the sandwich, present at an
 finite-sample selection effect visible is skew_early log x2 at n = 400, bias/ESE 0.24 (oracle
 -0.06), gone by n = 8000.
 
-Not yet in the package: kee_async_cv still selects by sync-loss CV.
+In the package as kee_async_cv(method = "variance"), the default; the package equals select13 on
+24 of 24 data sets (gauss / skew_early x three links x n = 400, 2000 x 2 seeds; same grid, same h,
+beta and SE to 3e-15; `eqv13.R`).
