@@ -345,7 +345,22 @@
     if (length(unique(tt)) <= df + 1L) return(rep(length(d$yt) / length(d$xt), length(d$xt)))
     B <- splines::ns(tt, df = df)
     f <- stats::glm.fit(cbind(1, B), lab, family = stats::binomial())
-    pr <- stats::plogis(as.vector(cbind(1, stats::predict(B, d$xt)) %*% f$coefficients))
+    # When the two schedules barely overlap in time (a covariate collected in
+    # one study phase only), the fit separates: an aliased spline column comes
+    # back NA and the fitted probability reaches 0 or 1, so the ratio is NaN or
+    # Inf and the pair fit fails on an NA condition. N occasions cannot resolve
+    # a probability finer than 1/N, so bound it there and say so.
+    cf <- f$coefficients
+    cf[is.na(cf)] <- 0
+    pr <- stats::plogis(as.vector(cbind(1, stats::predict(B, d$xt)) %*% cf))
+    eps <- 0.5 / length(tt)
+    nb <- sum(pr < eps | pr > 1 - eps)
+    if (nb) {
+        warning(nb, " covariate occasion(s) had an estimated response/covariate ",
+                "intensity ratio at the edge of what the observation times can ",
+                "resolve; bounded at ", signif(eps, 3), call. = FALSE)
+        pr <- pmin(pmax(pr, eps), 1 - eps)
+    }
     pr / (1 - pr)
 }
 

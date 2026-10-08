@@ -88,6 +88,14 @@
 
 ## Bug fixes
 
+* **`kee_async(correct = "pairs")` no longer fails when the response and
+  covariate schedules separate in time.** The response/covariate intensity
+  ratio comes from a logistic fit on the observation times; with a covariate
+  collected in one late window plus a stray early draw, the fitted probability
+  reached 0 or 1, the ratio became `Inf` or `NaN`, and the pair fit stopped
+  with "missing value where TRUE/FALSE needed". The probability is now bounded
+  at 0.5/N from either end, with a warning when the bound binds, and an aliased
+  spline coefficient is taken as zero.
 * **`skmle_cv()` scores a failed or overflowing fold as `+Inf`, and refuses a
   grid with no finite candidate.** A held-out score whose linear predictor
   overflowed returned `Inf - Inf = NaN`, which propagated into the candidate's
