@@ -209,3 +209,54 @@ reps with any |error| > 0.5 fell from 267 to 1 of 9000; h-hat at the floor in 0.
 ESE fell 2-8x (skew n = 8000 x1: 0.104 -> 0.018); SE/ESE 1.06-1.28 (was 0.18-1.28);
 CP 96.4-99.1%. The selection bias with front-loaded covariate visits remains
 (skew_early n = 8000: x2 bias 0.014 = 0.48 ESE).
+
+## 9. Plug-in minimum-variance bandwidth (job 8488853; `cov13.R`, `agg13.R`, `summary13.csv`)
+
+Why sync-loss CV cannot select a convergent h for the corrected fit: E U_h(beta_0) = 0 at every h,
+so MSE(h) = Var(h) and the CV criterion estimates E[delta_h' Sigma delta_h] from a single realisation
+of delta_h = O_p(n^-1/2). Differences across h are O_p(n^-1) in signal and O_p(n^-1) in noise, so h-hat
+stays random, the limit is G(h-hat) with h-hat correlated with G, and the selection bias E G(h-hat)/sqrt(n)
+is of the same order as the SE (skew_early bias/ESE 0.25, 0.47, 0.54 at n = 400, 2000, 8000). For
+non-squared losses the regression of the held-out loss on vech Gamma-hat(u) is also only an
+approximation: E[loss | u] is linear in Gamma(u) for the identity link alone.
+
+Rule: h_V = argmin_grid tr{Sigma-hat_X V-hat(h)}, V-hat the sandwich already computed at every grid
+point, Sigma-hat_X = sum_k r(S_k) X_k X_k' / sum_k r(S_k) (consistent for E[X(T) X(T)'] under A2).
+Grid floor on the full sample: ceil(sqrt(n)) subjects with a TS pair and with an SS pair inside the
+kernel. No folds, no loss function, no saturated-loss rule. Theory: V-hat(h) ->_p V(h) on the finite
+grid and V has a unique minimiser h*, so P(h_V = h*) -> 1 and sqrt(n)(beta-hat(h_V) - beta_0) =>
+N(0, V(h*)); the Wald interval has asymptotic level 1 - a. Needs finite fourth moments of the
+per-subject scores; no normality, no stationarity of x.
+
+Run: gauss / skew / skew_early x identity / logistic / log x n = 400, 2000, 8000, 1000 reps per cell,
+seeds of job 8485871, 0 errors. Arms on the same data: sync CV (pm_sat), plug-in (pm_var), and the
+oracle fixed h* (argmin over a common 40-point log-grid of the summed empirical MSE of x1, x2, z,
+located from the stored full-grid fits).
+
+n = 8000 (27 cells each):
+- pm_var: CP 93.2-96.4%, SE/ESE 0.93-1.06, |bias|/ESE <= 0.14, no cell significantly above 95%
+  after BH, one below (skew identity x1, 93.2%, q = 0.03; the oracle in that cell is 93.5%).
+- pm_sat: CP 95.3-99.9%, SE/ESE 0.96-1.48, 24 of 27 cells significantly above 95%; skew_early x2
+  bias/ESE 0.54 (identity), 0.50 (log), 0.41 (logistic).
+- oracle: CP 93.5-96.5%, SE/ESE 0.94-1.04.
+- skew_early x2 bias/ESE of pm_var: 0.045 (identity), 0.055 (log), 0.075 (logistic); by n for the log
+  link 0.24, 0.11, 0.06, falling as the theory says, where pm_sat gives 0.26, 0.44, 0.50.
+- RMSE pm_var / oracle 0.97-1.03 (median 1.00); pm_sat / oracle 0.75-1.26 (median 0.92: CV reps that
+  land near the truth are the same reps whose SE is too large).
+- h_V concentrates: 10th-90th percentile width shrinks with n in every cell; within a factor 2 of h*
+  in >= 97.8% of reps at n = 8000 (gauss identity 25-61% of reps at n = 400 -> 35-43% at n = 8000, h* = 0.38).
+
+n = 2000: pm_var CP 91.1-96.4%, SE/ESE 0.92-1.02, |bias|/ESE <= 0.21; 3 cells significantly low, all
+logistic or skew_early (x1 in skew logistic 92.2%, skew_early logistic 91.1%, skew_early log 93.1%),
+with 0.9-2.4% of reps having a coefficient error > 0.5 in the two logistic cells.
+
+n = 400: not a selection problem. Logistic cells have 19-38% of reps with |error| > 0.5 under pm_var,
+15-29% under pm_sat and the oracle fixed h shows the same (SE/ESE 0.56-0.68 for x1, 3-9 missing
+fits): about 2000 Bernoulli responses are too few for the pair-moment equation, whatever h. The
+extreme reps' h_V has the same distribution as the others'. In the identity and log cells pm_var CP
+is 89.7-93.3% with SE/ESE 0.84-0.93, and the oracle fixed h has SE/ESE 0.88-0.93 and CP 92.0-94.1%
+in the same cells: the small-sample downward bias of the sandwich, present at any fixed h. The one
+finite-sample selection effect visible is skew_early log x2 at n = 400, bias/ESE 0.24 (oracle
+-0.06), gone by n = 8000.
+
+Not yet in the package: kee_async_cv still selects by sync-loss CV.
