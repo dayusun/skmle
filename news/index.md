@@ -2,6 +2,124 @@
 
 ## skmle 0.1.0
 
+### Bandwidth selection for the asynchronous estimators
+
+- **`kee_async(correct = "pairs")` fits the pair-moment equation.** Each
+  subject’s own covariate pairs stand in for the covariate at the
+  response time, reweighted by the ratio of response and covariate visit
+  intensities estimated from the observation times. The equation has
+  mean zero at the true coefficients for every bandwidth, with no model
+  for the covariate process (no normality, no stationarity), and takes
+  any number of covariates. `correct = "gaussian"` is the
+  conditional-expectation correction for one stationary Gaussian
+  covariate.
+- **[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
+  now selects the bandwidth for the corrected fit and returns the
+  corrected fit.** The default, `method = "variance"`, selects the `h`
+  minimising tr{Sigma_X V(h)}, with V(h) the sandwich variance of the
+  corrected fit on all subjects and Sigma_X the second moment of X at
+  the response times. The corrected fit is unbiased at every `h`, so
+  this is its mean squared error; the selected `h` converges to the
+  minimiser of the true variance and the Wald interval at it has its
+  nominal level asymptotically. The default grid starts where at least
+  ceiling(sqrt(n)) subjects have a pair inside the kernel.
+- `method = "sync"` selects the same fit’s bandwidth by synchronous-loss
+  cross-validation. Held-out pair losses are regressed on the estimated
+  variogram matrix at the pair’s lag and the intercept is minimised; a
+  candidate whose intercept falls below the saturated loss on a fold is
+  dropped. The default grid starts where every training fold has at
+  least ceiling(sqrt(n_train)) subjects inside the kernel. The selected
+  bandwidth gives a consistent estimate but does not converge, and the
+  estimate can carry a selection bias of the order of its standard
+  error. The previous criterion is available as `method = "plain"`.
+- **[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
+  builds its default grid from the data.** The candidates are `n_h`
+  (default 100) log-spaced bandwidths from the smallest to the largest
+  lag between a response and a covariate observation of the same subject
+  (positive lags only when `one_sided = TRUE`). The previous default,
+  log-spaced over 2(Q3 - Q1) n^-0.7 to 2(Q3 - Q1) n^-0.3 of the pooled
+  observation times, had no justification for this estimator and is
+  removed.
+- [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
+  is plain K-fold cross-validation over subjects: each candidate is
+  scored on the held-out subjects by the kernel-weighted squared error
+  at that bandwidth, divided by the held-out weight, and the minimiser
+  is selected. The new `repeats` argument averages the loss over several
+  random splits (default 1).
+
+### Bug fixes
+
+- **A custom `weight` now reaches the risk-set averages.**
+  [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md),
+  [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
+  and the [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md)
+  sandwich used the weight only for the row weights and still built
+  every risk-set average S^(k) from a hardcoded Epanechnikov kernel. A
+  weight other than the default therefore gave a
+  [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) or
+  [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
+  estimate solving an equation that belongs to no estimator, and
+  [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) standard
+  errors for a different estimator from the one fitted. The default
+  kernels are unaffected: their estimates are bit-identical to before.
+- **`one_sided = FALSE` now reaches the whole variance.** `calc_B()`
+  (the [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md)
+  meat) and the risk set in
+  [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)’s
+  B required a positive lag whatever `one_sided` said. The full-kernel
+  scheme drops the indicator in every term (Sun et al. 2025, Remark 7;
+  Cao et al. 2015, eqs. 3.8-3.9). With the full kernel,
+  [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) standard
+  errors and
+  [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
+  estimates change.
+- **The [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md)
+  sandwich evaluates the baseline at the risk-set time.** The risk-set
+  averages in `calc_A()` and `calc_B()` used `alpha(X_k)`, the baseline
+  at each risk-set member’s own event time, where Theorem 3.5 and the R
+  prototype use `alpha(X_i)`, the time the risk set is formed at.
+  Standard errors change for every `s` except 0.5, where `H''/H = 1` and
+  the two agree. This had been present since the first commit.
+- **The [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md)
+  meat sums each subject’s cumulative-hazard term.** The second term of
+  the meat averaged over a subject’s observations, following the R
+  prototype, where the published Omega-hat and the objective’s own
+  per-subject score sum over them. In a simulation with 2,000 replicates
+  per cell (s = 0, 0.5, 1; n = 200, 400), the averaged form gave SE/ESE
+  of 0.90 to 0.96 and coverage of 91.5% to 94.2%; the summed form gave
+  0.93 to 0.98 and 92.5% to 95.0%, closer to 95% in all 12 comparisons.
+- **[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) no
+  longer returns a stalled optimisation.** With `s != 0`, SLSQP
+  occasionally stalled on the floor of the cumulative-hazard integrand
+  (0.3% of fits at s = 1 in simulation, nlopt status -1), or stopped
+  with an event row on the feasibility boundary under a success status
+  (0.4%), and
+  [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) returned
+  those fits silently with standard errors between 1e-16 and 1e-3. Such
+  a fit is now restarted: the problem is solved once with the quadrature
+  pairs also constrained, and the published problem is re-solved from
+  that point, in
+  [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) and in
+  the cross-validation loop alike. The restart is kept only if it
+  reaches at least as good an objective. The estimator is unchanged;
+  constraining the quadrature pairs outright removes the stalls but
+  biased beta by up to 0.35 empirical SDs at s = 1, n = 200.
+  [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) warns if
+  the optimiser still reports failure.
+- Rows with a negative weight are kept by the cumulative-hazard term of
+  the objective and by the meat, as they already were by the event term
+  and the bread.
+- For `s != 0` the feasibility constraints cover every row the weight
+  reaches, not only lags within `h`. For the Epanechnikov kernels the
+  set is unchanged.
+- `weight` now comes after `one_sided` in
+  [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md),
+  [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md),
+  [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
+  and
+  [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md), so
+  positional calls written before `weight` existed work again.
+
 ### Any weight function, not only the ones supplied
 
 - **[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md),

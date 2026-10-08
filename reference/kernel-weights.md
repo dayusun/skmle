@@ -51,8 +51,18 @@ not on whether it is positive.
 `support` is the one attribute worth setting, as a length-2 numeric
 giving the interval outside which the weight is zero. It is used to
 enumerate pairs in the asynchronous estimators, where scanning every
-pair would otherwise be quadratic. Without it a conservative default is
-assumed and the fit is correct but slower.
+pair would otherwise be quadratic, and to choose the rows that carry a
+feasibility constraint in
+[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) with
+`s != 0`. Without it a default of `[-1, 1]` is assumed; the constraint
+rows also include every row whose weight is nonzero, so a missing
+attribute never leaves a weighted row unconstrained.
+
+The same weight is used in every term of each estimating equation: the
+row weights, the risk-set averages and, for
+[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md), the
+cumulative-hazard integral and both sandwich matrices. Nothing in the
+package falls back to a built-in kernel.
 
 ## Scaling
 

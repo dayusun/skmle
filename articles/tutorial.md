@@ -150,9 +150,9 @@ summary(fit_skmle)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  1.02973    0.41714  2.4686  0.01357 *
-#> covariates2 -0.41579    0.28015 -1.4842  0.13776  
+#>             Estimate Std. Error z value  Pr(>|z|)    
+#> covariates1  1.02973    0.29390  3.5037 0.0004588 ***
+#> covariates2 -0.41579    0.31618 -1.3151 0.1884888    
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
@@ -345,8 +345,8 @@ summary(cv_fit$fit)
 #>   n= 80
 #> 
 #>             Estimate Std. Error z value  Pr(>|z|)    
-#> covariates1  1.39410    0.37867  3.6815 0.0002318 ***
-#> covariates2 -0.40813    0.30330 -1.3456 0.1784320    
+#> covariates1  1.39410    0.31690  4.3992 1.086e-05 ***
+#> covariates2 -0.40813    0.34222 -1.1926     0.233    
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
@@ -444,38 +444,37 @@ confint(fit_a)
 
 The bandwidth is the one consequential choice.
 [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-selects it by cross-validation over subjects, scoring each candidate by
-the kernel-weighted squared error on the held-out subjects:
+returns the asynchrony-corrected fit at the bandwidth that minimises its
+estimated variance:
 
 ``` r
 
 cv <- kee_async_cv(d$y, d$x,
   y ~ x, id = id, time = time,
-  h_grid = c(0.10, 0.15, 0.25, 0.40), K = 5, seed = 1, quiet = TRUE
+  h_grid = c(0.10, 0.15, 0.25, 0.40), quiet = TRUE
 )
 #> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid
 #> to check that the minimum is interior
 cv
 #> Call:
 #> kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
-#>     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), K = 5, seed = 1, 
-#>     quiet = TRUE)
+#>     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), quiet = TRUE)
 #> 
-#> 5-fold subject-level cross-validation
+#> Minimum-variance bandwidth: tr{Sigma_X V(h)} over the grid (pairs-corrected fits on all subjects)
 #> 
-#> # A tibble: 4 × 3
-#>       h cvloss nfold_used
-#>   <dbl>  <dbl>      <dbl>
-#> 1  0.1    1.09          5
-#> 2  0.15   1.16          5
-#> 3  0.25   1.27          5
-#> 4  0.4    1.42          5
+#> # A tibble: 4 × 2
+#>       h   trSV
+#>   <dbl>  <dbl>
+#> 1  0.1  0.0255
+#> 2  0.15 0.0225
+#> 3  0.25 0.0202
+#> 4  0.4  0.0192
 #> 
-#> Selected h = 0.1
+#> Selected h = 0.4
 #> 
-#> Coefficients at the refit:
+#> Coefficients at the selected h:
 #> (Intercept)           x 
-#>   0.6264998   1.3661731
+#>   0.6804317   1.4314279
 ```
 
 If the coefficients themselves vary with time,

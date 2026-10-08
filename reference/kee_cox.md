@@ -12,8 +12,8 @@ kee_cox(
   id,
   obs_times,
   h = NULL,
-  weight = NULL,
-  one_sided = TRUE
+  one_sided = TRUE,
+  weight = NULL
 )
 ```
 
@@ -49,13 +49,6 @@ kee_cox(
   [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) to
   choose it from the data.
 
-- weight:
-
-  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
-  default) for the Epanechnikov kernel implied by `one_sided`. Any R
-  function will do; see
-  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
-
 - one_sided:
 
   Logical. `TRUE` (the default) uses a half kernel: only covariate
@@ -65,6 +58,13 @@ kee_cox(
   covariate path from both sides. The switch applies to the risk-set
   averages inside the C++ backend as well as to the row weights, so the
   two are always consistent.
+
+- weight:
+
+  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
+  default) for the Epanechnikov kernel implied by `one_sided`. Any R
+  function will do; see
+  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
 
 ## Value
 

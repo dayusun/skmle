@@ -255,9 +255,9 @@ objects, the formatted inferential output is produced by
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   n= 80</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;             Estimate Std. Error z value Pr(&gt;|z|)  </span></span>
-<span><span class="co">#&gt; covariates1  1.02973    0.41714  2.4686  0.01357 *</span></span>
-<span><span class="co">#&gt; covariates2 -0.41579    0.28015 -1.4842  0.13776  </span></span>
+<span><span class="co">#&gt;             Estimate Std. Error z value  Pr(&gt;|z|)    </span></span>
+<span><span class="co">#&gt; covariates1  1.02973    0.29390  3.5037 0.0004588 ***</span></span>
+<span><span class="co">#&gt; covariates2 -0.41579    0.31618 -1.3151 0.1884888    </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -435,8 +435,8 @@ the left of the curve is real.</p>
 <span><span class="co">#&gt;   n= 80</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             Estimate Std. Error z value  Pr(&gt;|z|)    </span></span>
-<span><span class="co">#&gt; covariates1  1.39410    0.37867  3.6815 0.0002318 ***</span></span>
-<span><span class="co">#&gt; covariates2 -0.40813    0.30330 -1.3456 0.1784320    </span></span>
+<span><span class="co">#&gt; covariates1  1.39410    0.31690  4.3992 1.086e-05 ***</span></span>
+<span><span class="co">#&gt; covariates2 -0.40813    0.34222 -1.1926     0.233    </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -523,37 +523,35 @@ formula spans both: its left-hand side is looked up in
 <span><span class="co">#&gt; (Intercept) 0.4818555 0.7382607</span></span>
 <span><span class="co">#&gt; x           1.2230761 1.4500656</span></span></code></pre></div>
 <p>The bandwidth is the one consequential choice.
-<code><a href="../reference/kee_async_cv.html">kee_async_cv()</a></code> selects it by cross-validation over
-subjects, scoring each candidate by the kernel-weighted squared error on
-the held-out subjects:</p>
+<code><a href="../reference/kee_async_cv.html">kee_async_cv()</a></code> returns the asynchrony-corrected fit at the
+bandwidth that minimises its estimated variance:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_async_cv.html">kee_async_cv</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span>,</span>
 <span>  <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>  h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="fl">0.15</span>, <span class="fl">0.25</span>, <span class="fl">0.40</span><span class="op">)</span>, K <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="fl">0.15</span>, <span class="fl">0.25</span>, <span class="fl">0.40</span><span class="op">)</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid</span></span>
 <span><span class="co">#&gt; to check that the minimum is interior</span></span>
 <span><span class="va">cv</span></span>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span></span>
-<span><span class="co">#&gt;     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), K = 5, seed = 1, </span></span>
-<span><span class="co">#&gt;     quiet = TRUE)</span></span>
+<span><span class="co">#&gt;     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), quiet = TRUE)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; 5-fold subject-level cross-validation</span></span>
+<span><span class="co">#&gt; Minimum-variance bandwidth: tr{Sigma_X V(h)} over the grid (pairs-corrected fits on all subjects)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
-<span><span class="co">#&gt;       h cvloss nfold_used</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.1    1.09          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.15   1.16          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.25   1.27          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.4    1.42          5</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
+<span><span class="co">#&gt;       h   trSV</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.1  0.025<span style="text-decoration: underline;">5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.15 0.022<span style="text-decoration: underline;">5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.25 0.020<span style="text-decoration: underline;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.4  0.019<span style="text-decoration: underline;">2</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Selected h = 0.1</span></span>
+<span><span class="co">#&gt; Selected h = 0.4</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Coefficients at the refit:</span></span>
+<span><span class="co">#&gt; Coefficients at the selected h:</span></span>
 <span><span class="co">#&gt; (Intercept)           x </span></span>
-<span><span class="co">#&gt;   0.6264998   1.3661731</span></span></code></pre></div>
+<span><span class="co">#&gt;   0.6804317   1.4314279</span></span></code></pre></div>
 <p>If the coefficients themselves vary with time,
 <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve <span class="math inline">\(\beta(t)\)</span> pointwise. Both time arguments
 are smoothed there, so it converges at the bivariate rate <span class="math inline">\((n h_1 h_2)^{1/2}\)</span> and the bands are

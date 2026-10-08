@@ -18,8 +18,8 @@ skmle(
   lq_nodes = 64,
   maxeval = 10000,
   xtol_rel = 1e-06,
-  weight = NULL,
-  one_sided = TRUE
+  one_sided = TRUE,
+  weight = NULL
 )
 ```
 
@@ -83,13 +83,6 @@ skmle(
 
   Relative convergence tolerance passed to the optimizer.
 
-- weight:
-
-  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
-  default) for the Epanechnikov kernel implied by `one_sided`. Any R
-  function will do; see
-  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
-
 - one_sided:
 
   Logical. `TRUE` (the default) uses a half kernel: only covariate
@@ -99,6 +92,13 @@ skmle(
   covariate path from both sides. The switch applies to the risk-set
   averages inside the C++ backend as well as to the row weights, so the
   two are always consistent.
+
+- weight:
+
+  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
+  default) for the Epanechnikov kernel implied by `one_sided`. Any R
+  function will do; see
+  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
 
 ## Value
 
@@ -176,9 +176,9 @@ summary(fit)
 #> 
 #>   n= 80
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  1.02973    0.41714  2.4686  0.01357 *
-#> covariates2 -0.41579    0.28015 -1.4842  0.13776  
+#>             Estimate Std. Error z value  Pr(>|z|)    
+#> covariates1  1.02973    0.29390  3.5037 0.0004588 ***
+#> covariates2 -0.41579    0.31618 -1.3151 0.1884888    
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 

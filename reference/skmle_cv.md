@@ -21,8 +21,8 @@ skmle_cv(
   xtol_rel = 1e-06,
   seed = NULL,
   quiet = FALSE,
-  weight = NULL,
-  one_sided = TRUE
+  one_sided = TRUE,
+  weight = NULL
 )
 
 # S3 method for class 'cv.skmle'
@@ -104,13 +104,6 @@ print(x, ...)
 
   Logical; if `TRUE`, suppress progress output.
 
-- weight:
-
-  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
-  default) for the Epanechnikov kernel implied by `one_sided`. Any R
-  function will do; see
-  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
-
 - one_sided:
 
   Logical. `TRUE` (the default) uses a half kernel: only covariate
@@ -120,6 +113,13 @@ print(x, ...)
   covariate path from both sides. The switch applies to the risk-set
   averages inside the C++ backend as well as to the row weights, so the
   two are always consistent.
+
+- weight:
+
+  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
+  default) for the Epanechnikov kernel implied by `one_sided`. Any R
+  function will do; see
+  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
 
 - x:
 
@@ -286,9 +286,9 @@ summary(cv_fit$fit)
 #> 
 #>   n= 60
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)   
-#> covariates1  1.52299    0.51344  2.9663 0.003014 **
-#> covariates2 -0.36860    0.46092 -0.7997 0.423880   
+#>             Estimate Std. Error z value  Pr(>|z|)    
+#> covariates1  1.52299    0.40819  3.7310 0.0001907 ***
+#> covariates2 -0.36860    0.42041 -0.8768 0.3806090    
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 

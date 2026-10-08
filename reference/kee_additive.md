@@ -13,8 +13,8 @@ kee_additive(
   obs_times,
   h = NULL,
   lq_nodes = 64,
-  weight = NULL,
-  one_sided = TRUE
+  one_sided = TRUE,
+  weight = NULL
 )
 ```
 
@@ -54,13 +54,6 @@ kee_additive(
 
   Number of quadrature nodes used in the numerical integration step.
 
-- weight:
-
-  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
-  default) for the Epanechnikov kernel implied by `one_sided`. Any R
-  function will do; see
-  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
-
 - one_sided:
 
   Logical. `TRUE` (the default) uses a half kernel: only covariate
@@ -70,6 +63,13 @@ kee_additive(
   covariate path from both sides. The switch applies to the risk-set
   averages inside the C++ backend as well as to the row weights, so the
   two are always consistent.
+
+- weight:
+
+  Weight function of the standardised lag \\(t - r)/h\\, or `NULL` (the
+  default) for the Epanechnikov kernel implied by `one_sided`. Any R
+  function will do; see
+  [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
 
 ## Value
 

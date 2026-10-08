@@ -276,19 +276,19 @@ mean inventing it. The fit does not retain its data, so
 <div class="section level2">
 <h2 id="choosing-the-bandwidth">Choosing the bandwidth<a class="anchor" aria-label="anchor" href="#choosing-the-bandwidth"></a>
 </h2>
-<p>Because the rate is <span class="math inline">\((nh)^{1/2}\)</span>,
-<code>h</code> trades variance against bias directly: small
-<code>h</code> admits few pairs, large <code>h</code> admits pairs whose
-times are far apart and so pulls in a bias. <code><a href="../reference/kee_async_cv.html">kee_async_cv()</a></code>
-chooses it by cross-validation over <strong>subjects</strong>, scoring
-each candidate by the kernel-weighted squared error on the held-out
-subjects.</p>
+<p>For the uncorrected fit, <code>h</code> trades variance against bias
+directly: small <code>h</code> admits few pairs, large <code>h</code>
+admits pairs whose times are far apart and so pulls in a bias.
+<code><a href="../reference/kee_async_cv.html">kee_async_cv()</a></code> removes that bias first and then chooses
+<code>h</code> for variance alone. By default it returns the
+asynchrony-corrected fit <code>kee_async(correct = "pairs")</code> at
+the bandwidth that minimises its estimated variance.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cv</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/kee_async_cv.html">kee_async_cv</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span>
 <span>    id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>,</span>
 <span>    h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.10</span>, <span class="fl">0.15</span>, <span class="fl">0.25</span>, <span class="fl">0.40</span>, <span class="fl">0.60</span><span class="op">)</span>,</span>
-<span>    K <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid</span></span>
 <span><span class="co">#&gt; to check that the minimum is interior</span></span>
@@ -296,56 +296,101 @@ subjects.</p>
 <span><span class="co">#&gt; Call:</span></span>
 <span><span class="co">#&gt; kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span></span>
 <span><span class="co">#&gt;     time = time, h_grid = c(0.05, 0.1, 0.15, 0.25, 0.4, 0.6), </span></span>
-<span><span class="co">#&gt;     K = 5, seed = 1, quiet = TRUE)</span></span>
+<span><span class="co">#&gt;     quiet = TRUE)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; 5-fold subject-level cross-validation</span></span>
+<span><span class="co">#&gt; Minimum-variance bandwidth: tr{Sigma_X V(h)} over the grid (pairs-corrected fits on all subjects)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;       h cvloss nfold_used</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.05   1.12          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.1    1.16          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.15   1.22          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.25   1.35          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.4    1.53          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.6    1.69          5</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;       h   trSV</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.05 0.041<span style="text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.1  0.026<span style="text-decoration: underline;">6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.15 0.023<span style="text-decoration: underline;">0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.25 0.018<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.4  0.015<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.6  0.014<span style="text-decoration: underline;">0</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Selected h = 0.05</span></span>
+<span><span class="co">#&gt; Selected h = 0.6</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Coefficients at the refit:</span></span>
+<span><span class="co">#&gt; Coefficients at the selected h:</span></span>
 <span><span class="co">#&gt; (Intercept)           x </span></span>
-<span><span class="co">#&gt;   0.4667178   1.5235152</span></span></code></pre></div>
+<span><span class="co">#&gt;   0.4347785   1.5227101</span></span></code></pre></div>
 <p><code>cv_results</code> is a tibble, so it filters and plots
 directly:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cv</span><span class="op">$</span><span class="va">cv_results</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;       h cvloss nfold_used</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.05   1.12          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.1    1.16          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.15   1.22          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.25   1.35          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.4    1.53          5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.6    1.69          5</span></span></code></pre></div>
-<p>Two details of that criterion are worth knowing, because they
-determine whether it is meaningful at all.</p>
-<p><em>Folds are over subjects, never rows.</em> Rows within a subject
-come from one trajectory. Splitting by row would put the same subject on
-both sides and leak the answer into the held-out score.</p>
-<p><em>The loss is divided by the total weight.</em> A wider bandwidth
-admits more pairs and so accumulates more total squared error regardless
-of fit quality. Without the denominator the criterion would select the
-smallest candidate every time, which is not a bandwidth selection rule
-but a fixed point.</p>
-<p>If the selected value lands on an endpoint of the grid, the function
-warns and you should widen the grid: a minimum on the boundary is an
-artefact of where you stopped looking.</p>
-<p>Leaving <code>h_grid</code> unset generates one from the data,
-log-spaced over <span class="math inline">\([2(Q_3 - Q_1)n^{-0.7},\,
-2(Q_3 - Q_1)n^{-0.3}]\)</span> where <span class="math inline">\(Q_1,
-Q_3\)</span> are quartiles of the pooled observation times. It adapts to
-whatever units <code>time</code> is in.</p>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;       h   trSV</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.05 0.041<span style="text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.1  0.026<span style="text-decoration: underline;">6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.15 0.023<span style="text-decoration: underline;">0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.25 0.018<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.4  0.015<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.6  0.014<span style="text-decoration: underline;">0</span></span></span></code></pre></div>
+<p>The corrected fit uses each subject’s own covariate pairs in place of
+the covariate at the response time. Two covariate occasions <span class="math inline">\(S_k \ne S_{k'}\)</span> of the same subject
+give <span class="math inline">\((X(S_k), X(S_{k'}))\)</span> with
+the distribution of <span class="math inline">\((X(S), X(T))\)</span> at
+the same two times, so the kernel-weighted moment <span class="math inline">\(\sum W_h(T - S) X(S) Y(T)\)</span> is matched by
+<span class="math inline">\(\sum W_h(S_{k'} - S_k) X(S_k)
+g\{X(S_{k'})^\top \beta\}\)</span>, each normalised by its total
+weight and the covariate pairs reweighted by the ratio of the response
+and covariate visit intensities. The resulting equation has mean zero at
+the true <span class="math inline">\(\beta\)</span> for every
+<code>h</code>, with no model for the covariate process, so the
+bandwidth affects only the variance.
+<code>kee_async(correct = "gaussian")</code> is an alternative for one
+stationary Gaussian covariate.</p>
+<p>Since the corrected estimate is unbiased at every <code>h</code>, its
+mean squared error is its variance. The default criterion
+(<code>method = "variance"</code>) solves the corrected equation on all
+subjects at each candidate and selects the <code>h</code> that minimises
+<span class="math inline">\(\mathrm{tr}\{\hat\Sigma_X \hat
+V(h)\}\)</span>, where <span class="math inline">\(\hat V(h)\)</span> is
+the sandwich variance of <span class="math inline">\(\hat\beta(h)\)</span> and <span class="math inline">\(\hat\Sigma_X\)</span> is the second moment of
+<span class="math inline">\(X\)</span> at the response times. <span class="math inline">\(\hat V(h)\)</span> converges at every candidate,
+so the selected <code>h</code> converges to the minimiser of the true
+variance, and the Wald interval at it has its nominal level in large
+samples. No folds are involved.</p>
+<p>Two cross-validation criteria are also available.
+<code>method = "sync"</code> scores each held-out pair by the unweighted
+loss of <span class="math inline">\(Y(T)\)</span> against the fitted
+mean at <span class="math inline">\(X(S)\)</span>, regresses these
+losses on an intercept and the estimated variogram matrix <span class="math inline">\(\hat\Gamma(|T - S|)\)</span>, <span class="math inline">\(\Gamma(u) = E[\{x(t) - x(t-u)\}\{x(t) -
+x(t-u)\}^\top]\)</span>, and retains the intercept, which is the
+held-out loss at zero asynchrony. For the identity link and a stationary
+covariate the asynchrony part of the loss is exactly linear in <span class="math inline">\(\Gamma(u)\)</span>, so the intercept ranks
+bandwidths by the error of the training fit.</p>
+<p>Its differences between candidates are as noisy as the differences
+themselves, so the selected <code>h</code> stays random as <span class="math inline">\(n\)</span> grows. Because the same subjects choose
+<code>h</code> and fit <span class="math inline">\(\beta\)</span>, the
+estimate can then carry a bias of the order of its standard error.</p>
+<p>In both cross-validation methods, folds are formed from subjects,
+never from rows. Rows within a subject come from one trajectory.
+Splitting by row would place the same subject in both the training and
+the held-out sets, so the held-out score would not be computed on
+independent data.</p>
+<p><code>method = "plain"</code> scores the uncorrected fit by the
+kernel-weighted squared error on the held-out subjects, divided by the
+total weight. It selects a much smaller bandwidth than the corrected fit
+needs, and the uncorrected fit at that bandwidth keeps a bias of the
+order of its standard error.</p>
+<p>If the selected value is an endpoint of the grid, the function issues
+a warning. A minimum on the boundary reflects the range of the grid
+rather than the criterion, and the grid should then be widened.</p>
+<p>Leaving <code>h_grid</code> unset generates <code>n_h</code>
+candidates (100 by default), log-spaced up to the largest lag between a
+response and a covariate observation of the same subject; at larger
+bandwidths the kernel already contains every pair. For
+<code>method = "variance"</code> the grid starts at the smallest
+<code>h</code> at which at least <span class="math inline">\(\lceil
+n^{1/2} \rceil\)</span> subjects have a pair inside the kernel, and for
+<code>method = "sync"</code> at the smallest <code>h</code> at which
+every training fold has at least <span class="math inline">\(\lceil
+n_{\text{train}}^{1/2} \rceil\)</span> such subjects; for
+<code>method = "plain"</code> it starts at the smallest lag. The grid is
+in the units of <code>time</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="check-how-much-the-answer-moves-with-h">Check how much the answer moves with h<a class="anchor" aria-label="anchor" href="#check-how-much-the-answer-moves-with-h"></a>
@@ -483,8 +528,8 @@ is a different statement from evidence that <span class="math inline">\(\beta(t)
 </h2>
 <p><code>link = "log"</code> and <code>link = "logistic"</code> fit the
 corresponding generalised linear models by Newton-Raphson on the same
-estimating equation. Everything above applies unchanged; the
-cross-validation loss stays on the response scale.</p>
+estimating equation. Everything above applies unchanged, including the
+bandwidth selection.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">11</span><span class="op">)</span></span>
 <span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">400</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">1.0</span><span class="op">)</span>, link <span class="op">=</span> <span class="st">"logistic"</span><span class="op">)</span></span>

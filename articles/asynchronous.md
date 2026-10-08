@@ -235,12 +235,14 @@ data, so
 
 ## Choosing the bandwidth
 
-Because the rate is \\(nh)^{1/2}\\, `h` trades variance against bias
-directly: small `h` admits few pairs, large `h` admits pairs whose times
-are far apart and so pulls in a bias.
+For the uncorrected fit, `h` trades variance against bias directly:
+small `h` admits few pairs, large `h` admits pairs whose times are far
+apart and so pulls in a bias.
 [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-chooses it by cross-validation over **subjects**, scoring each candidate
-by the kernel-weighted squared error on the held-out subjects.
+removes that bias first and then chooses `h` for variance alone. By
+default it returns the asynchrony-corrected fit
+`kee_async(correct = "pairs")` at the bandwidth that minimises its
+estimated variance.
 
 ``` r
 
@@ -248,7 +250,7 @@ cv <- d$y |>
   kee_async_cv(d$x, y ~ x,
     id = id, time = time,
     h_grid = c(0.05, 0.10, 0.15, 0.25, 0.40, 0.60),
-    K = 5, seed = 1, quiet = TRUE
+    quiet = TRUE
   )
 #> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid
 #> to check that the minimum is interior
@@ -256,25 +258,25 @@ cv
 #> Call:
 #> kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
 #>     time = time, h_grid = c(0.05, 0.1, 0.15, 0.25, 0.4, 0.6), 
-#>     K = 5, seed = 1, quiet = TRUE)
+#>     quiet = TRUE)
 #> 
-#> 5-fold subject-level cross-validation
+#> Minimum-variance bandwidth: tr{Sigma_X V(h)} over the grid (pairs-corrected fits on all subjects)
 #> 
-#> # A tibble: 6 × 3
-#>       h cvloss nfold_used
-#>   <dbl>  <dbl>      <dbl>
-#> 1  0.05   1.12          5
-#> 2  0.1    1.16          5
-#> 3  0.15   1.22          5
-#> 4  0.25   1.35          5
-#> 5  0.4    1.53          5
-#> 6  0.6    1.69          5
+#> # A tibble: 6 × 2
+#>       h   trSV
+#>   <dbl>  <dbl>
+#> 1  0.05 0.0414
+#> 2  0.1  0.0266
+#> 3  0.15 0.0230
+#> 4  0.25 0.0187
+#> 5  0.4  0.0157
+#> 6  0.6  0.0140
 #> 
-#> Selected h = 0.05
+#> Selected h = 0.6
 #> 
-#> Coefficients at the refit:
+#> Coefficients at the selected h:
 #> (Intercept)           x 
-#>   0.4667178   1.5235152
+#>   0.4347785   1.5227101
 ```
 
 `cv_results` is a tibble, so it filters and plots directly:
@@ -282,38 +284,80 @@ cv
 ``` r
 
 cv$cv_results
-#> # A tibble: 6 × 3
-#>       h cvloss nfold_used
-#>   <dbl>  <dbl>      <dbl>
-#> 1  0.05   1.12          5
-#> 2  0.1    1.16          5
-#> 3  0.15   1.22          5
-#> 4  0.25   1.35          5
-#> 5  0.4    1.53          5
-#> 6  0.6    1.69          5
+#> # A tibble: 6 × 2
+#>       h   trSV
+#>   <dbl>  <dbl>
+#> 1  0.05 0.0414
+#> 2  0.1  0.0266
+#> 3  0.15 0.0230
+#> 4  0.25 0.0187
+#> 5  0.4  0.0157
+#> 6  0.6  0.0140
 ```
 
-Two details of that criterion are worth knowing, because they determine
-whether it is meaningful at all.
+The corrected fit uses each subject’s own covariate pairs in place of
+the covariate at the response time. Two covariate occasions \\S_k \ne
+S\_{k'}\\ of the same subject give \\(X(S_k), X(S\_{k'}))\\ with the
+distribution of \\(X(S), X(T))\\ at the same two times, so the
+kernel-weighted moment \\\sum W_h(T - S) X(S) Y(T)\\ is matched by
+\\\sum W_h(S\_{k'} - S_k) X(S_k) g\\X(S\_{k'})^\top \beta\\\\, each
+normalised by its total weight and the covariate pairs reweighted by the
+ratio of the response and covariate visit intensities. The resulting
+equation has mean zero at the true \\\beta\\ for every `h`, with no
+model for the covariate process, so the bandwidth affects only the
+variance. `kee_async(correct = "gaussian")` is an alternative for one
+stationary Gaussian covariate.
 
-*Folds are over subjects, never rows.* Rows within a subject come from
-one trajectory. Splitting by row would put the same subject on both
-sides and leak the answer into the held-out score.
+Since the corrected estimate is unbiased at every `h`, its mean squared
+error is its variance. The default criterion (`method = "variance"`)
+solves the corrected equation on all subjects at each candidate and
+selects the `h` that minimises \\\mathrm{tr}\\\hat\Sigma_X \hat
+V(h)\\\\, where \\\hat V(h)\\ is the sandwich variance of
+\\\hat\beta(h)\\ and \\\hat\Sigma_X\\ is the second moment of \\X\\ at
+the response times. \\\hat V(h)\\ converges at every candidate, so the
+selected `h` converges to the minimiser of the true variance, and the
+Wald interval at it has its nominal level in large samples. No folds are
+involved.
 
-*The loss is divided by the total weight.* A wider bandwidth admits more
-pairs and so accumulates more total squared error regardless of fit
-quality. Without the denominator the criterion would select the smallest
-candidate every time, which is not a bandwidth selection rule but a
-fixed point.
+Two cross-validation criteria are also available. `method = "sync"`
+scores each held-out pair by the unweighted loss of \\Y(T)\\ against the
+fitted mean at \\X(S)\\, regresses these losses on an intercept and the
+estimated variogram matrix \\\hat\Gamma(\|T - S\|)\\, \\\Gamma(u) =
+E\[\\x(t) - x(t-u)\\\\x(t) - x(t-u)\\^\top\]\\, and retains the
+intercept, which is the held-out loss at zero asynchrony. For the
+identity link and a stationary covariate the asynchrony part of the loss
+is exactly linear in \\\Gamma(u)\\, so the intercept ranks bandwidths by
+the error of the training fit.
 
-If the selected value lands on an endpoint of the grid, the function
-warns and you should widen the grid: a minimum on the boundary is an
-artefact of where you stopped looking.
+Its differences between candidates are as noisy as the differences
+themselves, so the selected `h` stays random as \\n\\ grows. Because the
+same subjects choose `h` and fit \\\beta\\, the estimate can then carry
+a bias of the order of its standard error.
 
-Leaving `h_grid` unset generates one from the data, log-spaced over
-\\\[2(Q_3 - Q_1)n^{-0.7},\\ 2(Q_3 - Q_1)n^{-0.3}\]\\ where \\Q_1, Q_3\\
-are quartiles of the pooled observation times. It adapts to whatever
-units `time` is in.
+In both cross-validation methods, folds are formed from subjects, never
+from rows. Rows within a subject come from one trajectory. Splitting by
+row would place the same subject in both the training and the held-out
+sets, so the held-out score would not be computed on independent data.
+
+`method = "plain"` scores the uncorrected fit by the kernel-weighted
+squared error on the held-out subjects, divided by the total weight. It
+selects a much smaller bandwidth than the corrected fit needs, and the
+uncorrected fit at that bandwidth keeps a bias of the order of its
+standard error.
+
+If the selected value is an endpoint of the grid, the function issues a
+warning. A minimum on the boundary reflects the range of the grid rather
+than the criterion, and the grid should then be widened.
+
+Leaving `h_grid` unset generates `n_h` candidates (100 by default),
+log-spaced up to the largest lag between a response and a covariate
+observation of the same subject; at larger bandwidths the kernel already
+contains every pair. For `method = "variance"` the grid starts at the
+smallest `h` at which at least \\\lceil n^{1/2} \rceil\\ subjects have a
+pair inside the kernel, and for `method = "sync"` at the smallest `h` at
+which every training fold has at least \\\lceil n\_{\text{train}}^{1/2}
+\rceil\\ such subjects; for `method = "plain"` it starts at the smallest
+lag. The grid is in the units of `time`.
 
 ## Check how much the answer moves with h
 
@@ -469,8 +513,7 @@ different statement from evidence that \\\beta(t)\\ is flat.
 
 `link = "log"` and `link = "logistic"` fit the corresponding generalised
 linear models by Newton-Raphson on the same estimating equation.
-Everything above applies unchanged; the cross-validation loss stays on
-the response scale.
+Everything above applies unchanged, including the bandwidth selection.
 
 ``` r
 

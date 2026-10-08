@@ -91,7 +91,8 @@ with \(W_h(u) = W(u/h)/h\) and \(W\) the Epanechnikov kernel.</p>
 <span>  link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"identity"</span>, <span class="st">"log"</span>, <span class="st">"logistic"</span><span class="op">)</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  maxit <span class="op">=</span> <span class="fl">50L</span>,</span>
-<span>  tol <span class="op">=</span> <span class="fl">1e-08</span></span>
+<span>  tol <span class="op">=</span> <span class="fl">1e-08</span>,</span>
+<span>  correct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"pairs"</span>, <span class="st">"gaussian"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -150,7 +151,15 @@ strictly before the response.</p></dd>
 
 
 <dt id="arg-maxit-tol">maxit, tol<a class="anchor" aria-label="anchor" href="#arg-maxit-tol"></a></dt>
-<dd><p>Newton-Raphson controls, ignored when <code>link = "identity"</code>.</p></dd>
+<dd><p>Newton-Raphson controls, ignored when <code>link = "identity"</code>
+and <code>correct = "none"</code>.</p></dd>
+
+
+<dt id="arg-correct">correct<a class="anchor" aria-label="anchor" href="#arg-correct"></a></dt>
+<dd><p><code>"none"</code> (default): the kernel equation of Cao, Zeng and
+Fine. <code>"pairs"</code>: the pair-moment correction, with no model for the
+covariates. <code>"gaussian"</code>: the correction for one stationary Gaussian
+covariate. See Details.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -170,8 +179,13 @@ strictly before the response.</p></dd>
 <dt>npair</dt>
 <dd><p>Number of weighted (response, covariate) pairs contributing.</p></dd>
 
-<dt>h, one_sided, link</dt>
+<dt>h, one_sided, link, correct</dt>
 <dd><p>Fit settings.</p></dd>
+
+<dt>variogram</dt>
+<dd><p>With <code>correct = "gaussian"</code>, a list holding the estimated
+variogram <code>gamma</code> (a function of the lag), the covariate mean <code>m</code> and
+variance <code>s2</code>; otherwise <code>NULL</code>.</p></dd>
 
 <dt>convergence</dt>
 <dd><p><code>0</code> converged, <code>1</code> singular, <code>2</code> hit <code>maxit</code>.</p></dd>
@@ -233,6 +247,45 @@ that drifts steadily as <code>h</code> grows, so fit at several bandwidths and l
 before trusting one number.</p>
 <p>Observation times are assumed independent of the response and covariate
 processes. Informative observation times need a different estimator.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="asynchrony-correction">Asynchrony correction<a class="anchor" aria-label="anchor" href="#asynchrony-correction"></a></h2>
+    <p><code>correct</code> removes the asynchrony bias instead of shrinking it with \(h\).</p>
+<p><code>correct = "pairs"</code> uses each subject's own covariate pairs in place of the
+unobserved covariate at the response time. For two covariate occasions
+\(S_{ik} \ne S_{ik'}\) of the same subject,
+\((X_i(S_{ik}), X_i(S_{ik'}))\) has the distribution of
+\((X(S), X(T))\) at the same two times, so the equation
+$$\frac{\sum W_h(T_{ij} - S_{ik}) X_i(S_{ik}) Y_i(T_{ij})}
+           {\sum W_h(T_{ij} - S_{ik})}
+    - \frac{\sum_{k \ne k'} W_h(S_{ik'} - S_{ik}) r(S_{ik'}) X_i(S_{ik})
+             g\{X_i(S_{ik'})^\top \beta\}}
+           {\sum_{k \ne k'} W_h(S_{ik'} - S_{ik}) r(S_{ik'})} = 0$$
+has mean zero at the true \(\beta\) for every \(h\). Here
+\(r = \lambda_T / \lambda_S\) is the ratio of the response and covariate
+visit intensities, estimated from the observation times alone by a logistic
+regression of the occasion type on a natural spline of time (4 degrees of
+freedom). No model is assumed for the covariate process: it need not be
+Gaussian or stationary, and any number of covariates, including ones
+constant within a subject, is allowed. At least one covariate must vary
+within a subject. The fit needs subjects with two or more covariate
+occasions and assumes visit processes whose second-order intensity
+factorises (for example Poisson visits).</p>
+<p><code>correct = "gaussian"</code> replaces \(g\{X(S)^\top\beta\}\) by
+\(E[g\{X(T)^\top\beta\} \mid x(S)]\) for a single covariate that is
+second-order stationary with variogram
+\(\gamma(u) = E\{x(t) - x(t - u)\}^2\), mean \(m\) and variance
+\(s^2\), computed as if \(x(T) \mid x(S)\) were normal with mean
+\(m + \rho(u)\{x(S) - m\}\) and variance \(s^2\{1 - \rho(u)^2\}\),
+\(\rho(u) = 1 - \gamma(u)/(2s^2)\). The variogram is estimated by
+isotonic regression of \(\{x(S_{ik}) - x(S_{ik'})\}^2\) on
+\(|S_{ik} - S_{ik'}|\). With the identity link it needs only
+stationarity; with the log and logistic links it also needs normality. It
+has a smaller variance than <code>"pairs"</code> when these assumptions hold and a bias
+that grows with \(h\) when they do not.</p>
+<p>Both corrected equations are unbiased at every fixed \(h\) under their
+assumptions, so \(h\) affects only the variance. The standard errors are
+the sandwich with the intensity ratio or the variogram treated as known.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

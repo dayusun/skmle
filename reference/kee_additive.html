@@ -60,8 +60,8 @@ a kernel estimating-equation approach.</p>
 <span>  <span class="va">obs_times</span>,</span>
 <span>  h <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  lq_nodes <span class="op">=</span> <span class="fl">64</span>,</span>
-<span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  one_sided <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  one_sided <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  weight <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -100,12 +100,6 @@ observation times as a rule of thumb and reported in a message. Use
 <dd><p>Number of quadrature nodes used in the numerical integration step.</p></dd>
 
 
-<dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
-<dd><p>Weight function of the standardised lag \((t - r)/h\), or
-<code>NULL</code> (the default) for the Epanechnikov kernel implied by <code>one_sided</code>.
-Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p></dd>
-
-
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>
 <dd><p>Logical. <code>TRUE</code> (the default) uses a half kernel: only
 covariate observations strictly before the event or quadrature time inform
@@ -114,6 +108,12 @@ published. <code>FALSE</code> uses a full, two-sided kernel, smoothing the covar
 path from both sides. The switch applies to the risk-set
 averages inside the C++ backend as well as to the row weights, so the two
 are always consistent.</p></dd>
+
+
+<dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
+<dd><p>Weight function of the standardised lag \((t - r)/h\), or
+<code>NULL</code> (the default) for the Epanechnikov kernel implied by <code>one_sided</code>.
+Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p></dd>
 
 </dl></div>
     <div class="section level2">

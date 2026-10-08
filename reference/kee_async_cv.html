@@ -5,19 +5,17 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Choose the bandwidth for an asynchronous longitudinal fit — kee_async_cv"><meta name="description" content="K-fold cross-validation over subjects for kee_async(). For each
-candidate bandwidth the estimator is fitted on the training subjects and
-scored on the held-out subjects by the kernel-weighted squared error of the
-fitted mean,
-$$ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
-       [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
-      {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.$$"><meta property="og:description" content="K-fold cross-validation over subjects for kee_async(). For each
-candidate bandwidth the estimator is fitted on the training subjects and
-scored on the held-out subjects by the kernel-weighted squared error of the
-fitted mean,
-$$ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
-       [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
-      {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.$$"></head><body>
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Choose the bandwidth for an asynchronous longitudinal fit — kee_async_cv"><meta name="description" content='Select the bandwidth for kee_async() and return the fit at it. The
+default, method = "variance", selects the bandwidth that minimises the
+estimated variance of an asynchrony-corrected fit
+(kee_async(correct = "pairs") by default). method = "sync" selects it
+for the same fit by K-fold cross-validation over subjects, and
+method = "plain" is ordinary cross-validation of the uncorrected fit.'><meta property="og:description" content='Select the bandwidth for kee_async() and return the fit at it. The
+default, method = "variance", selects the bandwidth that minimises the
+estimated variance of an asynchrony-corrected fit
+(kee_async(correct = "pairs") by default). method = "sync" selects it
+for the same fit by K-fold cross-validation over subjects, and
+method = "plain" is ordinary cross-validation of the uncorrected fit.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -57,13 +55,12 @@ $$ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
     </div>
 
     <div class="ref-description section level2">
-    <p>K-fold cross-validation over <strong>subjects</strong> for <code><a href="kee_async.html">kee_async()</a></code>. For each
-candidate bandwidth the estimator is fitted on the training subjects and
-scored on the held-out subjects by the kernel-weighted squared error of the
-fitted mean,
-$$ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
-       [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
-      {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.$$</p>
+    <p>Select the bandwidth for <code><a href="kee_async.html">kee_async()</a></code> and return the fit at it. The
+default, <code>method = "variance"</code>, selects the bandwidth that minimises the
+estimated variance of an asynchrony-corrected fit
+(<code>kee_async(correct = "pairs")</code> by default). <code>method = "sync"</code> selects it
+for the same fit by K-fold cross-validation over subjects, and
+<code>method = "plain"</code> is ordinary cross-validation of the uncorrected fit.</p>
     </div>
 
     <div class="section level2">
@@ -75,15 +72,18 @@ $$ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
 <span>  <span class="va">id</span>,</span>
 <span>  <span class="va">time</span>,</span>
 <span>  h_grid <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  n_h <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>  n_h <span class="op">=</span> <span class="fl">100L</span>,</span>
 <span>  K <span class="op">=</span> <span class="fl">5L</span>,</span>
+<span>  repeats <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  one_sided <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"identity"</span>, <span class="st">"log"</span>, <span class="st">"logistic"</span><span class="op">)</span>,</span>
 <span>  intercept <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  maxit <span class="op">=</span> <span class="fl">50L</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1e-08</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variance"</span>, <span class="st">"sync"</span>, <span class="st">"plain"</span><span class="op">)</span>,</span>
+<span>  correct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pairs"</span>, <span class="st">"gaussian"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'cv.kee_async'</span></span>
@@ -125,15 +125,21 @@ Accepts the same three forms as <code>id</code>.</p></dd>
 
 <dt id="arg-h-grid">h_grid<a class="anchor" aria-label="anchor" href="#arg-h-grid"></a></dt>
 <dd><p>Optional numeric vector of candidate bandwidths. When <code>NULL</code> a
-grid is generated from the observation times; see Details.</p></dd>
+grid is built from the data; see Details.</p></dd>
 
 
 <dt id="arg-n-h">n_h<a class="anchor" aria-label="anchor" href="#arg-n-h"></a></dt>
-<dd><p>Number of candidates to generate when <code>h_grid</code> is <code>NULL</code>.</p></dd>
+<dd><p>Number of candidates in the default grid.</p></dd>
 
 
 <dt id="arg-k">K<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
-<dd><p>Number of folds. Reduced to the number of subjects if larger.</p></dd>
+<dd><p>Number of folds. Reduced to the number of subjects if larger.
+Cross-validation methods only.</p></dd>
+
+
+<dt id="arg-repeats">repeats<a class="anchor" aria-label="anchor" href="#arg-repeats"></a></dt>
+<dd><p>Number of independent random K-fold splits; the held-out
+loss is averaged over them. Cross-validation methods only.</p></dd>
 
 
 <dt id="arg-one-sided">one_sided<a class="anchor" aria-label="anchor" href="#arg-one-sided"></a></dt>
@@ -152,16 +158,30 @@ strictly before the response.</p></dd>
 
 
 <dt id="arg-maxit-tol">maxit, tol<a class="anchor" aria-label="anchor" href="#arg-maxit-tol"></a></dt>
-<dd><p>Newton-Raphson controls, ignored when <code>link = "identity"</code>.</p></dd>
+<dd><p>Newton-Raphson controls, ignored when <code>link = "identity"</code>
+and <code>correct = "none"</code>.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>Optional integer seed for the subject-to-fold assignment. Pass it
-(or call <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> first) to make the selection reproducible.</p></dd>
+(or call <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> first) to make the selection reproducible.
+Cross-validation methods only.</p></dd>
 
 
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
 <dd><p>Logical; suppress progress output.</p></dd>
+
+
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p><code>"variance"</code> (default): the bandwidth minimising the estimated
+variance of the asynchrony-corrected fit. <code>"sync"</code>: synchronous-loss
+cross-validation of the corrected fit. <code>"plain"</code>: kernel-weighted
+cross-validation of the uncorrected fit. See Details.</p></dd>
+
+
+<dt id="arg-correct">correct<a class="anchor" aria-label="anchor" href="#arg-correct"></a></dt>
+<dd><p>The correction used with <code>method = "variance"</code> or
+<code>"sync"</code>: <code>"pairs"</code> (default) or <code>"gaussian"</code>; see <code><a href="kee_async.html">kee_async()</a></code>.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
@@ -178,53 +198,109 @@ strictly before the response.</p></dd>
 <dd><p>The selected bandwidth.</p></dd>
 
 <dt>fit</dt>
-<dd><p>The <code><a href="kee_async.html">kee_async()</a></code> fit refitted on all subjects at <code>h_cv</code>.</p></dd>
+<dd><p>The <code><a href="kee_async.html">kee_async()</a></code> fit on all subjects at <code>h_cv</code>, with the
+chosen <code>correct</code> unless <code>method = "plain"</code>.</p></dd>
 
 <dt>cv_results</dt>
-<dd><p>Data frame of <code>h</code>, the mean held-out loss <code>cvloss</code>, and
-<code>nfold_used</code>, the number of folds that produced a usable fit.</p></dd>
+<dd><p>Data frame of <code>h</code> and the criterion. For <code>"variance"</code>,
+<code>trSV</code>, \(\mathrm{tr}\{\hat\Sigma_X \hat V(h)\}\). For the
+cross-validation methods, <code>cvloss</code> (the intercept for <code>"sync"</code>, the
+weighted held-out loss for <code>"plain"</code>) and <code>nfold_used</code>, the number of
+folds over all repeats that produced a usable loss.</p></dd>
 
-<dt>h_grid, fold_id, seed, call</dt>
-<dd><p>Selection metadata.</p></dd>
+<dt>h_grid, fold_id, repeats, method, correct, seed, call</dt>
+<dd><p>Selection
+metadata; <code>fold_id</code> and <code>repeats</code> are <code>NULL</code> for <code>"variance"</code>.</p></dd>
 
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="minimum-variance-bandwidth-method-variance-">Minimum-variance bandwidth (<code>method = "variance"</code>)<a class="anchor" aria-label="anchor" href="#minimum-variance-bandwidth-method-variance-"></a></h2>
+    <p>The corrected equation has mean zero at the true coefficients for every
+\(h\) (see <code><a href="kee_async.html">kee_async()</a></code>), so the bandwidth affects only the variance and
+the mean squared error of \(\hat\beta(h)\) is its variance. The corrected
+equation is solved on all subjects at every candidate, and the selected
+\(h\) minimises
+$$\mathrm{tr}\{\hat\Sigma_X \hat V(h)\},$$
+with \(\hat V(h)\) the sandwich variance of \(\hat\beta(h)\) and
+\(\hat\Sigma_X\) the second moment of \(X\) at the response times:
+the covariate rows weighted by the estimated intensity ratio
+\(\lambda_T / \lambda_S\) for <code>correct = "pairs"</code>, unweighted for
+<code>correct = "gaussian"</code>. The criterion is \(n\) times the expected squared
+prediction error \(E[\{X(T)^\top(\hat\beta - \beta_0)\}^2]\), and it
+does not depend on the scale of the covariates.</p>
+<p>\(\hat V(h)\) converges at every point of the finite grid, so when
+\(V\) has a unique minimiser \(h^*\) on the grid the selected bandwidth
+equals \(h^*\) with probability tending to one. The estimate at the
+selected bandwidth is then asymptotically normal with variance
+\(V(h^*)\), and the Wald interval has its nominal level asymptotically.
+No assumption on the distribution of the covariates is involved beyond
+those of the corrected equation.</p>
+<p>The default grid is <code>n_h</code> log-spaced bandwidths up to the largest
+within-subject lag \(|T_{ij} - S_{ik}|\), starting at the smallest
+\(h\) at which at least \(\lceil n^{1/2} \rceil\) subjects have a pair
+inside the kernel (for <code>correct = "pairs"</code>, both a response-covariate pair
+and a covariate pair). <code>K</code>, <code>repeats</code> and <code>seed</code> are not used.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="synchronous-loss-cross-validation-method-sync-">Synchronous-loss cross-validation (<code>method = "sync"</code>)<a class="anchor" aria-label="anchor" href="#synchronous-loss-cross-validation-method-sync-"></a></h2>
+    <p>For each candidate \(h\) and fold, the corrected equation is fitted on
+the training subjects. Every within-subject pair \((T, S)\) of the
+held-out subjects gets the unweighted loss of \(Y(T)\) against the fitted
+mean at \(X(S)\): squared error (identity), Poisson deviance (log) or
+Bernoulli log loss (logistic). The losses are regressed on an intercept and
+the entries of the estimated variogram matrix \(\hat\Gamma(|T - S|)\),
+\(\Gamma(u) = E[\{x(t) - x(t-u)\}\{x(t) - x(t-u)\}^\top]\), of the
+covariates that vary within subjects. The intercept, the held-out loss at
+zero asynchrony, is retained. Each entry of
+\(\hat\Gamma\) comes from isotonic regressions of squared increments of
+\(x_j\) and \(x_j + x_k\) on the lag. For the identity link and a
+stationary covariate the intercept's expectation is
+\(\sigma^2 + \delta_h^\top \Sigma_X \delta_h\), with \(\delta_h\) the
+error of the training fit, because the asynchrony part of the loss is
+exactly linear in \(\Gamma(u)\). Intercepts are averaged over folds (and
+over <code>repeats</code> splits) and the minimiser is selected.</p>
+<p>A candidate is retained only when every fold produces a fit whose
+intercept is at least the mean saturated loss of the held-out pairs
+(\(\min_\eta\) of the loss: 0 for squared error and log loss,
+\(y - y \log y\) for the Poisson loss). An intercept below it comes from a
+degenerate fold fit.</p>
+<p>The default grid is <code>n_h</code> log-spaced bandwidths up to the largest
+within-subject lag \(|T_{ij} - S_{ik}|\), starting at the smallest
+\(h\) at which every training fold has at least
+\(\lceil n_{\mathrm{train}}^{1/2} \rceil\) subjects with a pair inside the
+kernel (for <code>correct = "pairs"</code>, both a response-covariate pair and a
+covariate pair). Below that, a fold fit uses a handful of pairs and its
+error does not shrink with \(n\).</p>
+<p>The guarantee is consistency: the selected \(h\) lies on a finite grid on
+which every corrected fit is consistent. The criterion's differences between
+candidates are of the same order as its noise, so the selected \(h\) does
+not converge. Because the same subjects choose \(h\) and fit \(\beta\),
+the estimate at the selected \(h\) can carry a selection bias of the order
+of its standard error, and the Wald interval has no coverage guarantee.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="plain-cross-validation-method-plain-">Plain cross-validation (<code>method = "plain"</code>)<a class="anchor" aria-label="anchor" href="#plain-cross-validation-method-plain-"></a></h2>
+    <p>Each candidate is fitted without correction and scored on the held-out
+subjects by the kernel-weighted squared error of the fitted mean at that
+bandwidth,
+$$ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
+       [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
+      {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.$$
+The default grid runs from the smallest to the largest within-subject lag
+(positive lags \(T_{ij} - S_{ik}\) only when <code>one_sided = TRUE</code>; exact
+zeros excluded). A candidate is dropped only when it fails on every fold.
+This criterion is minimised at a bandwidth much smaller than the
+MSE-optimal one, and the uncorrected fit keeps a bias of the order of its
+standard error there.</p>
+    </div>
     <div class="section level2">
     <h2 id="how-the-folds-are-formed">How the folds are formed<a class="anchor" aria-label="anchor" href="#how-the-folds-are-formed"></a></h2>
     <p>Folds are formed over subjects, never over rows. Rows within a subject come
 from one trajectory, so splitting by row would put a subject on both sides of
 the split and leak the answer into the held-out score.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="why-the-loss-is-normalised">Why the loss is normalised<a class="anchor" aria-label="anchor" href="#why-the-loss-is-normalised"></a></h2>
-    <p>Dividing by the total weight is what makes bandwidths comparable. A larger
-<code>h</code> admits more pairs and so accumulates a larger unnormalised error whatever
-the quality of the fit; without the denominator the criterion would select
-the smallest candidate every time.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="why-squared-error-and-not-a-likelihood">Why squared error and not a likelihood<a class="anchor" aria-label="anchor" href="#why-squared-error-and-not-a-likelihood"></a></h2>
-    <p>These estimators solve an estimating equation. There is no likelihood, so
-nothing to evaluate as a held-out log-likelihood. The same weighted squared error on the
-response scale is used for all three links, applied after <code>link</code>.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="the-default-grid">The default grid<a class="anchor" aria-label="anchor" href="#the-default-grid"></a></h2>
-    <p>When <code>h_grid</code> is <code>NULL</code> the grid is log-spaced over
-\([2 (Q_3 - Q_1) n^{-0.7},\, 2 (Q_3 - Q_1) n^{-0.3}]\), where
-\(Q_1, Q_3\) are quartiles of the pooled observation times of both tables
-and \(n\) is the number of subjects. This is the rule used by the reference
-implementation of Cao, Zeng and Fine's method, and it adapts to the scale of
-<code>time</code> on its own.</p>
 <p>Always look at <code>cv_results</code>. If the minimum sits at an endpoint of the grid a
-warning is issued, and the grid should be widened by hand: the selected value
-is then a boundary artefact rather than a minimum.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Cao, H., Zeng, D. and Fine, J. P. (2015). Regression analysis of sparse
-asynchronous longitudinal data. <em>Journal of the Royal Statistical
-Society, Series B</em> 77, 755-776.</p>
+warning is issued.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -238,36 +314,69 @@ Society, Series B</em> 77, 755-776.</p>
 <span class="r-in"><span><span class="va">cv</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">kee_async_cv</span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span></span>
 <span class="r-in"><span>    id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>,</span></span>
-<span class="r-in"><span>    h_grid <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.15</span>, <span class="fl">0.25</span>, <span class="fl">0.40</span><span class="op">)</span>, K <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>    n_h <span class="op">=</span> <span class="fl">20</span>, K <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>the selected bandwidth is at an endpoint of 'h_grid'; widen the grid to check that the minimum is interior</span>
 <span class="r-in"><span><span class="va">cv</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     time = time, h_grid = c(0.15, 0.25, 0.4), K = 3, seed = 1, </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     quiet = TRUE)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     time = time, n_h = 20, K = 3, seed = 1, quiet = TRUE)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3-fold subject-level cross-validation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Minimum-variance bandwidth: tr{Sigma_X V(h)} over the grid (pairs-corrected fits on all subjects)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       h cvloss nfold_used</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0.15   1.35          3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.25   1.51          3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  0.4    1.67          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 20 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          h   trSV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 0.003<span style="text-decoration: underline;">74</span> 1.19  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 0.005<span style="text-decoration: underline;">02</span> 0.560 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 0.006<span style="text-decoration: underline;">73</span> 0.316 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 0.009<span style="text-decoration: underline;">03</span> 0.220 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 0.012<span style="text-decoration: underline;">1</span>  0.179 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 0.016<span style="text-decoration: underline;">2</span>  0.171 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 0.021<span style="text-decoration: underline;">8</span>  0.171 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 0.029<span style="text-decoration: underline;">2</span>  0.138 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 0.039<span style="text-decoration: underline;">2</span>  0.109 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 0.052<span style="text-decoration: underline;">6</span>  0.088<span style="text-decoration: underline;">1</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> 0.070<span style="text-decoration: underline;">6</span>  0.087<span style="text-decoration: underline;">2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> 0.094<span style="text-decoration: underline;">6</span>  0.083<span style="text-decoration: underline;">4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> 0.127   0.095<span style="text-decoration: underline;">2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> 0.170   0.095<span style="text-decoration: underline;">3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> 0.228   0.094<span style="text-decoration: underline;">3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> 0.306   0.092<span style="text-decoration: underline;">5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> 0.411   0.089<span style="text-decoration: underline;">3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> 0.551   0.079<span style="text-decoration: underline;">4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span> 0.739   0.073<span style="text-decoration: underline;">0</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span> 0.992   0.069<span style="text-decoration: underline;">6</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Selected h = 0.15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Selected h = 0.991538</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients at the refit:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Coefficients at the selected h:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)           x </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   0.6103921   1.5031392 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.6313399   1.7001935 </span>
 <span class="r-in"><span><span class="va">cv</span><span class="op">$</span><span class="va">cv_results</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       h cvloss nfold_used</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0.15   1.35          3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.25   1.51          3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  0.4    1.67          3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 20 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          h   trSV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 0.003<span style="text-decoration: underline;">74</span> 1.19  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 0.005<span style="text-decoration: underline;">02</span> 0.560 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 0.006<span style="text-decoration: underline;">73</span> 0.316 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 0.009<span style="text-decoration: underline;">03</span> 0.220 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 0.012<span style="text-decoration: underline;">1</span>  0.179 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 0.016<span style="text-decoration: underline;">2</span>  0.171 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 0.021<span style="text-decoration: underline;">8</span>  0.171 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 0.029<span style="text-decoration: underline;">2</span>  0.138 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 0.039<span style="text-decoration: underline;">2</span>  0.109 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 0.052<span style="text-decoration: underline;">6</span>  0.088<span style="text-decoration: underline;">1</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> 0.070<span style="text-decoration: underline;">6</span>  0.087<span style="text-decoration: underline;">2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> 0.094<span style="text-decoration: underline;">6</span>  0.083<span style="text-decoration: underline;">4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> 0.127   0.095<span style="text-decoration: underline;">2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> 0.170   0.095<span style="text-decoration: underline;">3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> 0.228   0.094<span style="text-decoration: underline;">3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> 0.306   0.092<span style="text-decoration: underline;">5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> 0.411   0.089<span style="text-decoration: underline;">3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> 0.551   0.079<span style="text-decoration: underline;">4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span> 0.739   0.073<span style="text-decoration: underline;">0</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span> 0.992   0.069<span style="text-decoration: underline;">6</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

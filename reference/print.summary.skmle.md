@@ -50,9 +50,9 @@ print(summary(fit))
 #> 
 #>   n= 60
 #> 
-#>             Estimate Std. Error z value Pr(>|z|)  
-#> covariates1  0.94921    0.49488  1.9180  0.05511 .
-#> covariates2 -0.29827    0.32313 -0.9231  0.35598  
+#>             Estimate Std. Error z value Pr(>|z|)   
+#> covariates1  0.94921    0.33148  2.8636 0.004189 **
+#> covariates2 -0.29827    0.37203 -0.8017 0.422702   
 #> ---
 #> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 
