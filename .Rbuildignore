@@ -24,3 +24,7 @@
 ^tests/test_plot\.R$
 ^tests/test_plot\.png$
 ^sims$
+^\.claude$
+^Rplots\.pdf$
+^.*\.tar\.gz$
+^CITATION\.cff$

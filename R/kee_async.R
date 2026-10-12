@@ -375,6 +375,8 @@
 #'   \item{coefficients}{Named coefficient vector.}
 #'   \item{var}{Sandwich covariance matrix \eqn{A^{-1} B A^{-1}}.}
 #'   \item{A, Sigma}{The bread and the meat of the sandwich.}
+#'   \item{scores}{Per-subject score contributions, one row per subject;
+#'     `Sigma` is `crossprod(scores)`.}
 #'   \item{n}{Number of subjects, the unit the asymptotics are in.}
 #'   \item{npair}{Number of weighted (response, covariate) pairs contributing.}
 #'   \item{h, one_sided, link, correct}{Fit settings.}
@@ -485,6 +487,7 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
         W = fit$bread,
         Sigma = crossprod(fit$U),
         A = fit$bread,
+        scores = fit$U,
         convergence = fit$convergence,
         n = d$n,
         npair = fit$npair,

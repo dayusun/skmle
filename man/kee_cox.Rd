@@ -46,8 +46,10 @@ Any R function will do; see \link{kernel-weights}.}
 }
 \value{
 An object of class \code{kee} containing coefficient estimates, the estimated
-variance-covariance matrix, the estimating-equation matrices, convergence status,
-and the original function call.
+variance-covariance matrix, the estimating-equation matrices \code{W} and
+\code{Sigma}, the per-subject score contributions \code{scores} (one row per subject,
+so that \code{Sigma} is \code{crossprod(scores) / n^2}), convergence status, and the
+original function call.
 }
 \description{
 Fit the proportional hazards model for sparse longitudinal covariate data using

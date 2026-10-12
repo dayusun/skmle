@@ -83,8 +83,10 @@
 #'
 #' @return
 #' An object of class `kee` containing coefficient estimates, the estimated
-#' variance-covariance matrix, the estimating-equation matrices, convergence status,
-#' and the original function call.
+#' variance-covariance matrix, the estimating-equation matrices `W` and
+#' `Sigma`, the per-subject score contributions `scores` (one row per subject,
+#' so that `Sigma` is `crossprod(scores) / n^2`), convergence status, and the
+#' original function call.
 #'
 #' @examples
 #' \donttest{
@@ -220,6 +222,7 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE,
         var = var_est,
         W = W,
         Sigma = Sigma,
+        scores = var_res$U,
         convergence = estres$termcd,
         n = n,
         h = h,

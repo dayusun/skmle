@@ -414,15 +414,18 @@ arma::mat calc_A(const arma::vec &beta, const arma::vec &gamma, double s,
   return A_est / n_subj;
 }
 
+// Per-subject contributions to the profiled score for beta, one row per
+// subject. calc_B() is their mean outer product; the rows themselves are what
+// the covariance of estimates at two bandwidths needs.
 // [[Rcpp::export]]
-arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
-                 double tau, const arma::mat &covariates, const arma::vec &X,
-                 const arma::vec &delta, const arma::vec &kerval,
-                 const arma::ivec &ev_index, const arma::mat &K_ev,
-                 const arma::vec &id, const arma::mat &bsmat_XX,
-                 const arma::vec &lq_x, const arma::vec &lq_w,
-                 const arma::mat &bsmat_tt_all, const arma::mat &kerval_tt_all,
-                 int n_subj) {
+arma::mat calc_scores(const arma::vec &beta, const arma::vec &gamma, double s,
+                      double tau, const arma::mat &covariates,
+                      const arma::vec &X, const arma::vec &delta,
+                      const arma::vec &kerval, const arma::ivec &ev_index,
+                      const arma::mat &K_ev, const arma::vec &id,
+                      const arma::mat &bsmat_XX, const arma::vec &lq_x,
+                      const arma::vec &lq_w, const arma::mat &bsmat_tt_all,
+                      const arma::mat &kerval_tt_all, int n_subj) {
   int n = X.n_elem;
   int p = covariates.n_cols;
 
@@ -522,13 +525,26 @@ arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
     }
   }
 
-  arma::mat B_est = arma::zeros<arma::mat>(p, p);
+  arma::mat scores(n_subj, p);
   for (int subj = 0; subj < n_subj; ++subj) {
-    arma::vec bb_diff = id_to_bb1[subj] - id_to_bb2[subj];
-    B_est += bb_diff * trans(bb_diff);
+    scores.row(subj) = trans(id_to_bb1[subj] - id_to_bb2[subj]);
   }
+  return scores;
+}
 
-  return B_est / n_subj;
+// [[Rcpp::export]]
+arma::mat calc_B(const arma::vec &beta, const arma::vec &gamma, double s,
+                 double tau, const arma::mat &covariates, const arma::vec &X,
+                 const arma::vec &delta, const arma::vec &kerval,
+                 const arma::ivec &ev_index, const arma::mat &K_ev,
+                 const arma::vec &id, const arma::mat &bsmat_XX,
+                 const arma::vec &lq_x, const arma::vec &lq_w,
+                 const arma::mat &bsmat_tt_all, const arma::mat &kerval_tt_all,
+                 int n_subj) {
+  arma::mat sc = calc_scores(beta, gamma, s, tau, covariates, X, delta, kerval,
+                             ev_index, K_ev, id, bsmat_XX, lq_x, lq_w,
+                             bsmat_tt_all, kerval_tt_all, n_subj);
+  return trans(sc) * sc / n_subj;
 }
 
 // [[Rcpp::export]]
@@ -794,4 +810,209 @@ double locf_nll_cpp_r(const arma::mat &node_bs, const arma::vec &node_w,
                       const arma::uvec &keep) {
   return locf_nll_cpp(node_bs, node_w, node_row, node_subj, ev_bs, ev_row,
                       ev_delta, n_subj, Z, beta, gamma, s, keep);
+}
+
+
+// ---------------------------------------------------------------------------
+// Interior-point (log-barrier) Newton fit
+// ---------------------------------------------------------------------------
+//
+// For 0 <= s <= 1 the kernel-weighted log-likelihood is concave in
+// theta = (beta, gamma): log H(eta) = log(1 + s eta)/s is concave, -H(eta) is
+// concave because 1/s >= 1, and eta is linear in theta.  The feasibility
+// conditions 1 + s eta > 0 are linear in theta.  So the problem is a convex
+// program, and a barrier method solves it to its global optimum with every
+// iterate strictly feasible.  There is no floor on H: the constraints cover
+// every point the objective evaluates (event rows and quadrature pairs with
+// nonzero weight), which is condition (C7) of the paper rather than the
+// event-row constraints SLSQP is given.  For s > 1 the objective is no longer
+// concave and the method finds a local optimum.
+
+namespace {
+
+struct BarrierTerms {
+  arma::mat E;     // event design rows [Z_i, B(X_i)]
+  arma::vec e_w;   // kerval_i / n
+  arma::mat Q;     // quadrature design rows [Z_i, B(t_q)]
+  arma::vec q_w;   // quadrature weight * kerval_tt(q, i) / n
+};
+
+inline double logH(double eta, double s) {
+  return s == 0.0 ? eta : std::log1p(s * eta) / s;
+}
+inline double H(double eta, double s) {
+  return s == 0.0 ? std::exp(eta) : std::pow(1.0 + s * eta, 1.0 / s);
+}
+inline double H1(double eta, double s) {  // H'
+  return s == 0.0 ? std::exp(eta) : std::pow(1.0 + s * eta, 1.0 / s - 1.0);
+}
+inline double H2(double eta, double s) {  // H''
+  return s == 0.0 ? std::exp(eta)
+                  : (1.0 - s) * std::pow(1.0 + s * eta, 1.0 / s - 2.0);
+}
+
+// log-likelihood (scaled by 1/n), or -inf outside the open feasible set
+double bl_value(const BarrierTerms &T, const arma::vec &th, double s) {
+  const arma::vec ee = T.E * th, eq = T.Q * th;
+  double v = 0.0;
+  for (arma::uword i = 0; i < ee.n_elem; ++i) {
+    if (s != 0.0 && 1.0 + s * ee[i] <= 0.0) return -arma::datum::inf;
+    v += T.e_w[i] * logH(ee[i], s);
+  }
+  for (arma::uword j = 0; j < eq.n_elem; ++j) {
+    if (s != 0.0 && 1.0 + s * eq[j] <= 0.0) return -arma::datum::inf;
+    v -= T.q_w[j] * H(eq[j], s);
+  }
+  return v;
+}
+
+// value, gradient and Hessian of t * loglik + sum log(1 + s eta) over the
+// constrained rows (every row of E and Q when s != 0)
+double bl_phi(const BarrierTerms &T, const arma::vec &th, double s, double t,
+              arma::vec *g, arma::mat *Hs) {
+  const arma::vec ee = T.E * th, eq = T.Q * th;
+  const int d = th.n_elem;
+  double v = 0.0;
+  arma::vec ge(ee.n_elem), gq(eq.n_elem), he(ee.n_elem), hq(eq.n_elem);
+  for (arma::uword i = 0; i < ee.n_elem; ++i) {
+    const double c = 1.0 + s * ee[i];
+    if (s != 0.0 && c <= 0.0) return -arma::datum::inf;
+    // d/deta log H = 1/c ; d2 = -s/c^2  (s = 0: 1 and 0)
+    v += t * T.e_w[i] * logH(ee[i], s);
+    ge[i] = t * T.e_w[i] * (s == 0.0 ? 1.0 : 1.0 / c);
+    he[i] = t * T.e_w[i] * (s == 0.0 ? 0.0 : -s / (c * c));
+    if (s != 0.0) {
+      v += std::log(c);
+      ge[i] += s / c;
+      he[i] -= s * s / (c * c);
+    }
+  }
+  for (arma::uword j = 0; j < eq.n_elem; ++j) {
+    const double c = 1.0 + s * eq[j];
+    if (s != 0.0 && c <= 0.0) return -arma::datum::inf;
+    v -= t * T.q_w[j] * H(eq[j], s);
+    gq[j] = -t * T.q_w[j] * H1(eq[j], s);
+    hq[j] = -t * T.q_w[j] * H2(eq[j], s);
+    if (s != 0.0) {
+      v += std::log(c);
+      gq[j] += s / c;
+      hq[j] -= s * s / (c * c);
+    }
+  }
+  if (g) *g = T.E.t() * ge + T.Q.t() * gq;
+  if (Hs) {
+    *Hs = T.E.t() * (T.E.each_col() % he) + T.Q.t() * (T.Q.each_col() % hq);
+    (void)d;
+  }
+  return v;
+}
+
+// Damped Newton on phi for fixed t.  Returns Newton decrement^2 / 2 at exit.
+double bl_newton(const BarrierTerms &T, arma::vec &th, double s, double t,
+                 int max_iter, double tol, int &iters) {
+  double lam2 = arma::datum::inf;
+  for (int it = 0; it < max_iter; ++it) {
+    if (it % 20 == 0) Rcpp::checkUserInterrupt();
+    arma::vec g;
+    arma::mat Hs;
+    const double v = bl_phi(T, th, s, t, &g, &Hs);
+    // phi is concave for 0 <= s <= 1 with nonnegative weights; regularise
+    // when it is not (s > 1, or a signed weight) so the step is an ascent.
+    arma::mat negH = -Hs;
+    negH = 0.5 * (negH + negH.t());
+    arma::mat R;
+    double ridge = 0.0;
+    while (!arma::chol(R, negH + ridge * arma::eye(negH.n_rows, negH.n_cols))) {
+      ridge = ridge == 0.0 ? 1e-10 * std::max(1.0, arma::abs(negH).max())
+                           : ridge * 10.0;
+    }
+    const arma::vec step = arma::solve(
+        arma::trimatu(R), arma::solve(arma::trimatl(R.t()), g));
+    lam2 = arma::dot(g, step);
+    ++iters;
+    if (lam2 / 2.0 <= tol) break;
+    double a = 1.0;
+    double vn = bl_phi(T, th + a * step, s, t, nullptr, nullptr);
+    while (!(vn >= v + 0.25 * a * lam2) && a > 1e-14) {
+      a *= 0.5;
+      vn = bl_phi(T, th + a * step, s, t, nullptr, nullptr);
+    }
+    if (a <= 1e-14) break;
+    th += a * step;
+  }
+  return lam2 / 2.0;
+}
+
+}  // namespace
+
+// [[Rcpp::export]]
+List skmle_barrier_fit(int n, int p, int gammap, double s, double tau,
+                       const arma::mat &covariates, const arma::mat &bsmat,
+                       const arma::vec &X, const arma::vec &delta,
+                       const arma::vec &kerval, const arma::vec &lq_x,
+                       const arma::vec &lq_w, const arma::mat &bsmat_tt_all,
+                       const arma::mat &kerval_tt_all, int max_newton,
+                       double gap_tol) {
+  const int d = p + gammap;
+  const int n_row = X.n_elem;
+  const int n_quad = lq_x.n_elem;
+  BarrierTerms T;
+
+  std::vector<arma::uword> ev;
+  for (int i = 0; i < n_row; ++i)
+    if (delta[i] == 1.0 && kerval[i] != 0) ev.push_back(i);
+  T.E.set_size(ev.size(), d);
+  T.e_w.set_size(ev.size());
+  for (std::size_t k = 0; k < ev.size(); ++k) {
+    T.E.row(k) = arma::join_rows(covariates.row(ev[k]), bsmat.row(ev[k]));
+    T.e_w[k] = kerval[ev[k]] / n;
+  }
+
+  // Same pairs nll_obj integrates over: node < X_i and nonzero weight.
+  std::vector<std::pair<int, int>> qp;
+  for (int q = 0; q < n_quad; ++q) {
+    const double tt = 0.5 * tau * (lq_x[q] + 1.0);
+    for (int i = 0; i < n_row; ++i)
+      if (tt < X[i] && kerval_tt_all(q, i) != 0) qp.emplace_back(q, i);
+  }
+  T.Q.set_size(qp.size(), d);
+  T.q_w.set_size(qp.size());
+  for (std::size_t k = 0; k < qp.size(); ++k) {
+    const int q = qp[k].first, i = qp[k].second;
+    T.Q.row(k) = arma::join_rows(covariates.row(i), bsmat_tt_all.row(q));
+    T.q_w[k] = 0.5 * tau * lq_w[q] * kerval_tt_all(q, i) / n;
+  }
+
+  // theta = 0 is strictly feasible: 1 + s * 0 = 1.
+  arma::vec th(d, arma::fill::zeros);
+  const double m = (s != 0.0) ? static_cast<double>(T.E.n_rows + T.Q.n_rows)
+                              : 0.0;
+  int iters = 0, outer = 0, status = 1;
+  if (s == 0.0) {
+    const double dec = bl_newton(T, th, s, 1.0, max_newton, 1e-12, iters);
+    status = (dec <= 1e-10) ? 1 : -1;
+  } else {
+    // Start where the duality gap m/t is O(1) on the scale of the objective
+    // (the log-likelihood is divided by n), rather than at the analytic
+    // centre, which costs many Newton steps for nothing.
+    double t = std::max(1.0, m);
+    while (true) {
+      ++outer;
+      const double dec = bl_newton(T, th, s, t, max_newton, 1e-10, iters);
+      if (!std::isfinite(dec) || iters >= max_newton * 60) {
+        status = -1;
+        break;
+      }
+      if (m / t < gap_tol) break;
+      t *= 10.0;
+    }
+  }
+  const double ll = bl_value(T, th, s);
+  return List::create(Named("status") = status,
+                      Named("minimum") = -ll,
+                      Named("solution") = arma::conv_to<std::vector<double>>::from(th),
+                      Named("newton_iterations") = iters,
+                      Named("outer_iterations") = outer,
+                      Named("duality_gap") = (s != 0.0) ? m / (std::max(1.0, m) * std::pow(10.0, outer - 1)) : 0.0,
+                      Named("n_constraints") = m);
 }

@@ -40,6 +40,52 @@
   minimiser is selected. The new `repeats` argument averages the loss over
   several random splits (default 1).
 
+## Bias-corrected bandwidth selection
+
+* **New functions `skmle_bc()`, `kee_cox_bc()` and `kee_async_bc()` choose the
+  bandwidth and extrapolate the coefficients to h = 0.** The three share one
+  engine. Each fits its estimator (`skmle()`, `kee_cox()`, `kee_async()`) over
+  a grid of bandwidths (by default 12, log-spaced) and chooses h by a plug-in
+  estimate of the mean squared error: a weighted least-squares regression of
+  the estimate on 1, h, [h^2,] 1/h across the grid, with weights from the
+  sandwich variances. The coefficients are then extrapolated to h = 0 by a
+  weighted regression on h over the grid points in [h/2, 2h]. The argument
+  `degree` is 1 (the default) or 2; `degree = 2` also removes an h^2 term.
+  The returned objects have class `"bc"`, with `print()` and `summary()`
+  methods.
+* **The reported covariance includes the choice of bandwidth.** It is computed
+  from the joint covariance of the estimates across bandwidths, built from
+  each fit's per-subject influence contributions, with a parametric bootstrap
+  of the grid (`n_boot`, default 2000) that accounts for the data-driven
+  choice of h. `n_boot = 0` gives the variance with the bandwidth and window
+  held fixed.
+* **A Wald interval at the selected bandwidth undercovers.** At the
+  MSE-optimal bandwidth the bias and the standard deviation are of the same
+  order. With bias of order h, the asymptotic coverage of the nominal 95%
+  interval is 0.891.
+* **In simulation, the 95% intervals for the first coefficient from the new
+  functions had coverage between 0.929 and 0.960.** With 1000 replicates per
+  cell and n from 200 to 3200: for `skmle()` with s in {0, 0.5, 1}, the
+  coverage of the interval for beta_1 was 0.936 to 0.960 with `skmle_bc()`,
+  against 0.720 to 0.770 at n = 3200 for the interval at the selected
+  bandwidth without extrapolation. `kee_cox_bc()` gave 0.938 to 0.956. For
+  the slope, `kee_async_bc()`, with an Ornstein-Uhlenbeck covariate
+  (covariance exp(-|s - t|)) and a two-sided kernel, gave 0.929 to 0.950,
+  while the split-half selector of Cao, Zeng and Fine (2015) gave 0.869 at
+  n = 200, falling to 0.783 at n = 3200.
+* **`skmle()`, `kee_cox()` and `kee_async()` return `scores`.** These are the
+  per-subject contributions to the score; their crossproduct reproduces the
+  meat of the sandwich.
+* **`?skmle_cv` is corrected: the carried-forward approximation in the
+  held-out score does not cancel across bandwidths.** The help page said it
+  did. The held-out score rewards fits attenuated by the time since the last
+  visit, so the selected bandwidth converges to a constant fixed by the visit
+  process rather than to zero, and the coefficients at `h_cv` are biased for
+  beta. In simulation (200 replicates per cell, n = 100 to 400, grid
+  [0.03, 1]), the coverage of the interval for beta_1 at the cross-validated
+  bandwidth was 0.760 to 0.880. Use `skmle_cv()` for prediction and
+  `skmle_bc()` for inference on beta.
+
 ## Bug fixes
 
 * **A custom `weight` now reaches the risk-set averages.** `kee_cox()`,

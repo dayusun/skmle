@@ -42,6 +42,8 @@ navbar:
         href: articles/tutorial.html
       - text: Asynchronous Longitudinal Regression
         href: articles/asynchronous.html
+      - text: "Choosing the bandwidth: bias correction and inference"
+        href: articles/bandwidth.html
       - text: Benchmarking skmle Against SurvSparse
         href: articles/benchmark_survsparse.html
     news:
@@ -72,6 +74,15 @@ reference:
   - kee_async
   - kee_async_cv
   - kee_async_td
+
+- title: Bandwidth selection with bias correction
+  desc: >
+    Fit an estimator over a grid of bandwidths, choose one by a plug-in mean
+    squared error, extrapolate the coefficients to bandwidth zero, and report
+    a standard error that accounts for the choice.
+  contents:
+  - skmle_bc
+  - kee_bc
 
 - title: Kernel weights
   desc: >
@@ -117,4 +128,5 @@ articles:
   contents:
   - tutorial
   - asynchronous
+  - bandwidth
   - benchmark_survsparse

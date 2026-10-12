@@ -53,6 +53,10 @@ calc_A <- function(beta, gamma, s, covariates, X, delta, kerval, ev_index, K_ev,
     .Call(`_skmle_calc_A`, beta, gamma, s, covariates, X, delta, kerval, ev_index, K_ev, bsmat_XX, n_subj)
 }
 
+calc_scores <- function(beta, gamma, s, tau, covariates, X, delta, kerval, ev_index, K_ev, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj) {
+    .Call(`_skmle_calc_scores`, beta, gamma, s, tau, covariates, X, delta, kerval, ev_index, K_ev, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj)
+}
+
 calc_B <- function(beta, gamma, s, tau, covariates, X, delta, kerval, ev_index, K_ev, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj) {
     .Call(`_skmle_calc_B`, beta, gamma, s, tau, covariates, X, delta, kerval, ev_index, K_ev, id, bsmat_XX, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, n_subj)
 }
@@ -67,5 +71,9 @@ skmle_cv_cpp <- function(p, gammap, s, tau, h_grid, K, fold_id_subj, id_vec, cov
 
 locf_nll_cpp_r <- function(node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, Z, beta, gamma, s, keep) {
     .Call(`_skmle_locf_nll_cpp_r`, node_bs, node_w, node_row, node_subj, ev_bs, ev_row, ev_delta, n_subj, Z, beta, gamma, s, keep)
+}
+
+skmle_barrier_fit <- function(n, p, gammap, s, tau, covariates, bsmat, X, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, max_newton, gap_tol) {
+    .Call(`_skmle_skmle_barrier_fit`, n, p, gammap, s, tau, covariates, bsmat, X, delta, kerval, lq_x, lq_w, bsmat_tt_all, kerval_tt_all, max_newton, gap_tol)
 }
 

@@ -11,8 +11,11 @@
 # So the held-out score is an ordinary log-likelihood: no kernel, no h. The
 # covariate path a held-out subject needs between its observation times is filled
 # in by carrying the last observation forward (and the first one backward, before
-# the first observation). That approximation is the same for every candidate, so
-# it cancels out of the comparison and what is left is the quality of the fit.
+# the first observation). That approximation does not cancel across candidates:
+# the carried-forward covariate is out of date by the time since the last visit,
+# so the score rewards fits attenuated by that lag, and the selected bandwidth
+# converges to a constant set by the visit process rather than to zero
+# (dev/sim_cv/theory). skmle_bc() is the route to inference on beta.
 #
 #' Pieces of the held-out log-likelihood that do not depend on the bandwidth
 #'
@@ -138,9 +141,17 @@ locf_score <- function(X_time, obs_times_vec, id_vec, delta, knots, tau,
 #' candidate wins every grid on every data set, and coefficients further from the
 #' truth are preferred to coefficients nearer it. Dividing by the admitted
 #' weight, or scoring at one bandwidth held fixed across the grid, does not
-#' rescue it. The carried-forward likelihood is one yardstick for every
-#' candidate, so its approximation cancels out of the comparison and what is left
-#' is the quality of the fit.
+#' rescue it.
+#'
+#' The carried-forward likelihood still favours some bandwidths over others. A carried-forward covariate is out of date by the time since the
+#' last visit, so the held-out score is maximised by coefficients attenuated by
+#' that lag. The fit produces such coefficients at a bandwidth of the same
+#' order as the typical gap between visits. As \eqn{n} grows, the selected
+#' bandwidth therefore converges to a constant determined by the visit
+#' process rather than to zero, and the coefficients at `h_cv` remain biased
+#' for \eqn{\beta} at any sample size. Use `skmle_cv()` to choose a bandwidth
+#' for predicting the hazard, and [skmle_bc()] to estimate \eqn{\beta} with
+#' confidence intervals.
 #'
 #' # The default grid
 #'

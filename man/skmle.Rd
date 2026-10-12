@@ -16,7 +16,8 @@ skmle(
   maxeval = 10000,
   xtol_rel = 1e-06,
   one_sided = TRUE,
-  weight = NULL
+  weight = NULL,
+  optimizer = c("slsqp", "barrier")
 )
 }
 \arguments{
@@ -66,6 +67,16 @@ are always consistent.}
 \item{weight}{Weight function of the standardised lag \eqn{(t - r)/h}, or
 \code{NULL} (the default) for the Epanechnikov kernel implied by \code{one_sided}.
 Any R function will do; see \link{kernel-weights}.}
+
+\item{optimizer}{\code{"slsqp"} (the default) maximises the objective with
+NLopt's SLSQP, constraining \code{1 + s * eta >= 0} at the event-time rows and
+flooring the hazard elsewhere, which is the estimator as published.
+\code{"barrier"} uses an interior-point (log-barrier) Newton method that keeps
+\code{1 + s * eta > 0} at every point the objective evaluates, event rows and
+quadrature pairs alike, so no floor is needed. For \verb{0 <= s <= 1} that
+problem is concave and the barrier fit is its global optimum. The two
+coincide at \code{s = 0}, where there are no constraints. \code{maxeval} and
+\code{xtol_rel} apply to \code{"slsqp"} only.}
 }
 \value{
 An object of class \code{skmle} containing:
@@ -75,6 +86,8 @@ An object of class \code{skmle} containing:
 \item \code{gamma}: estimated spline coefficients for the baseline component,
 \item \code{loglik}: maximized log-likelihood,
 \item \code{convergence}: optimizer status code,
+\item \code{scores}: per-subject contributions to the score for the coefficients
+(one row per subject), from which the sandwich's \code{B} is formed,
 \item model metadata such as \code{n}, \code{s}, \code{h}, and \code{call}.
 }
 }

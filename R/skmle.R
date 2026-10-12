@@ -40,6 +40,15 @@
 #'   integration.
 #' @param maxeval Maximum number of optimizer evaluations.
 #' @param xtol_rel Relative convergence tolerance passed to the optimizer.
+#' @param optimizer `"slsqp"` (the default) maximises the objective with
+#'   NLopt's SLSQP, constraining `1 + s * eta >= 0` at the event-time rows and
+#'   flooring the hazard elsewhere, which is the estimator as published.
+#'   `"barrier"` uses an interior-point (log-barrier) Newton method that keeps
+#'   `1 + s * eta > 0` at every point the objective evaluates, event rows and
+#'   quadrature pairs alike, so no floor is needed. For `0 <= s <= 1` that
+#'   problem is concave and the barrier fit is its global optimum. The two
+#'   coincide at `s = 0`, where there are no constraints. `maxeval` and
+#'   `xtol_rel` apply to `"slsqp"` only.
 #'
 #' @details
 #' `skmle()` is the main model-fitting function in the package. It combines:
@@ -65,6 +74,8 @@
 #' * `gamma`: estimated spline coefficients for the baseline component,
 #' * `loglik`: maximized log-likelihood,
 #' * `convergence`: optimizer status code,
+#' * `scores`: per-subject contributions to the score for the coefficients
+#'   (one row per subject), from which the sandwich's `B` is formed,
 #' * model metadata such as `n`, `s`, `h`, and `call`.
 #'
 #' @examples
@@ -100,7 +111,9 @@
 #' @importFrom splines ns
 #' @importFrom gaussquad legendre.quadrature.rules
 #' @export
-skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE, weight = NULL) {
+skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_nodes = 64, maxeval = 10000, xtol_rel = 1e-6, one_sided = TRUE, weight = NULL,
+                  optimizer = c("slsqp", "barrier")) {
+  optimizer <- match.arg(optimizer)
   weight <- resolve_weight(weight, one_sided)
   # validate inputs --------------------------------------------------------
   if (missing(formula) || missing(data) || missing(id) || missing(obs_times)) {
@@ -196,7 +209,17 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
                                 bsmat_tt_mat[quad[, 1], , drop = FALSE]))
   }
 
-  res <- skmle_cpp_fit(
+  res <- if (optimizer == "barrier") {
+    skmle_barrier_fit(
+      n = n, p = ncol(Z), gammap = ncol(bsmat), s = s, tau = tau,
+      covariates = as.matrix(Z), bsmat = as.matrix(bsmat),
+      X = as.numeric(X_time), delta = as.numeric(delta),
+      kerval = as.numeric(kerval), lq_x = as.numeric(lq_x),
+      lq_w = as.numeric(lq_w), bsmat_tt_all = bsmat_tt_mat,
+      kerval_tt_all = as.matrix(kerval_tt_all),
+      max_newton = 200L, gap_tol = 1e-8
+    )
+  } else skmle_cpp_fit(
     n = n,
     p = ncol(Z),
     gammap = ncol(bsmat),
@@ -248,7 +271,10 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     n_subj = n
   )
 
-  B_est <- calc_B(
+  # Per-subject score contributions. B is their mean outer product; the rows
+  # are kept on the fit because the covariance of estimates at two bandwidths
+  # (skmle_bc()) is built from them.
+  scores <- calc_scores(
     beta = beta_est,
     gamma = gamma_est,
     s = s,
@@ -267,6 +293,7 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     kerval_tt_all = as.matrix(kerval_tt_all),
     n_subj = n
   )
+  B_est <- crossprod(scores) / n
 
   var_est <- safe_sandwich(A_est, B_est, scale = 1 / n, what = "skmle variance")
 
@@ -285,7 +312,9 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
     loglik = -res$minimum,
     A = A_est,
     B = B_est,
+    scores = scores,
     convergence = res$status,
+    optimizer = optimizer,
     n = n,
     s = s,
     h = h,

@@ -111,13 +111,14 @@ List kee_cox_var(const arma::vec &beta, const arma::mat &covariates,
 
   W = W / static_cast<double>(n_subj);
 
-  arma::mat Sigma = arma::zeros<arma::mat>(p, p);
-  for (int j = 0; j < n_subj; ++j) {
-    Sigma += id_to_sigma[j] * trans(id_to_sigma[j]);
-  }
-  Sigma = Sigma / std::pow(static_cast<double>(n_subj), 2.0);
+  // Per-subject score contributions, one row per subject; Sigma is their
+  // outer-product sum over n^2.
+  arma::mat U(n_subj, p);
+  for (int j = 0; j < n_subj; ++j) U.row(j) = trans(id_to_sigma[j]);
+  arma::mat Sigma = trans(U) * U / std::pow(static_cast<double>(n_subj), 2.0);
 
-  return List::create(Named("W") = W, Named("Sigma") = Sigma);
+  return List::create(Named("W") = W, Named("Sigma") = Sigma,
+                      Named("U") = U);
 }
 
 // [[Rcpp::export]]

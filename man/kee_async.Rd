@@ -66,6 +66,8 @@ An object of class \code{kee} with components
 \item{coefficients}{Named coefficient vector.}
 \item{var}{Sandwich covariance matrix \eqn{A^{-1} B A^{-1}}.}
 \item{A, Sigma}{The bread and the meat of the sandwich.}
+\item{scores}{Per-subject score contributions, one row per subject;
+\code{Sigma} is \code{crossprod(scores)}.}
 \item{n}{Number of subjects, the unit the asymptotics are in.}
 \item{npair}{Number of weighted (response, covariate) pairs contributing.}
 \item{h, one_sided, link, correct}{Fit settings.}
