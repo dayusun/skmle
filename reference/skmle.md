@@ -19,7 +19,8 @@ skmle(
   maxeval = 10000,
   xtol_rel = 1e-06,
   one_sided = TRUE,
-  weight = NULL
+  weight = NULL,
+  optimizer = c("slsqp", "barrier")
 )
 ```
 
@@ -100,6 +101,18 @@ skmle(
   function will do; see
   [kernel-weights](https://www.sundayu.me/skmle/reference/kernel-weights.md).
 
+- optimizer:
+
+  `"slsqp"` (the default) maximises the objective with NLopt's SLSQP,
+  constraining `1 + s * eta >= 0` at the event-time rows and flooring
+  the hazard elsewhere, which is the estimator as published. `"barrier"`
+  uses an interior-point (log-barrier) Newton method that keeps
+  `1 + s * eta > 0` at every point the objective evaluates, event rows
+  and quadrature pairs alike, so no floor is needed. For `0 <= s <= 1`
+  that problem is concave and the barrier fit is its global optimum. The
+  two coincide at `s = 0`, where there are no constraints. `maxeval` and
+  `xtol_rel` apply to `"slsqp"` only.
+
 ## Value
 
 An object of class `skmle` containing:
@@ -114,6 +127,9 @@ An object of class `skmle` containing:
 - `loglik`: maximized log-likelihood,
 
 - `convergence`: optimizer status code,
+
+- `scores`: per-subject contributions to the score for the coefficients
+  (one row per subject), from which the sandwich's `B` is formed,
 
 - model metadata such as `n`, `s`, `h`, and `call`.
 

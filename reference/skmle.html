@@ -31,6 +31,7 @@ log-likelihood estimator (SMKLE)."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
     <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/bandwidth.html">Choosing the bandwidth: bias correction and inference</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -68,7 +69,8 @@ log-likelihood estimator (SMKLE).</p>
 <span>  maxeval <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  xtol_rel <span class="op">=</span> <span class="fl">1e-06</span>,</span>
 <span>  one_sided <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  weight <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  optimizer <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slsqp"</span>, <span class="st">"barrier"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -146,6 +148,18 @@ are always consistent.</p></dd>
 <code>NULL</code> (the default) for the Epanechnikov kernel implied by <code>one_sided</code>.
 Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p></dd>
 
+
+<dt id="arg-optimizer">optimizer<a class="anchor" aria-label="anchor" href="#arg-optimizer"></a></dt>
+<dd><p><code>"slsqp"</code> (the default) maximises the objective with
+NLopt's SLSQP, constraining <code>1 + s * eta &gt;= 0</code> at the event-time rows and
+flooring the hazard elsewhere, which is the estimator as published.
+<code>"barrier"</code> uses an interior-point (log-barrier) Newton method that keeps
+<code>1 + s * eta &gt; 0</code> at every point the objective evaluates, event rows and
+quadrature pairs alike, so no floor is needed. For <code>0 &lt;= s &lt;= 1</code> that
+problem is concave and the barrier fit is its global optimum. The two
+coincide at <code>s = 0</code>, where there are no constraints. <code>maxeval</code> and
+<code>xtol_rel</code> apply to <code>"slsqp"</code> only.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -154,6 +168,8 @@ Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p
 <li><p><code>gamma</code>: estimated spline coefficients for the baseline component,</p></li>
 <li><p><code>loglik</code>: maximized log-likelihood,</p></li>
 <li><p><code>convergence</code>: optimizer status code,</p></li>
+<li><p><code>scores</code>: per-subject contributions to the score for the coefficients
+(one row per subject), from which the sandwich's <code>B</code> is formed,</p></li>
 <li><p>model metadata such as <code>n</code>, <code>s</code>, <code>h</code>, and <code>call</code>.</p></li>
 </ul></div>
     <div class="section level2">

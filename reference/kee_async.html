@@ -47,6 +47,7 @@ with \(W_h(u) = W(u/h)/h\) and \(W\) the Epanechnikov kernel."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
     <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/bandwidth.html">Choosing the bandwidth: bias correction and inference</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -172,6 +173,10 @@ covariate. See Details.</p></dd>
 
 <dt>A, Sigma</dt>
 <dd><p>The bread and the meat of the sandwich.</p></dd>
+
+<dt>scores</dt>
+<dd><p>Per-subject score contributions, one row per subject;
+<code>Sigma</code> is <code>crossprod(scores)</code>.</p></dd>
 
 <dt>n</dt>
 <dd><p>Number of subjects, the unit the asymptotics are in.</p></dd>

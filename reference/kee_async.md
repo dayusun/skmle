@@ -114,6 +114,11 @@ An object of class `kee` with components
 
   The bread and the meat of the sandwich.
 
+- scores:
+
+  Per-subject score contributions, one row per subject; `Sigma` is
+  `crossprod(scores)`.
+
 - n:
 
   Number of subjects, the unit the asymptotics are in.

@@ -4,6 +4,7 @@
 <url><loc>https://www.sundayu.me/skmle/LICENSE-text.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/LICENSE.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/articles/asynchronous.html</loc></url>
+<url><loc>https://www.sundayu.me/skmle/articles/bandwidth.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/articles/benchmark_survsparse.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/articles/index.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/articles/tutorial.html</loc></url>
@@ -24,6 +25,7 @@
 <url><loc>https://www.sundayu.me/skmle/reference/kee_async.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/kee_async_cv.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/kee_async_td.html</loc></url>
+<url><loc>https://www.sundayu.me/skmle/reference/kee_bc.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/kee_cox.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/kernel-weights.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/nobs.skmle.html</loc></url>
@@ -41,6 +43,7 @@
 <url><loc>https://www.sundayu.me/skmle/reference/sim_skmle_data.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/skmle-package.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/skmle.html</loc></url>
+<url><loc>https://www.sundayu.me/skmle/reference/skmle_bc.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/skmle_cv.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/summary.kee.html</loc></url>
 <url><loc>https://www.sundayu.me/skmle/reference/summary.skmle.html</loc></url>

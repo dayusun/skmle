@@ -27,6 +27,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
     <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/bandwidth.html">Choosing the bandwidth: bias correction and inference</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -125,6 +126,29 @@
 
         </dt>
         <dd>Asynchronous longitudinal regression with time-dependent coefficients</dd>
+      </dl></div><div class="section level2">
+      <h2 id="bandwidth-selection-with-bias-correction">Bandwidth selection with bias correction<a class="anchor" aria-label="anchor" href="#bandwidth-selection-with-bias-correction"></a></h2>
+
+      <div class="section-desc"><p>Fit an estimator over a grid of bandwidths, choose one by a plug-in mean squared error, extrapolate the coefficients to bandwidth zero, and report a standard error that accounts for the choice.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="skmle_bc.html">print(<i>&lt;bc&gt;</i>)</a></code> <code><a href="skmle_bc.html">summary(<i>&lt;bc&gt;</i>)</a></code> <code><a href="skmle_bc.html">print(<i>&lt;summary.bc&gt;</i>)</a></code> <code><a href="skmle_bc.html">skmle_bc()</a></code>
+
+        </dt>
+        <dd>Bias-Corrected SMKLE by Extrapolation in the Bandwidth</dd>
+
+        <dt>
+
+          <code><a href="kee_bc.html">kee_cox_bc()</a></code> <code><a href="kee_bc.html">kee_async_bc()</a></code>
+
+        </dt>
+        <dd>Bias-Corrected Kernel Estimating Equations by Extrapolation in the Bandwidth</dd>
       </dl></div><div class="section level2">
       <h2 id="kernel-weights">Kernel weights<a class="anchor" aria-label="anchor" href="#kernel-weights"></a></h2>
 

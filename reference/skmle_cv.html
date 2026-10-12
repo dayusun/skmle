@@ -27,6 +27,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
     <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/bandwidth.html">Choosing the bandwidth: bias correction and inference</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -220,9 +221,16 @@ monotonically in <code>h</code> whatever the fit is worth. Scored that way the l
 candidate wins every grid on every data set, and coefficients further from the
 truth are preferred to coefficients nearer it. Dividing by the admitted
 weight, or scoring at one bandwidth held fixed across the grid, does not
-rescue it. The carried-forward likelihood is one yardstick for every
-candidate, so its approximation cancels out of the comparison and what is left
-is the quality of the fit.</p>
+rescue it.</p>
+<p>The carried-forward likelihood still favours some bandwidths over others. A carried-forward covariate is out of date by the time since the
+last visit, so the held-out score is maximised by coefficients attenuated by
+that lag. The fit produces such coefficients at a bandwidth of the same
+order as the typical gap between visits. As \(n\) grows, the selected
+bandwidth therefore converges to a constant determined by the visit
+process rather than to zero, and the coefficients at <code>h_cv</code> remain biased
+for \(\beta\) at any sample size. Use <code>skmle_cv()</code> to choose a bandwidth
+for predicting the hazard, and <code><a href="skmle_bc.html">skmle_bc()</a></code> to estimate \(\beta\) with
+confidence intervals.</p>
     </div>
     <div class="section level2">
     <h2 id="the-default-grid">The default grid<a class="anchor" aria-label="anchor" href="#the-default-grid"></a></h2>

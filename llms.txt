@@ -346,6 +346,22 @@ response and a covariate observed on different time grids.
   : Asynchronous longitudinal regression with time-dependent
   coefficients
 
+## Bandwidth selection with bias correction
+
+Fit an estimator over a grid of bandwidths, choose one by a plug-in mean
+squared error, extrapolate the coefficients to bandwidth zero, and
+report a standard error that accounts for the choice.
+
+- [`print(`*`<bc>`*`)`](https://www.sundayu.me/skmle/reference/skmle_bc.md)
+  [`summary(`*`<bc>`*`)`](https://www.sundayu.me/skmle/reference/skmle_bc.md)
+  [`print(`*`<summary.bc>`*`)`](https://www.sundayu.me/skmle/reference/skmle_bc.md)
+  [`skmle_bc()`](https://www.sundayu.me/skmle/reference/skmle_bc.md) :
+  Bias-Corrected SMKLE by Extrapolation in the Bandwidth
+- [`kee_cox_bc()`](https://www.sundayu.me/skmle/reference/kee_bc.md)
+  [`kee_async_bc()`](https://www.sundayu.me/skmle/reference/kee_bc.md) :
+  Bias-Corrected Kernel Estimating Equations by Extrapolation in the
+  Bandwidth
+
 ## Kernel weights
 
 The weight a model gives a covariate observation at a given lag. Both
@@ -420,5 +436,7 @@ tidy workflow.
   skmle](https://www.sundayu.me/skmle/articles/tutorial.md):
 - [Asynchronous Longitudinal
   Regression](https://www.sundayu.me/skmle/articles/asynchronous.md):
+- [Choosing the bandwidth: bias correction and
+  inference](https://www.sundayu.me/skmle/articles/bandwidth.md):
 - [Benchmarking skmle Against
   SurvSparse](https://www.sundayu.me/skmle/articles/benchmark_survsparse.md):

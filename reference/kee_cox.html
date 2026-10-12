@@ -29,6 +29,7 @@ a kernel estimating-equation approach."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/tutorial.html">Getting Started with skmle</a></li>
     <li><a class="dropdown-item" href="../articles/asynchronous.html">Asynchronous Longitudinal Regression</a></li>
+    <li><a class="dropdown-item" href="../articles/bandwidth.html">Choosing the bandwidth: bias correction and inference</a></li>
     <li><a class="dropdown-item" href="../articles/benchmark_survsparse.html">Benchmarking skmle Against SurvSparse</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -114,8 +115,10 @@ Any R function will do; see <a href="kernel-weights.html">kernel-weights</a>.</p
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>kee</code> containing coefficient estimates, the estimated
-variance-covariance matrix, the estimating-equation matrices, convergence status,
-and the original function call.</p>
+variance-covariance matrix, the estimating-equation matrices <code>W</code> and
+<code>Sigma</code>, the per-subject score contributions <code>scores</code> (one row per subject,
+so that <code>Sigma</code> is <code>crossprod(scores) / n^2</code>), convergence status, and the
+original function call.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
