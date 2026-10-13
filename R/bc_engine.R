@@ -140,14 +140,29 @@ bc_combine <- function(fits, h_grid, n_boot = 2000L, degree = 1L) {
   # the grid estimates: the bias fit is a fixed projection, and for each
   # candidate bandwidth the extrapolation is a fixed set of weights. Building
   # those maps once lets the selection be rerun on simulated grids cheaply.
-  powers <- function(h) outer(h, seq_len(degree), `^`)
+  # The regressions run on h / h_ref, which leaves every fitted value and
+  # intercept unchanged but keeps the design well conditioned whatever the
+  # unit of h: with h in days, (1, h, 1/h) spans about eight orders of
+  # magnitude, and together with inverse-variance weights that differ by
+  # several orders across the grid the normal equations became numerically
+  # singular. For the same reason the weighted fits go through a QR
+  # decomposition of the weighted design rather than its normal equations.
+  h_ref <- exp(mean(log(h_grid)))
+  powers <- function(h) outer(h / h_ref, seq_len(degree), `^`)
+  # Rows of P give the weighted least-squares coefficients as linear maps of
+  # the response: coef = P %*% y.
+  wls_map <- function(X, W) {
+    sw <- sqrt(W / max(W))
+    qx <- qr(X * sw)
+    if (qx$rank < ncol(X)) stop("rank-deficient bias regression", call. = FALSE)
+    qr.coef(qx, diag(sw, length(sw)))
+  }
 
   # Plug-in: bias per coefficient, weighted by inverse variance.
   # bias_map[[k]] takes column k of the grid estimates to the fitted bias.
-  Xb <- cbind(1, powers(h_grid), 1 / h_grid)
+  Xb <- cbind(1, powers(h_grid), h_ref / h_grid)
   bias_map <- lapply(seq_len(p), function(k) {
-    W <- 1 / V[, k]
-    P <- solve(crossprod(Xb, Xb * W), t(Xb * W))
+    P <- wls_map(Xb, 1 / V[, k])
     Xb[, -1, drop = FALSE] %*% P[-1, , drop = FALSE]
   })
   select_h <- function(Bs) {
@@ -175,8 +190,7 @@ bc_combine <- function(fits, h_grid, n_boot = 2000L, degree = 1L) {
     X2 <- cbind(1, powers(h_grid[in_win]))
     a <- matrix(0, H, p)
     for (k in seq_len(p)) {
-      W <- 1 / V[in_win, k]
-      M <- solve(crossprod(X2, X2 * W), t(X2 * W))
+      M <- wls_map(X2, 1 / V[in_win, k])
       a[in_win, k] <- M[1, ]
     }
     a

@@ -151,3 +151,26 @@ test_that("kee_cox_bc and kee_async_bc run and pass their arguments on", {
   expect_equal(b3$degree, 2L)
   expect_true(b3$fit$one_sided)
 })
+
+test_that("bc_combine does not depend on the unit of h", {
+  # Grid in days with variances falling steeply in h: before h was rescaled,
+  # the normal equations of the bias regression were numerically singular.
+  h <- exp(seq(log(3), log(7190), length.out = 12))
+  fk <- function(unit) {
+    set.seed(1)
+    sc <- matrix(rnorm(100), 50, 2)
+    lapply(h * unit, function(x) {
+      S <- sc * (x / (median(h) * unit))^-2
+      list(coefficients = setNames(c(1, -0.5) + c(-4e-4, 2e-4) * x / unit,
+                                   c("z1", "z2")),
+           A = diag(2), scores = S, n = 50, convergence = 0L,
+           var = crossprod(S) / 50 / 50)
+    })
+  }
+  days <- bc_combine(fk(1), h, n_boot = 0)
+  years <- bc_combine(fk(1 / 365.25), h / 365.25, n_boot = 0)
+  expect_equal(unname(days$coefficients), c(1, -0.5), tolerance = 1e-8)
+  expect_equal(unname(days$coefficients), unname(years$coefficients),
+               tolerance = 1e-8)
+  expect_equal(days$h, years$h * 365.25)
+})
