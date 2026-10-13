@@ -153,7 +153,10 @@ bc_combine <- function(fits, h_grid, n_boot = 2000L, degree = 1L) {
   # the response: coef = P %*% y.
   wls_map <- function(X, W) {
     sw <- sqrt(W / max(W))
-    qx <- qr(X * sw)
+    # qr()'s default rank tolerance (1e-7) misreads a full-rank design whose
+    # weights span many orders of magnitude as deficient (ADNI amy:plasma
+    # GFAP_Q); only a design that is singular to rounding error is refused.
+    qx <- qr(X * sw, tol = 1e-12)
     if (qx$rank < ncol(X)) stop("rank-deficient bias regression", call. = FALSE)
     qr.coef(qx, diag(sw, length(sw)))
   }
