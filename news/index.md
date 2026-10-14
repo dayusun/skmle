@@ -114,6 +114,28 @@
 
 ### Bug fixes
 
+- **`kee_async(correct = "pairs")` no longer fails when the response and
+  covariate schedules separate in time.** The response/covariate
+  intensity ratio comes from a logistic fit on the observation times;
+  with a covariate collected in one late window plus a stray early draw,
+  the fitted probability reached 0 or 1, the ratio became `Inf` or
+  `NaN`, and the pair fit stopped with “missing value where TRUE/FALSE
+  needed”. The probability is now bounded at 0.5/N from either end, with
+  a warning when the bound binds, and an aliased spline coefficient is
+  taken as zero.
+- **[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
+  scores a failed or overflowing fold as `+Inf`, and refuses a grid with
+  no finite candidate.** A held-out score whose linear predictor
+  overflowed returned `Inf - Inf = NaN`, which propagated into the
+  candidate’s mean loss;
+  [`which.min()`](https://rdrr.io/r/base/which.min.html) skipped it, and
+  a grid on which every candidate was NaN crashed on an NA condition.
+  Worse, a grid on which every candidate was `+Inf` (every training fit
+  failed) selected its first entry. Both cases now count as a lost
+  candidate, a grid with none finite stops with a message, and
+  `quiet = FALSE` reports how many candidates were ineligible. Finite
+  losses are unchanged to the bit. Found on ADNI MCI-to-dementia data,
+  where the smaller default-grid bandwidths overflowed on some folds.
 - **A custom `weight` now reaches the risk-set averages.**
   [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md),
   [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)

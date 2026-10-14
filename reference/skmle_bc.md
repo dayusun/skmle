@@ -229,8 +229,8 @@ summary(bc)
 #> 
 #> Selected h = 0.2757; extrapolated over h in [0.1794, 0.4236]
 #> 
-#>             estimate std.error      z  p.value estimate_at_h std.error_at_h
-#> covariates1   1.8465    0.4855  3.803 0.000143        1.1706         0.2639
-#> covariates2  -0.7799    0.4462 -1.748 0.080463       -0.4342         0.3124
+#>             estimate std.error      z   p.value estimate_at_h std.error_at_h
+#> covariates1   1.8465    0.4862  3.798 0.0001461        1.1706         0.2639
+#> covariates2  -0.7799    0.4456 -1.750 0.0800776       -0.4342         0.3124
 # }
 ```

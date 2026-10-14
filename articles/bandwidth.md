@@ -354,8 +354,8 @@ summary(kc)
 #> Selected h = 0.256; extrapolated over h in [0.1626, 0.4032]
 #> 
 #>             estimate std.error      z   p.value estimate_at_h std.error_at_h
-#> covariates1   1.5950    0.3876  4.115 3.873e-05        1.0415         0.2343
-#> covariates2  -0.8852    0.4584 -1.931 5.349e-02       -0.5197         0.3071
+#> covariates1   1.5950    0.3899  4.091 4.302e-05        1.0415         0.2343
+#> covariates2  -0.8852    0.4348 -2.036 4.177e-02       -0.5197         0.3071
 ```
 
 [`kee_async_bc()`](https://www.sundayu.me/skmle/reference/kee_bc.md)
