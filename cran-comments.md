@@ -7,6 +7,11 @@ This is the initial CRAN submission of `skmle`.
 * local: Ubuntu 24.04, R 4.6.1 (R CMD check --as-cran)
 * GitHub Actions: Windows (R release), macOS (R release), Ubuntu (R devel,
   release and oldrel-1)
+* win-builder, Windows Server 2022 x64, x86_64-w64-mingw32:
+  R-devel (2026-11-11 r90876 ucrt) and R 4.6.2 ucrt -- Status: 1 NOTE
+  (new submission)
+* macOS builder (mac.r-project.org), aarch64-apple-darwin23,
+  R 4.6.1 Patched -- Status: OK
 
 ## R CMD check results
 
