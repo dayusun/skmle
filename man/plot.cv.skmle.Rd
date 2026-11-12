@@ -2,15 +2,12 @@
 % Please edit documentation in R/methods.R
 \name{plot.cv.skmle}
 \alias{plot.cv.skmle}
-\alias{plot.cv.kee_async}
 \title{Plot a cross-validation curve}
 \usage{
-\method{plot}{cv.kee_async}(x, ...)
-
 \method{plot}{cv.skmle}(x, ...)
 }
 \arguments{
-\item{x}{A \code{cv.skmle} or \code{cv.kee_async} object.}
+\item{x}{A \code{cv.skmle} object.}
 
 \item{...}{Passed to \code{\link[graphics:plot]{graphics::plot()}}.}
 }
@@ -24,12 +21,20 @@ endpoint of the grid, the "selected" bandwidth is where you stopped looking
 rather than a minimum, and the grid should be widened.
 }
 \examples{
-set.seed(1)
-d <- sim_async_data(n = 150)
-cv <- d$y |>
-  kee_async_cv(d$x, y ~ x,
-    id = id, time = time,
-    h_grid = c(0.1, 0.2, 0.3, 0.5), K = 3, seed = 1, quiet = TRUE
-  )
+\donttest{
+library(survival)
+set.seed(123)
+dat <- sim_skmle_data(
+  n = 60,
+  mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+  mu_bar = 8,
+  alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+  beta = c(1, -0.5),
+  s = 0,
+  cen = 0.7
+)
+cv <- skmle_cv(Surv(X, delta) ~ covariates, data = dat, id = id,
+  obs_times = obs_times, s = 0, K = 3, seed = 2026, quiet = TRUE)
 plot(cv)
+}
 }

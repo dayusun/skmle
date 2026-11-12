@@ -267,8 +267,7 @@
 #' The estimator is consistent and asymptotically normal at the smoothing rate
 #' \eqn{(nh)^{1/2}}. Standard errors shrink more slowly than in a parametric
 #' fit, and the bandwidth becomes a real modelling choice: too small and few
-#' pairs contribute, too large and the bias grows. [kee_async_cv()] picks it
-#' from the data.
+#' pairs contribute, too large and the bias grows.
 #'
 #' `h` is on the **same scale as the observation times**. Unlike the survival
 #' `h` must be on whatever scale the times are on; nothing else is assumed
@@ -298,48 +297,6 @@
 #' Observation times are assumed independent of the response and covariate
 #' processes. Informative observation times need a different estimator.
 #'
-#' # Asynchrony correction
-#'
-#' `correct` removes the asynchrony bias instead of shrinking it with \eqn{h}.
-#'
-#' `correct = "pairs"` uses each subject's own covariate pairs in place of the
-#' unobserved covariate at the response time. For two covariate occasions
-#' \eqn{S_{ik} \ne S_{ik'}} of the same subject,
-#' \eqn{(X_i(S_{ik}), X_i(S_{ik'}))} has the distribution of
-#' \eqn{(X(S), X(T))} at the same two times, so the equation
-#' \deqn{\frac{\sum W_h(T_{ij} - S_{ik}) X_i(S_{ik}) Y_i(T_{ij})}
-#'            {\sum W_h(T_{ij} - S_{ik})}
-#'     - \frac{\sum_{k \ne k'} W_h(S_{ik'} - S_{ik}) r(S_{ik'}) X_i(S_{ik})
-#'              g\{X_i(S_{ik'})^\top \beta\}}
-#'            {\sum_{k \ne k'} W_h(S_{ik'} - S_{ik}) r(S_{ik'})} = 0}
-#' has mean zero at the true \eqn{\beta} for every \eqn{h}. Here
-#' \eqn{r = \lambda_T / \lambda_S} is the ratio of the response and covariate
-#' visit intensities, estimated from the observation times alone by a logistic
-#' regression of the occasion type on a natural spline of time (4 degrees of
-#' freedom). No model is assumed for the covariate process: it need not be
-#' Gaussian or stationary, and any number of covariates, including ones
-#' constant within a subject, is allowed. At least one covariate must vary
-#' within a subject. The fit needs subjects with two or more covariate
-#' occasions and assumes visit processes whose second-order intensity
-#' factorises (for example Poisson visits).
-#'
-#' `correct = "gaussian"` replaces \eqn{g\{X(S)^\top\beta\}} by
-#' \eqn{E[g\{X(T)^\top\beta\} \mid x(S)]} for a single covariate that is
-#' second-order stationary with variogram
-#' \eqn{\gamma(u) = E\{x(t) - x(t - u)\}^2}, mean \eqn{m} and variance
-#' \eqn{s^2}, computed as if \eqn{x(T) \mid x(S)} were normal with mean
-#' \eqn{m + \rho(u)\{x(S) - m\}} and variance \eqn{s^2\{1 - \rho(u)^2\}},
-#' \eqn{\rho(u) = 1 - \gamma(u)/(2s^2)}. The variogram is estimated by
-#' isotonic regression of \eqn{\{x(S_{ik}) - x(S_{ik'})\}^2} on
-#' \eqn{|S_{ik} - S_{ik'}|}. With the identity link it needs only
-#' stationarity; with the log and logistic links it also needs normality. It
-#' has a smaller variance than `"pairs"` when these assumptions hold and a bias
-#' that grows with \eqn{h} when they do not.
-#'
-#' Both corrected equations are unbiased at every fixed \eqn{h} under their
-#' assumptions, so \eqn{h} affects only the variance. The standard errors are
-#' the sandwich with the intensity ratio or the variogram treated as known.
-#'
 #' @param data_y Data frame of response occasions: one row per time the
 #'   response was recorded. First argument, so the function pipes.
 #' @param data_x Data frame of covariate occasions: one row per time the
@@ -356,19 +313,14 @@
 #'   Accepts the same three forms as `id`.
 #' @param h Positive bandwidth, on the same scale as `time`. If omitted, a
 #'   value is read off the observation times as a rule of thumb and reported in
-#'   a message. Use [kee_async_cv()] to choose it from the data.
+#'   a message.
 #' @param one_sided Logical. `FALSE` (default) is the full two-sided kernel of
 #'   the paper; `TRUE` is the half kernel, admitting only covariate observations
 #'   strictly before the response.
 #' @param link One of `"identity"` (closed form), `"log"` or `"logistic"`
 #'   (Newton-Raphson).
 #' @param intercept Logical, include an intercept.
-#' @param maxit,tol Newton-Raphson controls, ignored when `link = "identity"`
-#'   and `correct = "none"`.
-#' @param correct `"none"` (default): the kernel equation of Cao, Zeng and
-#'   Fine. `"pairs"`: the pair-moment correction, with no model for the
-#'   covariates. `"gaussian"`: the correction for one stationary Gaussian
-#'   covariate. See Details.
+#' @param maxit,tol Newton-Raphson controls, ignored when `link = "identity"`.
 #'
 #' @return An object of class `kee` with components
 #' \describe{
@@ -379,10 +331,7 @@
 #'     `Sigma` is `crossprod(scores)`.}
 #'   \item{n}{Number of subjects, the unit the asymptotics are in.}
 #'   \item{npair}{Number of weighted (response, covariate) pairs contributing.}
-#'   \item{h, one_sided, link, correct}{Fit settings.}
-#'   \item{variogram}{With `correct = "gaussian"`, a list holding the estimated
-#'     variogram `gamma` (a function of the lag), the covariate mean `m` and
-#'     variance `s2`; otherwise `NULL`.}
+#'   \item{h, one_sided, link}{Fit settings.}
 #'   \item{convergence}{`0` converged, `1` singular, `2` hit `maxit`.}
 #'   \item{call}{The matched call.}
 #' }
@@ -394,8 +343,8 @@
 #' asynchronous longitudinal data. \emph{Journal of the Royal Statistical
 #' Society, Series B} 77, 755-776.
 #'
-#' @seealso [kee_async_cv()] to choose `h`, [kee_async_td()] for a coefficient
-#'   curve \eqn{\beta(t)}, [sim_async_data()] to simulate.
+#' @seealso [kee_async_td()] for a coefficient curve \eqn{\beta(t)},
+#'   [sim_async_data()] to simulate.
 #'
 #' @examples
 #' set.seed(1)
@@ -420,10 +369,8 @@
 #' @export
 kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = FALSE,
                       link = c("identity", "log", "logistic"),
-                      intercept = TRUE, maxit = 50L, tol = 1e-8,
-                      correct = c("none", "pairs", "gaussian")) {
+                      intercept = TRUE, maxit = 50L, tol = 1e-8) {
     link <- match.arg(link)
-    correct <- match.arg(correct)
     .async_check_one_sided(one_sided)
     d <- .async_parse(
         formula, data_y, data_x,
@@ -431,34 +378,12 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
     )
     if (is.null(h)) {
         h <- default_bandwidth_async(c(d$yt, d$xt), d$n)
-        announce_bandwidth(h, "kee_async_cv")
+        announce_bandwidth(h)
     }
     .async_check_h(h)
 
     lk <- .async_link_code(link)
     fit <- .async_fit_ti(d, h, one_sided, lk, maxit, tol)
-    vg <- NULL
-    if (correct == "pairs" && !is.null(fit) && fit$convergence != 1L) {
-        .async_time_varying(d)
-        nresp <- fit$nresp
-        fit <- .async_fit_pairs(
-            .async_ts_pairs(d, one_sided), .async_cov_pairs(d, one_sided), h, d,
-            lk, .async_intensity_ratio(d), as.numeric(fit$beta), maxit, tol,
-            one_sided
-        )
-        if (!is.null(fit)) fit$nresp <- nresp
-    }
-    if (correct == "gaussian" && !is.null(fit) && fit$convergence != 1L) {
-        xcol <- .async_corr_col(d)
-        vg <- .async_variogram(d, xcol)
-        P <- .async_all_pairs(d, xcol, one_sided)
-        nresp <- fit$nresp
-        # Newton from the uncorrected estimate, which the correction moves
-        # only by the asynchrony bias.
-        fit <- .async_fit_corr(P, h, d$n, d$p, xcol, lk, vg,
-                               as.numeric(fit$beta), maxit, tol, one_sided)
-        if (!is.null(fit)) fit$nresp <- nresp
-    }
     if (is.null(fit)) {
         stop(
             "no response occasion has a covariate observation inside the ",
@@ -494,13 +419,9 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
         h = h,
         one_sided = one_sided,
         link = link,
-        correct = correct,
-        variogram = vg,
         model = sprintf(
-            "Asynchronous longitudinal regression (%s link, %s kernel%s)",
-            link, if (one_sided) "half" else "full",
-            switch(correct, none = "", pairs = ", pair-moment correction",
-                   gaussian = ", Gaussian correction")
+            "Asynchronous longitudinal regression (%s link, %s kernel)",
+            link, if (one_sided) "half" else "full"
         ),
         call = match.call()
     )
@@ -508,402 +429,6 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
     # covariate occasion is well defined here and is not for a hazard fit.
     class(out) <- c("kee_async", "kee")
     out
-}
-
-
-# The default candidate grid: n_h log-spaced bandwidths from the smallest to
-# the largest within-subject lag |T_ij - S_ik| (exact zeros excluded; with
-# one_sided = TRUE only positive lags T_ij - S_ik count, since no other pair is
-# ever weighted). Below the smallest lag no pair enters any window; above the
-# largest every pair already does, so nothing outside this range changes the
-# fit.
-.async_lag_grid <- function(d, n_h, one_sided) {
-    xs <- split(d$xt, d$xi)
-    ys <- split(d$yt, d$yi)
-    ids <- intersect(names(xs), names(ys))
-    lg <- unlist(lapply(ids, function(i) outer(ys[[i]], xs[[i]], "-")),
-                 use.names = FALSE)
-    lg <- if (one_sided) lg[lg > 0] else abs(lg[lg != 0])
-    if (!length(lg)) {
-        stop("no response and covariate observation of the same subject are ",
-             "at different times", if (one_sided) " in the required order", "; ",
-             "supply 'h' or 'h_grid'", call. = FALSE)
-    }
-    lo <- min(lg)
-    hi <- max(lg)
-    if (hi <= lo) return(lo)
-    exp(seq(log(lo), log(hi), length.out = max(2L, as.integer(n_h))))
-}
-
-# Plain K-fold cross-validation over subjects, repeated over `repeats` random
-# splits. Each candidate h is fitted on the training subjects and scored on the
-# held-out subjects by the kernel-weighted squared error of the fitted mean at
-# that same h, divided by the held-out weight at h; the per-fold losses are
-# averaged over folds and then over splits. A candidate is dropped when no fold
-# produced a usable loss for it.
-.async_cv_plain <- function(d, h_grid, K, repeats, one_sided, lk, maxit, tol,
-                            quiet) {
-    G <- length(h_grid)
-    folds <- matrix(replicate(repeats, sample(rep_len(seq_len(K), d$n))),
-                    nrow = d$n)
-    nfold_used <- integer(G)
-    Lr <- matrix(NA_real_, repeats, G)
-    for (r in seq_len(repeats)) {
-        losses <- matrix(NA_real_, K, G)
-        for (m in seq_len(G)) {
-            if (!quiet && r == 1L) cat(sprintf("Evaluating bandwidth h = %g\n", h_grid[m]))
-            for (f in seq_len(K)) {
-                tr <- which(folds[, r] != f)
-                te <- which(folds[, r] == f)
-                if (!length(tr) || !length(te)) next
-                fit <- .async_fit_ti(.async_subset(d, tr), h_grid[m],
-                                     one_sided, lk, maxit, tol)
-                if (is.null(fit) || fit$convergence == 1L ||
-                    !all(is.finite(fit$beta))) next
-                dte <- .async_subset(d, te)
-                ac <- .async_collapse(dte, h_grid[m], one_sided)
-                if (is.null(ac)) next
-                losses[f, m] <- .async_loss(ac, dte$X, as.numeric(fit$beta), lk)
-            }
-        }
-        nfold_used <- nfold_used + colSums(!is.na(losses))
-        Lr[r, ] <- colMeans(losses, na.rm = TRUE)
-        Lr[r, colSums(!is.na(losses)) == 0L] <- NA_real_
-    }
-    cvloss <- colMeans(Lr, na.rm = TRUE)
-    cvloss[colSums(is.finite(Lr)) == 0L] <- NA_real_
-    if (all(is.na(cvloss))) {
-        stop(
-            "no candidate bandwidth produced a usable fit on any fold; widen ",
-            "'h_grid' or check that it is on the same scale as 'time'",
-            call. = FALSE
-        )
-    }
-    list(cvloss = cvloss, nfold_used = nfold_used,
-         index = which.min(replace(cvloss, is.na(cvloss), Inf)),
-         folds = folds)
-}
-
-#' Choose the bandwidth for an asynchronous longitudinal fit
-#'
-#' @description
-#' Select the bandwidth for [kee_async()] and return the fit at it. The
-#' default, `method = "variance"`, selects the bandwidth that minimises the
-#' estimated variance of an asynchrony-corrected fit
-#' (`kee_async(correct = "pairs")` by default). `method = "sync"` selects it
-#' for the same fit by K-fold cross-validation over subjects, and
-#' `method = "plain"` is ordinary cross-validation of the uncorrected fit.
-#'
-#' @details
-#' # Minimum-variance bandwidth (`method = "variance"`)
-#'
-#' The corrected equation has mean zero at the true coefficients for every
-#' \eqn{h} (see [kee_async()]), so the bandwidth affects only the variance and
-#' the mean squared error of \eqn{\hat\beta(h)} is its variance. The corrected
-#' equation is solved on all subjects at every candidate, and the selected
-#' \eqn{h} minimises
-#' \deqn{\mathrm{tr}\{\hat\Sigma_X \hat V(h)\},}
-#' with \eqn{\hat V(h)} the sandwich variance of \eqn{\hat\beta(h)} and
-#' \eqn{\hat\Sigma_X} the second moment of \eqn{X} at the response times:
-#' the covariate rows weighted by the estimated intensity ratio
-#' \eqn{\lambda_T / \lambda_S} for `correct = "pairs"`, unweighted for
-#' `correct = "gaussian"`. The criterion is \eqn{n} times the expected squared
-#' prediction error \eqn{E[\{X(T)^\top(\hat\beta - \beta_0)\}^2]}, and it
-#' does not depend on the scale of the covariates.
-#'
-#' \eqn{\hat V(h)} converges at every point of the finite grid, so when
-#' \eqn{V} has a unique minimiser \eqn{h^*} on the grid the selected bandwidth
-#' equals \eqn{h^*} with probability tending to one. The estimate at the
-#' selected bandwidth is then asymptotically normal with variance
-#' \eqn{V(h^*)}, and the Wald interval has its nominal level asymptotically.
-#' No assumption on the distribution of the covariates is involved beyond
-#' those of the corrected equation.
-#'
-#' The default grid is `n_h` log-spaced bandwidths up to the largest
-#' within-subject lag \eqn{|T_{ij} - S_{ik}|}, starting at the smallest
-#' \eqn{h} at which at least \eqn{\lceil n^{1/2} \rceil} subjects have a pair
-#' inside the kernel (for `correct = "pairs"`, both a response-covariate pair
-#' and a covariate pair). `K`, `repeats` and `seed` are not used.
-#'
-#' # Synchronous-loss cross-validation (`method = "sync"`)
-#'
-#' For each candidate \eqn{h} and fold, the corrected equation is fitted on
-#' the training subjects. Every within-subject pair \eqn{(T, S)} of the
-#' held-out subjects gets the unweighted loss of \eqn{Y(T)} against the fitted
-#' mean at \eqn{X(S)}: squared error (identity), Poisson deviance (log) or
-#' Bernoulli log loss (logistic). The losses are regressed on an intercept and
-#' the entries of the estimated variogram matrix \eqn{\hat\Gamma(|T - S|)},
-#' \eqn{\Gamma(u) = E[\{x(t) - x(t-u)\}\{x(t) - x(t-u)\}^\top]}, of the
-#' covariates that vary within subjects. The intercept, the held-out loss at
-#' zero asynchrony, is retained. Each entry of
-#' \eqn{\hat\Gamma} comes from isotonic regressions of squared increments of
-#' \eqn{x_j} and \eqn{x_j + x_k} on the lag. For the identity link and a
-#' stationary covariate the intercept's expectation is
-#' \eqn{\sigma^2 + \delta_h^\top \Sigma_X \delta_h}, with \eqn{\delta_h} the
-#' error of the training fit, because the asynchrony part of the loss is
-#' exactly linear in \eqn{\Gamma(u)}. Intercepts are averaged over folds (and
-#' over `repeats` splits) and the minimiser is selected.
-#'
-#' A candidate is retained only when every fold produces a fit whose
-#' intercept is at least the mean saturated loss of the held-out pairs
-#' (\eqn{\min_\eta} of the loss: 0 for squared error and log loss,
-#' \eqn{y - y \log y} for the Poisson loss). An intercept below it comes from a
-#' degenerate fold fit.
-#'
-#' The default grid is `n_h` log-spaced bandwidths up to the largest
-#' within-subject lag \eqn{|T_{ij} - S_{ik}|}, starting at the smallest
-#' \eqn{h} at which every training fold has at least
-#' \eqn{\lceil n_{\mathrm{train}}^{1/2} \rceil} subjects with a pair inside the
-#' kernel (for `correct = "pairs"`, both a response-covariate pair and a
-#' covariate pair). Below that, a fold fit uses a handful of pairs and its
-#' error does not shrink with \eqn{n}.
-#'
-#' The guarantee is consistency: the selected \eqn{h} lies on a finite grid on
-#' which every corrected fit is consistent. The criterion's differences between
-#' candidates are of the same order as its noise, so the selected \eqn{h} does
-#' not converge. Because the same subjects choose \eqn{h} and fit \eqn{\beta},
-#' the estimate at the selected \eqn{h} can carry a selection bias of the order
-#' of its standard error, and the Wald interval has no coverage guarantee.
-#'
-#' # Plain cross-validation (`method = "plain"`)
-#'
-#' Each candidate is fitted without correction and scored on the held-out
-#' subjects by the kernel-weighted squared error of the fitted mean at that
-#' bandwidth,
-#' \deqn{ \frac{\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})
-#'        [Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \hat\beta\}]^2}
-#'       {\sum_{i \in \mathrm{test}} \sum_j \sum_k W_h(T_{ij} - S_{ik})}.}
-#' The default grid runs from the smallest to the largest within-subject lag
-#' (positive lags \eqn{T_{ij} - S_{ik}} only when `one_sided = TRUE`; exact
-#' zeros excluded). A candidate is dropped only when it fails on every fold.
-#' This criterion is minimised at a bandwidth much smaller than the
-#' MSE-optimal one, and the uncorrected fit keeps a bias of the order of its
-#' standard error there.
-#'
-#' # How the folds are formed
-#'
-#' Folds are formed over subjects, never over rows. Rows within a subject come
-#' from one trajectory, so splitting by row would put a subject on both sides of
-#' the split and leak the answer into the held-out score.
-#'
-#' Always look at `cv_results`. If the minimum sits at an endpoint of the grid a
-#' warning is issued.
-#'
-#' @inheritParams kee_async
-#' @param h_grid Optional numeric vector of candidate bandwidths. When `NULL` a
-#'   grid is built from the data; see Details.
-#' @param n_h Number of candidates in the default grid.
-#' @param K Number of folds. Reduced to the number of subjects if larger.
-#'   Cross-validation methods only.
-#' @param repeats Number of independent random K-fold splits; the held-out
-#'   loss is averaged over them. Cross-validation methods only.
-#' @param seed Optional integer seed for the subject-to-fold assignment. Pass it
-#'   (or call [set.seed()] first) to make the selection reproducible.
-#'   Cross-validation methods only.
-#' @param quiet Logical; suppress progress output.
-#' @param method `"variance"` (default): the bandwidth minimising the estimated
-#'   variance of the asynchrony-corrected fit. `"sync"`: synchronous-loss
-#'   cross-validation of the corrected fit. `"plain"`: kernel-weighted
-#'   cross-validation of the uncorrected fit. See Details.
-#' @param correct The correction used with `method = "variance"` or
-#'   `"sync"`: `"pairs"` (default) or `"gaussian"`; see [kee_async()].
-#'
-#' @return An object of class `cv.kee_async`:
-#' \describe{
-#'   \item{h_cv}{The selected bandwidth.}
-#'   \item{fit}{The [kee_async()] fit on all subjects at `h_cv`, with the
-#'     chosen `correct` unless `method = "plain"`.}
-#'   \item{cv_results}{Data frame of `h` and the criterion. For `"variance"`,
-#'     `trSV`, \eqn{\mathrm{tr}\{\hat\Sigma_X \hat V(h)\}}. For the
-#'     cross-validation methods, `cvloss` (the intercept for `"sync"`, the
-#'     weighted held-out loss for `"plain"`) and `nfold_used`, the number of
-#'     folds over all repeats that produced a usable loss.}
-#'   \item{h_grid, fold_id, repeats, method, correct, seed, call}{Selection
-#'     metadata; `fold_id` and `repeats` are `NULL` for `"variance"`.}
-#' }
-#'
-#' @seealso [kee_async()]
-#'
-#' @examples
-#' set.seed(1)
-#' d <- sim_async_data(n = 150, beta = c(0.5, 1.5))
-#' cv <- d$y |>
-#'   kee_async_cv(d$x, y ~ x,
-#'     id = id, time = time,
-#'     n_h = 20, K = 3, seed = 1, quiet = TRUE
-#'   )
-#' cv
-#' cv$cv_results
-#' @export
-kee_async_cv <- function(data_y, data_x, formula, id, time, h_grid = NULL,
-                         n_h = 100L, K = 5L, repeats = 1L, one_sided = FALSE,
-                         link = c("identity", "log", "logistic"),
-                         intercept = TRUE, maxit = 50L, tol = 1e-8,
-                         seed = NULL, quiet = FALSE,
-                         method = c("variance", "sync", "plain"),
-                         correct = c("pairs", "gaussian")) {
-    link <- match.arg(link)
-    method <- match.arg(method)
-    correct <- match.arg(correct)
-    .async_check_one_sided(one_sided)
-    call <- match.call()
-    d <- .async_parse(
-        formula, data_y, data_x,
-        .async_name(rlang::enquo(id)), .async_name(rlang::enquo(time)), intercept
-    )
-    lk <- .async_link_code(link)
-
-    default_grid <- is.null(h_grid)
-    if (default_grid) h_grid <- .async_lag_grid(d, n_h, one_sided)
-    h_grid <- sort(unique(as.numeric(h_grid)))
-    if (!length(h_grid) || anyNA(h_grid) || any(h_grid <= 0)) {
-        stop("'h_grid' must be positive and free of NA", call. = FALSE)
-    }
-    repeats <- as.integer(repeats)
-    if (length(repeats) != 1L || is.na(repeats) || repeats < 1L) {
-        stop("'repeats' must be a positive integer", call. = FALSE)
-    }
-    K <- as.integer(K)
-    if (method != "variance" && K > d$n) {
-        if (!quiet) {
-            message(
-                "Requested K = ", K, " exceeds n = ", d$n,
-                " subjects; using K = ", d$n, " (leave-one-out)."
-            )
-        }
-        K <- d$n
-    }
-    if (K < 2L) stop("'K' must be at least 2", call. = FALSE)
-
-    if (!is.null(seed)) set.seed(seed)
-    if (method == "plain") {
-        cv <- .async_cv_plain(d, h_grid, K, repeats, one_sided, lk, maxit, tol, quiet)
-    } else {
-        folds <- if (method == "sync")
-            matrix(replicate(repeats, sample(rep_len(seq_len(K), d$n))), nrow = d$n)
-        if (correct == "pairs") {
-            tv <- .async_time_varying(d)
-            P <- .async_ts_pairs(d, one_sided)
-            Q <- .async_cov_pairs(d, one_sided)
-            r <- .async_intensity_ratio(d)
-            design_of <- function(H) d$X[H[, "k"], , drop = FALSE]
-            fitter <- function(te, h, st) {
-                .async_fit_pairs(P[!P[, "sid"] %in% te, , drop = FALSE],
-                                 Q[!Q[, "sid"] %in% te, , drop = FALSE],
-                                 h, d, lk, r, st, maxit, tol, one_sided)
-            }
-            lo <- max(.async_grid_floor(P, d$n, folds),
-                      .async_grid_floor(cbind(u = Q[, "v"], sid = Q[, "sid"]),
-                                        d$n, folds))
-            # Second moment of X at the response times: covariate rows
-            # reweighted by lambda_T / lambda_S.
-            Sx <- crossprod(d$X * sqrt(r)) / sum(r)
-            if (method == "sync") gdes <- .async_gamma_design(d, tv)
-        } else {
-            xcol <- .async_corr_col(d)
-            vg <- .async_variogram(d, xcol)
-            P <- .async_all_pairs(d, xcol, one_sided)
-            gdes <- function(u) vg$gamma(u)
-            design_of <- function(H) {
-                Hx <- matrix(0, nrow(H), d$p)
-                if (d$p == 2L) Hx[, 1L] <- 1
-                Hx[, xcol] <- H[, "x"]
-                Hx
-            }
-            fitter <- function(te, h, st) {
-                .async_fit_corr(P[!P[, "sid"] %in% te, , drop = FALSE], h, d$n,
-                                d$p, xcol, lk, vg, st, maxit, tol, one_sided)
-            }
-            lo <- .async_grid_floor(P, d$n, folds)
-            Sx <- crossprod(d$X) / nrow(d$X)
-        }
-        if (default_grid && lo > h_grid[1L] && lo < max(h_grid)) {
-            # Start the default grid where enough subjects have a pair inside
-            # the kernel; see Details.
-            h_grid <- exp(seq(log(lo), log(max(h_grid)), length.out = length(h_grid)))
-        }
-        start <- .async_fit_ti(d, max(h_grid), one_sided, lk, maxit, tol)
-        start <- if (is.null(start) || start$convergence == 1L) NULL else
-            as.numeric(start$beta)
-        cv <- if (method == "variance") {
-            .async_select_var(function(h, st) fitter(integer(0), h, st), Sx,
-                              h_grid, colnames(d$X), start, quiet)
-        } else {
-            .async_cv_sync(P, design_of, gdes, fitter, h_grid, folds, lk,
-                           start, quiet)
-        }
-    }
-    best_h <- h_grid[cv$index]
-    if (!quiet) cat(sprintf("Selected h = %g\n", best_h))
-    if (length(h_grid) > 1L && best_h %in% range(h_grid)) {
-        warning(
-            "the selected bandwidth is at an endpoint of 'h_grid'; widen the ",
-            "grid to check that the minimum is interior",
-            call. = FALSE
-        )
-    }
-
-    fit_call <- call
-    fit_call[[1L]] <- quote(skmle::kee_async)
-    fit_call$h <- best_h
-    fit_call$h_grid <- NULL
-    fit_call$n_h <- NULL
-    fit_call$K <- NULL
-    fit_call$repeats <- NULL
-    fit_call$seed <- NULL
-    fit_call$quiet <- NULL
-    fit_call$method <- NULL
-    fit_call$correct <- if (method == "plain") "none" else correct
-    fit <- eval(fit_call, parent.frame())
-
-    folded <- method != "variance"
-    out <- list(
-        h_cv = best_h,
-        fit = fit,
-        cv_results = if (folded) tibble::tibble(
-            h = h_grid, cvloss = cv$cvloss, nfold_used = cv$nfold_used
-        ) else tibble::tibble(h = h_grid, trSV = cv$crit),
-        h_grid = h_grid,
-        fold_id = if (!folded) NULL else if (repeats == 1L) cv$folds[, 1L] else cv$folds,
-        repeats = if (folded) repeats,
-        method = method,
-        correct = if (method == "plain") "none" else correct,
-        seed = seed,
-        call = call
-    )
-    class(out) <- "cv.kee_async"
-    out
-}
-
-#' @param x A `cv.kee_async` object.
-#' @param ... Ignored.
-#' @rdname kee_async_cv
-#' @export
-print.cv.kee_async <- function(x, ...) {
-  cat("Call:\n")
-  print(x$call)
-  if (identical(x$method, "variance")) {
-    cat("\nMinimum-variance bandwidth: tr{Sigma_X V(h)} over the grid (",
-        x$correct, "-corrected fits on all subjects)\n\n", sep = "")
-    print(x$cv_results, row.names = FALSE, digits = 5)
-    cat("\nSelected h = ", format(x$h_cv), "\n", sep = "")
-    cat("\nCoefficients at the selected h:\n")
-    print(x$fit$coefficients)
-    return(invisible(x))
-  }
-  K <- length(unique(as.vector(x$fold_id)))
-  R <- if (is.null(x$repeats)) 1L else x$repeats
-  cat("\n", K, "-fold subject-level cross-validation",
-    if (identical(x$method, "sync")) sprintf(" (synchronous loss, %s-corrected fits)",
-                                             if (is.null(x$correct)) "pairs" else x$correct),
-    if (R > 1L) sprintf(", %d random splits", R), "\n\n",
-    sep = ""
-  )
-  print(x$cv_results, row.names = FALSE, digits = 5)
-  cat("\nSelected h = ", format(x$h_cv), "\n", sep = "")
-  cat("\nCoefficients at the refit:\n")
-  print(x$fit$coefficients)
-  invisible(x)
 }
 
 
@@ -1026,7 +551,7 @@ kee_async_td <- function(data_y, data_x, formula, id, time, times = NULL,
     )
     if (is.null(h)) {
         h <- default_bandwidth_async(c(d$yt, d$xt), d$n)
-        announce_bandwidth(h, "kee_async_cv")
+        announce_bandwidth(h)
         if (missing(h2)) h2 <- h
     }
     .async_check_h(h)

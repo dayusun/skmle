@@ -272,8 +272,7 @@ skmle <- function(formula, data, id, obs_times, s = 0, h = NULL, nknots = 3, lq_
   )
 
   # Per-subject score contributions. B is their mean outer product; the rows
-  # are kept on the fit because the covariance of estimates at two bandwidths
-  # (skmle_bc()) is built from them.
+  # are kept on the fit for users who need them.
   scores <- calc_scores(
     beta = beta_est,
     gamma = gamma_est,

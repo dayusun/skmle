@@ -15,7 +15,6 @@ default_bandwidth_async(times, n)
 A positive bandwidth.
 }
 \description{
-Geometric midpoint of the grid \code{kee_async_cv()} searches,
-\eqn{2 (Q_3 - Q_1) n^{-1/2}}, so it adapts to whatever units \code{time} is in.
+A rule of thumb, \eqn{2 (Q_3 - Q_1) n^{-1/2}}, so it adapts to whatever units \code{time} is in.
 }
 \keyword{internal}

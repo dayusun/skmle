@@ -150,8 +150,7 @@ order as the typical gap between visits. As \eqn{n} grows, the selected
 bandwidth therefore converges to a constant determined by the visit
 process rather than to zero, and the coefficients at \code{h_cv} remain biased
 for \eqn{\beta} at any sample size. Use \code{skmle_cv()} to choose a bandwidth
-for predicting the hazard, and \code{\link[=skmle_bc]{skmle_bc()}} to estimate \eqn{\beta} with
-confidence intervals.
+for predicting the hazard.
 }
 
 \section{The default grid}{

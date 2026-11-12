@@ -55,12 +55,11 @@ Then:
 | Survival | Want the baseline hazard, or a model between the two | `skmle()` |
 | Survival | Choose the bandwidth properly | `skmle_cv()` |
 | Longitudinal | Start here; one constant effect | `kee_async()` |
-| Longitudinal | Choose the bandwidth properly | `kee_async_cv()` |
 | Longitudinal | The effect may change over time | `kee_async_td()` |
 
 Every fitting function picks a bandwidth for you if you do not supply one, and
-says in a message what it chose. That is enough for a first answer; the `_cv()`
-functions choose it from the data, which is what to report.
+says in a message what it chose. For the survival models, `skmle_cv()` chooses
+it from the data.
 
 ## The functions
 
@@ -77,7 +76,6 @@ functions choose it from the data, which is what to report.
 **Asynchronous longitudinal outcomes**
 
 - `kee_async()` fits one constant coefficient per covariate.
-- `kee_async_cv()` selects the bandwidth by subject-level cross-validation.
 - `kee_async_td()` estimates a coefficient curve `β(t)`, pointwise.
 - `sim_async_data()` simulates a response and a covariate on independent
   observation-time streams.
@@ -191,15 +189,8 @@ summary(fit_a)
 tidy(fit_a, conf.int = TRUE)   # a tibble, ready for ggplot2 or dplyr
 ```
 
-`h` is the one consequential choice; `kee_async_cv()` makes it by
-cross-validation over subjects:
-
-```r
-cv <- d$y |>
-  kee_async_cv(d$x, y ~ x, id = id, time = time, K = 5, seed = 1)
-
-cv$h_cv
-```
+`h` is the one consequential choice. Fit at several bandwidths and check that
+the estimate is stable before reporting one.
 
 Each (response, covariate) pair within a subject contributes in proportion to
 its time separation, so nothing is discarded and nothing is carried forward.

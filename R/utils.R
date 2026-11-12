@@ -205,8 +205,7 @@ default_bandwidth_surv <- function(X_time, obs_times, n) {
 
 #' Default bandwidth for the asynchronous estimators
 #'
-#' Geometric midpoint of the grid `kee_async_cv()` searches,
-#' \eqn{2 (Q_3 - Q_1) n^{-1/2}}, so it adapts to whatever units `time` is in.
+#' A rule of thumb, \eqn{2 (Q_3 - Q_1) n^{-1/2}}, so it adapts to whatever units `time` is in.
 #'
 #' @param times Pooled observation times from both tables.
 #' @param n Number of subjects.
@@ -224,16 +223,18 @@ default_bandwidth_async <- function(times, n) {
 #' Tell the user which bandwidth was chosen for them
 #'
 #' @param h The chosen bandwidth.
-#' @param cv_fun Name of the cross-validation function to point at.
+#' @param cv_fun Name of the cross-validation function to point at, or `NULL`
+#'   when the estimator has none.
 #' @return `h`, invisibly.
 #' @keywords internal
-announce_bandwidth <- function(h, cv_fun) {
-  message(sprintf(
-    paste0(
-      "'h' not supplied. Using h = %s, read off the observation times as a\n",
-      "rule of thumb. See %s() to choose the bandwidth from the data."
-    ),
-    format(h, digits = 3), cv_fun
-  ))
+announce_bandwidth <- function(h, cv_fun = NULL) {
+  msg <- sprintf(
+    "'h' not supplied. Using h = %s, read off the observation times as a\nrule of thumb.",
+    format(h, digits = 3)
+  )
+  if (!is.null(cv_fun)) {
+    msg <- paste0(msg, sprintf(" See %s() to choose the bandwidth from the data.", cv_fun))
+  }
+  message(msg)
   invisible(h)
 }

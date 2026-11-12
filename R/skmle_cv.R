@@ -15,7 +15,7 @@
 # the carried-forward covariate is out of date by the time since the last visit,
 # so the score rewards fits attenuated by that lag, and the selected bandwidth
 # converges to a constant set by the visit process rather than to zero
-# (dev/sim_cv/theory). skmle_bc() is the route to inference on beta.
+# (dev/sim_cv/theory).
 #
 #' Pieces of the held-out log-likelihood that do not depend on the bandwidth
 #'
@@ -150,8 +150,7 @@ locf_score <- function(X_time, obs_times_vec, id_vec, delta, knots, tau,
 #' bandwidth therefore converges to a constant determined by the visit
 #' process rather than to zero, and the coefficients at `h_cv` remain biased
 #' for \eqn{\beta} at any sample size. Use `skmle_cv()` to choose a bandwidth
-#' for predicting the hazard, and [skmle_bc()] to estimate \eqn{\beta} with
-#' confidence intervals.
+#' for predicting the hazard.
 #'
 #' # The default grid
 #'

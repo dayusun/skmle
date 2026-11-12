@@ -130,31 +130,28 @@ confint.kee_td <- function(object, parm, level = 0.95, ...) {
 #' endpoint of the grid, the "selected" bandwidth is where you stopped looking
 #' rather than a minimum, and the grid should be widened.
 #'
-#' @param x A `cv.skmle` or `cv.kee_async` object.
+#' @param x A `cv.skmle` object.
 #' @param ... Passed to [graphics::plot()].
 #' @return `x`, invisibly. Called for the plot.
 #' @examples
-#' set.seed(1)
-#' d <- sim_async_data(n = 150)
-#' cv <- d$y |>
-#'   kee_async_cv(d$x, y ~ x,
-#'     id = id, time = time,
-#'     h_grid = c(0.1, 0.2, 0.3, 0.5), K = 3, seed = 1, quiet = TRUE
-#'   )
+#' \donttest{
+#' library(survival)
+#' set.seed(123)
+#' dat <- sim_skmle_data(
+#'   n = 60,
+#'   mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+#'   mu_bar = 8,
+#'   alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+#'   beta = c(1, -0.5),
+#'   s = 0,
+#'   cen = 0.7
+#' )
+#' cv <- skmle_cv(Surv(X, delta) ~ covariates, data = dat, id = id,
+#'   obs_times = obs_times, s = 0, K = 3, seed = 2026, quiet = TRUE)
 #' plot(cv)
+#' }
 #' @importFrom graphics abline points
 #' @name plot.cv.skmle
-#' @export
-plot.cv.kee_async <- function(x, ...) {
-  if (identical(x$method, "variance")) {
-    res <- x$cv_results
-    return(.plot_cv(data.frame(h = res$h, cvloss = res$trSV), x$h_cv,
-                    ylab = "tr{Sigma_X V(h)}", main = "Minimum-variance bandwidth", ...))
-  }
-  .plot_cv(x$cv_results, x$h_cv, ...)
-}
-
-#' @rdname plot.cv.skmle
 #' @export
 plot.cv.skmle <- function(x, ...) .plot_cv(x$cv_results, x$h_cv, ...)
 

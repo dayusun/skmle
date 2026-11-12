@@ -38,13 +38,13 @@ Survival \tab Additive hazards instead \tab \code{\link[=kee_additive]{kee_addit
 Survival \tab Want the baseline hazard, or a model between the two \tab \code{\link[=skmle]{skmle()}} \cr
 Survival \tab Choose the bandwidth properly \tab \code{\link[=skmle_cv]{skmle_cv()}} \cr
 Longitudinal \tab Start here; one constant effect \tab \code{\link[=kee_async]{kee_async()}} \cr
-Longitudinal \tab Choose the bandwidth properly \tab \code{\link[=kee_async_cv]{kee_async_cv()}} \cr
 Longitudinal \tab The effect may change over time \tab \code{\link[=kee_async_td]{kee_async_td()}} \cr
 }
 
 Every fitting function will pick a bandwidth for you if you do not supply
 one, and will say in a message what it chose. That is enough to get a first
-answer; the \verb{_cv()} functions choose it from the data, which is what to
+answer; \code{\link[=skmle_cv]{skmle_cv()}} chooses it from the data for the
+survival models, which is what to
 report.
 }
 

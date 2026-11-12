@@ -4,12 +4,13 @@
 \alias{announce_bandwidth}
 \title{Tell the user which bandwidth was chosen for them}
 \usage{
-announce_bandwidth(h, cv_fun)
+announce_bandwidth(h, cv_fun = NULL)
 }
 \arguments{
 \item{h}{The chosen bandwidth.}
 
-\item{cv_fun}{Name of the cross-validation function to point at.}
+\item{cv_fun}{Name of the cross-validation function to point at, or \code{NULL}
+when the estimator has none.}
 }
 \value{
 \code{h}, invisibly.

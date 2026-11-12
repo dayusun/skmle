@@ -61,12 +61,11 @@ Then:
 | Survival | Want the baseline hazard, or a model between the two | `skmle()` |
 | Survival | Choose the bandwidth properly | `skmle_cv()` |
 | Longitudinal | Start here; one constant effect | `kee_async()` |
-| Longitudinal | Choose the bandwidth properly | `kee_async_cv()` |
 | Longitudinal | The effect may change over time | `kee_async_td()` |
 
 Every fitting function picks a bandwidth for you if you do not supply one, and
-says in a message what it chose. That is enough for a first answer; the `_cv()`
-functions choose it from the data, which is what to report.
+says in a message what it chose. For the survival models, `skmle_cv()` chooses
+it from the data.
 
 ```{r setup, warning=FALSE, message=FALSE}
 library(nloptr)
@@ -302,16 +301,12 @@ summary(fit_a)
 confint(fit_a)
 ```
 
-The bandwidth is the one consequential choice. `kee_async_cv()` returns the
-asynchrony-corrected fit at the bandwidth that minimises its estimated
-variance:
+The bandwidth is the one consequential choice. Fit at several bandwidths and
+check that the estimate is stable:
 
-```{r async-cv}
-cv <- kee_async_cv(d$y, d$x,
-  y ~ x, id = id, time = time,
-  h_grid = c(0.10, 0.15, 0.25, 0.40), quiet = TRUE
-)
-cv
+```{r async-h}
+sapply(c(0.10, 0.15, 0.25, 0.40), function(h)
+  coef(kee_async(d$y, d$x, y ~ x, id = id, time = time, h = h))["x"])
 ```
 
 If the coefficients themselves vary with time, `kee_async_td()` estimates the

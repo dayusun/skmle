@@ -269,100 +269,6 @@ test_that("one_sided is validated", {
 
 ## ------------------------------------------------------- bandwidth selection
 
-test_that("kee_async_cv selects a bandwidth and refits there", {
-    skip_on_cran()
-    set.seed(41)
-    d <- sim_async_data(n = 200)
-    # The minimum may land on a grid endpoint here; that is exactly what the
-    # endpoint warning is for, so accept it rather than letting it leak.
-    cv <- suppressWarnings(kee_async_cv(d$y, d$x,
-        y ~ x, id = id, time = time,
-        h_grid = c(0.10, 0.20, 0.35), K = 4, seed = 1, quiet = TRUE, method = "plain"
-    ))
-    expect_s3_class(cv, "cv.kee_async")
-    expect_true(cv$h_cv %in% cv$h_grid)
-    expect_equal(cv$fit$h, cv$h_cv)
-    expect_s3_class(cv$fit, "kee")
-    expect_true(all(cv$cv_results$nfold_used > 0))
-
-    # The loss is a weighted MEAN of squared residuals, so it sits on the scale
-    # of the error variance (1 in this generator) whatever the bandwidth.  An
-    # unnormalised loss would instead grow with the number of pairs a wider
-    # bandwidth admits, and would always select the smallest candidate.
-    expect_true(all(cv$cv_results$cvloss > 0.1 & cv$cv_results$cvloss < 20))
-    expect_lt(max(cv$cv_results$cvloss) / min(cv$cv_results$cvloss), 3)
-
-    # The refit call must be readable, not the whole data frame.
-    expect_lt(nchar(paste(deparse(cv$fit$call), collapse = " ")), 300)
-    expect_lt(length(capture.output(print(cv))), 20)
-})
-
-test_that("kee_async_cv reproduces a hand-computed held-out loss", {
-    skip_on_cran()
-    set.seed(43)
-    d <- sim_async_data(n = 60)
-    h <- 0.3
-    K <- 2
-    cv <- kee_async_cv(d$y, d$x,
-        y ~ x, id = id, time = time,
-        h_grid = h, K = K, seed = 7, quiet = TRUE, method = "plain"
-    )
-
-    # Rebuild fold 1's contribution from scratch.
-    set.seed(7)
-    subj <- sort(unique(c(as.character(d$y$id), as.character(d$x$id))))
-    fold <- sample(rep_len(seq_len(K), length(subj)))
-    W <- function(z) pmax(0.75 * (1 - z^2), 0)
-    loss_f <- function(f) {
-        te <- subj[fold == f]
-        tr <- subj[fold != f]
-        b <- coef(kee_async(
-            d$y[as.character(d$y$id) %in% tr, ],
-            d$x[as.character(d$x$id) %in% tr, ],
-            y ~ x,
-            id = id, time = time, h = h
-        ))
-        num <- 0
-        den <- 0
-        yt <- d$y[as.character(d$y$id) %in% te, ]
-        xt <- d$x[as.character(d$x$id) %in% te, ]
-        for (j in seq_len(nrow(yt))) {
-            k <- which(xt$id == yt$id[j])
-            if (!length(k)) next
-            w <- W((yt$time[j] - xt$time[k]) / h) / h
-            mu <- b[1] + b[2] * xt$x[k]
-            num <- num + sum(w * (yt$y[j] - mu)^2)
-            den <- den + sum(w)
-        }
-        c(num, den)
-    }
-    hand <- vapply(seq_len(K), loss_f, numeric(2))
-    expect_equal(cv$cv_results$cvloss, mean(hand[1, ] / hand[2, ]), tolerance = 1e-8)
-})
-
-test_that("kee_async_cv builds a default grid and flags endpoint minima", {
-    skip_on_cran()
-    set.seed(47)
-    d <- sim_async_data(n = 120)
-    cv <- suppressWarnings(kee_async_cv(d$y, d$x,
-        y ~ x, id = id, time = time,
-        n_h = 6, K = 3, seed = 2, quiet = TRUE, method = "plain"
-    ))
-    expect_length(cv$h_grid, 6L)
-    expect_true(all(diff(cv$h_grid) > 0))
-    expect_true(all(cv$h_grid > 0))
-
-    # A grid with a single sensible value plus an absurd one must pick the
-    # sensible one and warn that the minimum is on the boundary.
-    expect_warning(
-        kee_async_cv(d$y, d$x,
-            y ~ x, id = id, time = time,
-            h_grid = c(0.25, 5), K = 3, seed = 2, quiet = TRUE, method = "plain"
-        ),
-        "endpoint"
-    )
-})
-
 test_that("a bandwidth on the wrong scale is flagged rather than fitted quietly", {
     set.seed(53)
     d <- sim_async_data(n = 80)
@@ -454,8 +360,7 @@ test_that("the asynchronous estimators run with only the data", {
     expect_equal(unname(coef(fit)), c(0.5, 1.5), tolerance = 0.2)
     expect_true(fit$h > 0)
 
-    # The default is the geometric midpoint of the grid kee_async_cv() searches,
-    # which is the claim the message makes.
+    # The default is the rule of thumb the message reports.
     pooled <- c(d$y$time, d$x$time)
     iqr <- diff(stats::quantile(pooled, c(0.25, 0.75), names = FALSE))
     expect_equal(fit$h, 2 * iqr * 200^(-0.5), tolerance = 1e-8)
@@ -470,17 +375,4 @@ test_that("the asynchronous estimators run with only the data", {
     expect_no_message(
         kee_async(d$y, d$x, y ~ x, id = id, time = time, h = 0.25)
     )
-})
-
-test_that("the cross-validation curve plots", {
-    skip_on_cran()
-    set.seed(73)
-    d <- sim_async_data(n = 120)
-    cv <- suppressWarnings(kee_async_cv(d$y, d$x, y ~ x,
-        id = id, time = time,
-        h_grid = c(0.1, 0.2, 0.3, 0.5), K = 3, seed = 1, quiet = TRUE
-    ))
-    pdf(NULL)
-    on.exit(dev.off(), add = TRUE)
-    expect_invisible(plot(cv))
 })
