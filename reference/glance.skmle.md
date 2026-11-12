@@ -27,11 +27,7 @@ glance(x, ...)
 
 ## Value
 
-A one-row tibble. `nobs` is the number of **subjects**, which is the
-unit the asymptotics are in. No `AIC` or `logLik` column is reported:
-the criterion these estimators optimise is a kernel-weighted
-pseudo-likelihood, so an information criterion built from it would not
-mean what it usually means.
+A one-row tibble. `nobs` is the number of **subjects**.
 
 ## Examples
 

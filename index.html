@@ -65,8 +65,7 @@
 <!-- badges: start -->
 
 <p><code>skmle</code> is the reference implementation of the <em>sieve maximum kernel-weighted log-likelihood estimator</em> of Sun, Sun, Zhao and Cao (2025), <em>Journal of the American Statistical Association</em> <strong>120</strong>(552), 2580-2591, <a href="https://doi.org/10.1080/01621459.2025.2476781" class="external-link">doi:10.1080/01621459.2025.2476781</a>.</p>
-<p>Longitudinal covariates are rarely measured when you need them. A biomarker is drawn at a handful of clinic visits; the event you are modelling happens somewhere between two of them, and the outcome you are modelling is recorded on a schedule of its own. Carrying the last value forward answers a different question, and smoothing the covariate first and substituting it is regression calibration, which is not consistent when the sampling is sparse.</p>
-<p><code>skmle</code> handles the mismatch directly, by weighting each observation according to how far its measurement time sits from the time being modelled. It covers two settings:</p>
+<p>Longitudinal covariates are rarely measured when you need them. A biomarker is drawn at a handful of clinic visits; the event you are modelling happens somewhere between two of them, and the outcome you are modelling is recorded on a schedule of its own. <code>skmle</code> weights each observation according to how far its measurement time sits from the time being modelled, without carrying values forward or imputing the covariate. It covers two settings:</p>
 <p>For survival outcomes, the transformed hazards family, with covariates observed sparsely and intermittently. The Box-Cox parameter <code>s</code> indexes the family: <code>s = 0</code> is proportional hazards, <code>s = 1</code> is additive hazards, and other values interpolate. This is the Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and Cao (2025), plus faster specialised estimating equations for the two named cases.</p>
 <p>For longitudinal outcomes, generalised linear models where the response and the covariate are measured on <em>different</em> time grids and never observed together. This is the asynchronous case, handled by the kernel-weighted estimating equations of Cao, Zeng and Fine (2015), with either time-invariant coefficients or a coefficient curve <code>β(t)</code>.</p>
 <p>Both settings share one idea and one implementation: a kernel weight bridging mismatched time grids, with the heavy numerical work in C++ via <code>Rcpp</code> and <code>RcppArmadillo</code>, behind an ordinary R modelling interface.</p>
@@ -105,7 +104,7 @@
 </tr>
 <tr>
 <td align="left">Survival</td>
-<td align="left">Choose the bandwidth properly</td>
+<td align="left">Choose the bandwidth</td>
 <td align="left"><code><a href="reference/skmle_cv.html">skmle_cv()</a></code></td>
 </tr>
 <tr>
@@ -120,7 +119,7 @@
 </tr>
 </tbody>
 </table>
-<p>Every fitting function picks a bandwidth for you if you do not supply one, and says in a message what it chose. For the survival models, <code><a href="reference/skmle_cv.html">skmle_cv()</a></code> chooses it from the data.</p>
+<p>Every fitting function picks a bandwidth for you if you do not supply one, and says in a message what it chose. For the survival models, use <code><a href="reference/skmle_cv.html">skmle_cv()</a></code> to choose it from the data.</p>
 </div>
 <div class="section level2">
 <h2 id="the-functions">The functions<a class="anchor" aria-label="anchor" href="#the-functions"></a>
@@ -227,10 +226,10 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_a</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit_a</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>   <span class="co"># a tibble, ready for ggplot2 or dplyr</span></span></code></pre></div>
-<p><code>h</code> is the one consequential choice. Fit at several bandwidths and check that the estimate is stable before reporting one.</p>
-<p>Each (response, covariate) pair within a subject contributes in proportion to its time separation, so nothing is discarded and nothing is carried forward. The estimator converges at the smoothing rate <code>(nh)^(1/2)</code>, so standard errors shrink more slowly than in a parametric fit.</p>
+<p>To see how the estimate depends on <code>h</code>, fit at several values.</p>
+<p>Each (response, covariate) pair within a subject contributes in proportion to its time separation, so nothing is discarded and nothing is carried forward.</p>
 <p>Identity, log and logistic links are supported by both <code><a href="reference/kee_async.html">kee_async()</a></code> and <code><a href="reference/kee_async_td.html">kee_async_td()</a></code>.</p>
-<p>If the coefficients vary with time, <code><a href="reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve pointwise. Both time arguments are smoothed there, so it converges at the bivariate rate <code>(n h1 h2)^(1/2)</code> and the bands are correspondingly wide:</p>
+<p>If the coefficients vary with time, <code><a href="reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve pointwise:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_td</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/kee_async_td.html">kee_async_td</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,</span>
@@ -239,7 +238,7 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span>          <span class="co"># beta_j(t) with pointwise 95% bands</span></span>
 <span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span>          <span class="co"># one row per (time, term)</span></span></code></pre></div>
-<p>There is a full article on this setting: why last-value-carried-forward and regression calibration fail, how to read the bandwidth diagnostics, and what the half kernel changes.</p>
+<p>There is a full article on this setting:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"asynchronous"</span>, package <span class="op">=</span> <span class="st">"skmle"</span><span class="op">)</span></span></code></pre></div>
 <p>or read it at <a href="https://www.sundayu.me/skmle/articles/asynchronous.html" class="uri">https://www.sundayu.me/skmle/articles/asynchronous.html</a>.</p>

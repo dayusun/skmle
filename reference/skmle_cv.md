@@ -171,11 +171,10 @@ random, pass `seed` (or
 [`set.seed()`](https://rdrr.io/r/base/Random.html) before calling) to
 make the grid selection reproducible.
 
-## What the held-out loss is
+## The loss
 
 Each training fold is fitted at the candidate bandwidth, and the fit is
-scored on the held-out subjects by an ordinary log-likelihood per
-subject,
+scored on the held-out subjects by the log-likelihood per subject,
 
 \$\$-\frac{1}{n\_{\mathrm{test}}} \sum\_{i \in \mathrm{test}} \left\[
 \delta_i \log g\\\hat\alpha(X_i) + Z_i(X_i)^\top \hat\beta\\ -
@@ -183,65 +182,19 @@ subject,
 \right\],\$\$
 
 where \\Z_i(t)\\ is the covariate carried forward from the last
-observation at or before \\t\\ (and the first observation carried back,
-before the first observation time). The integral is exact up to the
-Legendre rule applied between consecutive observation times, where the
-carried-forward path jumps.
+observation at or before \\t\\. This loss does not depend on the
+bandwidth itself, so it compares candidates on an equal footing.
 
-No kernel and no bandwidth appear in that expression, and that is the
-point. The kernel-weighted log-likelihood
-[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) maximises
-**cannot** be compared across bandwidths: its weights are \\W(u/h)/h\\,
-so the weight each subject contributes falls away as `h` grows, and the
-criterion decreases monotonically in `h` whatever the fit is worth.
-Scored that way the largest candidate wins every grid on every data set,
-and coefficients further from the truth are preferred to coefficients
-nearer it. Dividing by the admitted weight, or scoring at one bandwidth
-held fixed across the grid, does not rescue it.
-
-The carried-forward likelihood still favours some bandwidths over
-others. A carried-forward covariate is out of date by the time since the
-last visit, so the held-out score is maximised by coefficients
-attenuated by that lag. The fit produces such coefficients at a
-bandwidth of the same order as the typical gap between visits. As \\n\\
-grows, the selected bandwidth therefore converges to a constant
-determined by the visit process rather than to zero, and the
-coefficients at `h_cv` remain biased for \\\beta\\ at any sample size.
-Use `skmle_cv()` to choose a bandwidth for predicting the hazard.
-
-## The default grid
+## The grid
 
 When `h_grid` is `NULL` the grid is log-spaced over \\\[\max\\\min_i
 (X_i - T\_{ij})\_+,\\ \tau n^{-0.6}\\,\\ \min\\\max_i \max_j (X_i -
 T\_{ij})\_+,\\ \tau n^{-0.3}\\\]\\, with \\\tau = \max_i X_i\\, so it
-adapts to the scale of the times on its own.
+adapts to the scale of the times on its own. If the selected value is an
+endpoint of the grid, `skmle_cv()` warns; supply a wider `h_grid`.
 
-Always look at `cv_results`. A minimum at an endpoint of the grid raises
-a warning: the selected value is then the best of the values offered
-rather than a minimum, and the grid should be widened. On the automatic
-grid that warning is common, because \\n^{-0.3}\\ is the rate the
-asymptotics assume while the finite-sample minimum of the loss
-frequently lies above it. Widening `h_grid` by hand shows where the
-curve turns.
-
-## How sharp the selection is
-
-Not very, and the `se` column says so: it is the standard error of each
-loss across the folds, and over a wide middle range of `h` the losses
-sit inside one standard error of each other. Read the curve, not only
-`h_cv`.
-
-The criterion scores prediction of the held-out hazard, in which the
-baseline \\\hat\alpha\\ can absorb attenuation in \\\hat\beta\\, so it
-leans towards more smoothing than the coefficients on their own would
-want. Over 10 replicates at \\n = 200\\ on a grid spanning `0.05` to
-`0.9`, the mean squared error of \\\hat\beta\\ at the selected bandwidth
-was `0.155`, against `0.205` at the largest candidate and `0.065` at the
-bandwidth an oracle would have picked. Resist the temptation to correct
-the lean by taking the smallest bandwidth within one standard error of
-the minimum: that lands in the noisy small-`h` end, and scored `0.205`
-over the same replicates – no better than taking the largest candidate.
-The rise at the left of the curve is real.
+`cv_results` lists the loss and its standard error across folds for
+every candidate.
 
 ## Examples
 

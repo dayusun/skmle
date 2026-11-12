@@ -51,7 +51,7 @@ Then:
 | Survival | Start here; Cox model | [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) |
 | Survival | Additive hazards instead | [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md) |
 | Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) |
-| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
+| Survival | Choose the bandwidth | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
 | Longitudinal | Start here; one constant effect | [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) |
 | Longitudinal | The effect may change over time | [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md) |
 
@@ -297,39 +297,10 @@ The returned object contains:
 - the refitted `skmle` model at that bandwidth
 - the cross-validation loss table
 
-Each candidate is scored by an ordinary log-likelihood on the held-out
-subjects, with the covariate path carried forward from the last
-observation. Note what is *not* in that sentence: a kernel and a
-bandwidth. Scoring the fold with the kernel-weighted log-likelihood
-instead would not compare like with like, because the kernel weight
-`W(u/h)/h` shrinks as `h` grows and the loss would fall away with it
-whatever the fit was worth.
-[`?skmle_cv`](https://www.sundayu.me/skmle/reference/skmle_cv.md) gives
-the criterion in full.
-
-Read `cv_results` rather than only `h_cv`, and read the `se` column with
-it. Two warnings are worth taking literally.
-
-If the minimum sits at an end of the grid,
-[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) says
-so: the answer is then the best of the values offered, not a minimum. On
-the automatic grid that happens often, because the grid stops at \\\tau
-n^{-0.3}\\ – the rate the asymptotics assume – while the finite-sample
-minimum of the loss frequently lies above it. Widen `h_grid` by hand to
-see where the curve turns.
-
-And the curve is flat. With 80 subjects, 7 of the 10 candidates above
-lie within one standard error of the minimum: this much data does not
-pin down a bandwidth. The criterion also scores prediction of the
-held-out hazard, in which the baseline can absorb attenuation in `beta`,
-so it leans towards more smoothing than the coefficients on their own
-would want.
-
-It is tempting to correct that lean by taking the smallest `h` within
-one standard error of the minimum. Don’t: over 10 replicates at \\n =
-200\\ that rule put the squared error of `beta` back where the grid
-maximum had it, because it lands in the noisy small-`h` end. The rise at
-the left of the curve is real.
+`cv_results` holds the held-out loss and its standard error for each
+candidate bandwidth. If the selected value sits at an end of the grid,
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
+warns; pass a wider `h_grid`.
 
 You can then inspect the final refit in the usual way.
 
@@ -441,8 +412,7 @@ confint(fit_a)
 #> x           1.2230761 1.4500656
 ```
 
-The bandwidth is the one consequential choice. Fit at several bandwidths
-and check that the estimate is stable:
+To see how the estimate depends on the bandwidth, fit at several values:
 
 ``` r
 
@@ -454,9 +424,7 @@ sapply(c(0.10, 0.15, 0.25, 0.40), function(h)
 
 If the coefficients themselves vary with time,
 [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
-estimates the curve \\\beta(t)\\ pointwise. Both time arguments are
-smoothed there, so it converges at the bivariate rate \\(n h_1
-h_2)^{1/2}\\ and the bands are wide.
+estimates the curve \\\beta(t)\\ pointwise.
 
 ``` r
 
@@ -475,9 +443,7 @@ plot(fit_td)
 
 ![](tutorial_files/figure-html/async-td-1.png)
 
-The `asynchronous` article covers this properly: why
-last-value-carried-forward and regression calibration fail here, how to
-read the bandwidth diagnostics, and what the half kernel changes.
+The `asynchronous` article covers this setting in more detail.
 
 ## A typical workflow
 
@@ -491,7 +457,7 @@ For routine use, the usual sequence is:
     the fitted model.
 4.  Use
     [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
-    if you want data-driven bandwidth selection.
+    to select the bandwidth.
 5.  Use [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md)
     or
     [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)

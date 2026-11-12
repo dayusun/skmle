@@ -9,14 +9,10 @@ kernel-weighted log-likelihood estimator* of Sun, Sun, Zhao and Cao
 Longitudinal covariates are rarely measured when you need them. A
 biomarker is drawn at a handful of clinic visits; the event you are
 modelling happens somewhere between two of them, and the outcome you are
-modelling is recorded on a schedule of its own. Carrying the last value
-forward answers a different question, and smoothing the covariate first
-and substituting it is regression calibration, which is not consistent
-when the sampling is sparse.
-
-`skmle` handles the mismatch directly, by weighting each observation
-according to how far its measurement time sits from the time being
-modelled. It covers two settings:
+modelling is recorded on a schedule of its own. `skmle` weights each
+observation according to how far its measurement time sits from the time
+being modelled, without carrying values forward or imputing the
+covariate. It covers two settings:
 
 For survival outcomes, the transformed hazards family, with covariates
 observed sparsely and intermittently. The Box-Cox parameter `s` indexes
@@ -53,14 +49,14 @@ Then:
 | Survival | Start here; Cox model | [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) |
 | Survival | Additive hazards instead | [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md) |
 | Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) |
-| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
+| Survival | Choose the bandwidth | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
 | Longitudinal | Start here; one constant effect | [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) |
 | Longitudinal | The effect may change over time | [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md) |
 
 Every fitting function picks a bandwidth for you if you do not supply
-one, and says in a message what it chose. For the survival models,
-[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
-chooses it from the data.
+one, and says in a message what it chose. For the survival models, use
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) to
+choose it from the data.
 
 ## The functions
 
@@ -213,14 +209,11 @@ summary(fit_a)
 tidy(fit_a, conf.int = TRUE)   # a tibble, ready for ggplot2 or dplyr
 ```
 
-`h` is the one consequential choice. Fit at several bandwidths and check
-that the estimate is stable before reporting one.
+To see how the estimate depends on `h`, fit at several values.
 
 Each (response, covariate) pair within a subject contributes in
 proportion to its time separation, so nothing is discarded and nothing
-is carried forward. The estimator converges at the smoothing rate
-`(nh)^(1/2)`, so standard errors shrink more slowly than in a parametric
-fit.
+is carried forward.
 
 Identity, log and logistic links are supported by both
 [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) and
@@ -228,9 +221,7 @@ Identity, log and logistic links are supported by both
 
 If the coefficients vary with time,
 [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
-estimates the curve pointwise. Both time arguments are smoothed there,
-so it converges at the bivariate rate `(n h1 h2)^(1/2)` and the bands
-are correspondingly wide:
+estimates the curve pointwise:
 
 ``` r
 
@@ -243,9 +234,7 @@ plot(fit_td)          # beta_j(t) with pointwise 95% bands
 tidy(fit_td)          # one row per (time, term)
 ```
 
-There is a full article on this setting: why last-value-carried-forward
-and regression calibration fail, how to read the bandwidth diagnostics,
-and what the half kernel changes.
+There is a full article on this setting:
 
 ``` r
 

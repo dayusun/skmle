@@ -33,10 +33,6 @@ augment(x, data_x, ...)
 
 ## Details
 
-There is deliberately no `.resid`. A residual needs a response value at
-\\S\_{ik}\\, and asynchronous data has none; any residual reported here
-would have to be invented.
-
 The fit does not retain its data, so `data_x` must be supplied.
 
 ## Examples

@@ -101,34 +101,11 @@ complete observation of the regression you are trying to fit.</p>
 implements their two estimators: <code><a href="../reference/kee_async.html">kee_async()</a></code> for a constant
 <span class="math inline">\(\beta\)</span>, and
 <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> for a coefficient curve <span class="math inline">\(\beta(t)\)</span>.</p>
-</div>
-<div class="section level2">
-<h2 id="two-shortcuts-that-do-not-work">Two shortcuts that do not work<a class="anchor" aria-label="anchor" href="#two-shortcuts-that-do-not-work"></a>
-</h2>
-<p>Both of the obvious fixes are common in practice, and both fail
-quietly. They return plausible numbers with plausible standard
-errors.</p>
-<p><em>Last value carried forward</em> replaces <span class="math inline">\(X_i(T_{ij})\)</span> by the most recent observed
-covariate value. This is measurement error with a twist: the error does
-not shrink as the sample grows. The expected gap back to the previous
-observation is set by the visit schedule and has nothing to do with
-<span class="math inline">\(n\)</span>, so the substituted covariate
-keeps a fixed error variance forever. You get classical attenuation.
-<span class="math inline">\(\hat\beta\)</span> converges, but to
-something closer to zero than <span class="math inline">\(\beta\)</span>.</p>
-<p><em>Regression calibration</em> smooths the covariate path first and
-substitutes the smoothed value. This feels more careful and has the same
-problem: to smooth at <span class="math inline">\(T_{ij}\)</span> you
-need observations near <span class="math inline">\(T_{ij}\)</span>, and
-under sparse sampling the window cannot shrink without emptying.
-Whatever bandwidth keeps the window occupied also keeps a non-vanishing
-lag spread, and the attenuation returns. For a nonlinear link there is a
-second error on top: the estimating equation needs the average of <span class="math inline">\(g(\cdot)\)</span>, and you have supplied <span class="math inline">\(g\)</span> of the average.</p>
-<p>What the kernel-weighted equation does instead is give up on
-reconstructing <span class="math inline">\(X_i(T_{ij})\)</span> at all.
-It evaluates the link at each covariate vector you actually have, and
-lets a weight express how much that observation says about a given
-response occasion.</p>
+<p>Carrying the last covariate value forward, or smoothing the covariate
+first and substituting it, both attenuate <span class="math inline">\(\hat\beta\)</span> when sampling is sparse. The
+kernel-weighted equation instead evaluates the link at each covariate
+vector you actually have, and lets a weight express how much that
+observation says about a given response occasion.</p>
 </div>
 <div class="section level2">
 <h2 id="the-estimator">The estimator<a class="anchor" aria-label="anchor" href="#the-estimator"></a>
@@ -141,14 +118,9 @@ W_h(T_{ij} - S_{ik})\,
 (response, covariate) pair within a subject contributes, weighted by how
 far apart in time the two occasions are. Pairs more than <span class="math inline">\(h\)</span> apart drop out; pairs close together
 dominate.</p>
-<p>The rate is <span class="math inline">\((nh)^{1/2}\)</span>. This is
-a smoothing problem wearing a regression problem’s clothes, so standard
-errors shrink more slowly than you are used to and the bandwidth becomes
-something you have to think about.</p>
 <p>The equation sees times only through <span class="math inline">\((T -
 S)/h\)</span>, so any units work as long as <code>h</code> is in the
-same ones. That is the one thing to get right, and the package warns
-when it looks wrong.</p>
+same ones. The package warns when it looks wrong.</p>
 </div>
 <div class="section level2">
 <h2 id="a-worked-example">A worked example<a class="anchor" aria-label="anchor" href="#a-worked-example"></a>
@@ -266,31 +238,15 @@ response occasion.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>     4 0.014<span style="text-decoration: underline;">3</span> -<span style="color: #BB0000;">1.84</span>   -<span style="color: #BB0000;">2.15</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>     4 0.015<span style="text-decoration: underline;">6</span> -<span style="color: #BB0000;">1.86</span>   -<span style="color: #BB0000;">2.18</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1,977 more rows</span></span></span></code></pre></div>
-<p>There is deliberately no <code>.resid</code> column. A residual needs
-a response value at <span class="math inline">\(S_{ik}\)</span>, which
-is exactly what asynchronous data does not have; reporting one would
-mean inventing it. The fit does not retain its data, so
-<code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">augment()</a></code> needs <code>data_x</code> handed back to it.</p>
+<p>The fit does not retain its data, so <code><a href="https://generics.r-lib.org/reference/augment.html" class="external-link">augment()</a></code> needs
+<code>data_x</code> handed back to it.</p>
 </div>
 <div class="section level2">
 <h2 id="choosing-the-bandwidth">Choosing the bandwidth<a class="anchor" aria-label="anchor" href="#choosing-the-bandwidth"></a>
 </h2>
-<p><code>h</code> trades variance against bias: small <code>h</code>
-admits few pairs, and large <code>h</code> admits pairs whose times are
-far apart and so pulls in a bias. <code>h</code> is in the units of
-<code>time</code>. The next section shows how to check how much the
-estimate depends on it.</p>
-</div>
-<div class="section level2">
-<h2 id="check-how-much-the-answer-moves-with-h">Check how much the answer moves with h<a class="anchor" aria-label="anchor" href="#check-how-much-the-answer-moves-with-h"></a>
-</h2>
-<p>Cao, Zeng and Fine assume the covariance function of the covariate
-process is twice differentiable, which gives a bias of order <span class="math inline">\(h^2\)</span>. Their Section 6 notes that relaxing
-this to one-sided differentiability leaves a bias of order <span class="math inline">\(h\)</span> instead. That weaker class admits
-processes with independent increments, including the Ornstein-Uhlenbeck
-process <code><a href="../reference/sim_async_data.html">sim_async_data()</a></code> uses by default.</p>
-<p>The practical symptom is an estimate that drifts steadily as
-<code>h</code> grows. It costs nothing to look:</p>
+<p><code>h</code> is in the units of <code>time</code>. Small
+<code>h</code> admits few pairs; large <code>h</code> admits pairs far
+apart in time. Fit at several values and compare:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.10</span>, <span class="fl">0.15</span>, <span class="fl">0.25</span>, <span class="fl">0.40</span>, <span class="fl">0.60</span><span class="op">)</span></span>
 <span><span class="va">sweep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">hs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">h</span><span class="op">)</span> <span class="op">{</span></span>
@@ -317,11 +273,8 @@ process <code><a href="../reference/sim_async_data.html">sim_async_data()</a></c
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">1.5</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"firebrick"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="asynchronous_files/figure-html/sweep-1.png" class="r-plt" alt="" width="672"></p>
-<p>The estimate slides away from the truth as <code>h</code> grows, at a
-rate roughly linear in <code>h</code>. That is the <span class="math inline">\(O(h)\)</span> term, and it is telling you that the
-covariance of this covariate process has a kink at the diagonal. A plot
-that is flat across a range of <code>h</code> says the opposite and is
-reassuring. Either way, report the plot, not one bandwidth.</p>
+<p>Choose <code>h</code> from this plot, weighing the width of the
+interval against how far the estimate moves.</p>
 </div>
 <div class="section level2">
 <h2 id="half-kernel-or-full-kernel">Half kernel or full kernel<a class="anchor" aria-label="anchor" href="#half-kernel-or-full-kernel"></a>
@@ -363,11 +316,8 @@ enters.</p>
   W_{h_2}(t - S_{ik})\, X_i(S_{ik})
   \left[ Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \beta(t)\} \right] =
 0.\]</span></p>
-<p>Because both time arguments are smoothed, the rate is the
-<strong>bivariate</strong> <span class="math inline">\((n h_1
-h_2)^{1/2}\)</span>. This is much slower than the time-invariant fit,
-and a sample size that gave a comfortable constant-<span class="math inline">\(\beta\)</span> answer can be far too small
-here.</p>
+<p>Both time arguments are smoothed, so the curve needs more data than
+the time-invariant fit.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2025</span><span class="op">)</span></span>
 <span><span class="va">dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span></span>
@@ -395,29 +345,15 @@ Compare the fitted curve against it:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.25     1.16     1.06      1.25</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  0.3      1.19     1.10      1.27</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.35     1.20     1.12      1.28</span></span></code></pre></div>
-<p>Three cautions when reading such a plot:</p>
-<p>Each band covers its own target time. Read them together as a region
-for the whole curve and you are claiming much more than the data
-supports, so a curve straying outside at one or two times means
-little.</p>
-<p>They carry no correction for smoothing bias either, so they cover
-<span class="math inline">\(E\hat\beta(t)\)</span> instead of <span class="math inline">\(\beta(t)\)</span>. A large bandwidth flattens the
-curve toward a constant and the bands stay the same width. Refit at a
-smaller <code>h</code> to see how much of the shape is smoothing.</p>
-<p>Target times within a bandwidth of either end of the observed range
-draw on a one-sided window and are the least trustworthy part of the
-picture. Keep <code>times</code> inside the data.</p>
-<p>If the bands cover a horizontal line across the whole range, the
-honest conclusion is that the data cannot resolve time variation. That
-is a different statement from evidence that <span class="math inline">\(\beta(t)\)</span> is flat.</p>
+<p>The bands are pointwise. Keep <code>times</code> inside the observed
+time range.</p>
 </div>
 <div class="section level2">
 <h2 id="links-other-than-the-identity">Links other than the identity<a class="anchor" aria-label="anchor" href="#links-other-than-the-identity"></a>
 </h2>
 <p><code>link = "log"</code> and <code>link = "logistic"</code> fit the
 corresponding generalised linear models by Newton-Raphson on the same
-estimating equation. Everything above applies unchanged, including the
-check of how the estimate moves with <code>h</code>.</p>
+estimating equation. Everything above applies unchanged.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">11</span><span class="op">)</span></span>
 <span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">400</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">1.0</span><span class="op">)</span>, link <span class="op">=</span> <span class="st">"logistic"</span><span class="op">)</span></span>
@@ -444,11 +380,10 @@ check of how the estimate moves with <code>h</code>.</p>
 <div class="section level2">
 <h2 id="getting-the-units-right">Getting the units right<a class="anchor" aria-label="anchor" href="#getting-the-units-right"></a>
 </h2>
-<p>The single most common mistake is a bandwidth on a different scale
-from the observation times: times in days, with <code>h</code> chosen as
-though they were on the unit interval. Times can be on any scale, so the
-package cannot simply reject the data; instead it tells you when almost
-nothing is contributing.</p>
+<p><code>h</code> must be on the same scale as the observation times.
+With times in days and <code>h</code> chosen as though they were on the
+unit interval, the package warns that almost nothing is
+contributing.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_days</span> <span class="op">&lt;-</span> <span class="va">d</span></span>
 <span><span class="va">d_days</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span><span class="op">$</span><span class="va">time</span> <span class="op">*</span> <span class="fl">365</span></span>

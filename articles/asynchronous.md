@@ -36,30 +36,9 @@ a constant \\\beta\\, and
 [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
 for a coefficient curve \\\beta(t)\\.
 
-## Two shortcuts that do not work
-
-Both of the obvious fixes are common in practice, and both fail quietly.
-They return plausible numbers with plausible standard errors.
-
-*Last value carried forward* replaces \\X_i(T\_{ij})\\ by the most
-recent observed covariate value. This is measurement error with a twist:
-the error does not shrink as the sample grows. The expected gap back to
-the previous observation is set by the visit schedule and has nothing to
-do with \\n\\, so the substituted covariate keeps a fixed error variance
-forever. You get classical attenuation. \\\hat\beta\\ converges, but to
-something closer to zero than \\\beta\\.
-
-*Regression calibration* smooths the covariate path first and
-substitutes the smoothed value. This feels more careful and has the same
-problem: to smooth at \\T\_{ij}\\ you need observations near
-\\T\_{ij}\\, and under sparse sampling the window cannot shrink without
-emptying. Whatever bandwidth keeps the window occupied also keeps a
-non-vanishing lag spread, and the attenuation returns. For a nonlinear
-link there is a second error on top: the estimating equation needs the
-average of \\g(\cdot)\\, and you have supplied \\g\\ of the average.
-
-What the kernel-weighted equation does instead is give up on
-reconstructing \\X_i(T\_{ij})\\ at all. It evaluates the link at each
+Carrying the last covariate value forward, or smoothing the covariate
+first and substituting it, both attenuate \\\hat\beta\\ when sampling is
+sparse. The kernel-weighted equation instead evaluates the link at each
 covariate vector you actually have, and lets a weight express how much
 that observation says about a given response occasion.
 
@@ -74,14 +53,8 @@ with \\W_h(u) = W(u/h)/h\\ and \\W\\ the Epanechnikov kernel. Every
 far apart in time the two occasions are. Pairs more than \\h\\ apart
 drop out; pairs close together dominate.
 
-The rate is \\(nh)^{1/2}\\. This is a smoothing problem wearing a
-regression problem’s clothes, so standard errors shrink more slowly than
-you are used to and the bandwidth becomes something you have to think
-about.
-
 The equation sees times only through \\(T - S)/h\\, so any units work as
-long as `h` is in the same ones. That is the one thing to get right, and
-the package warns when it looks wrong.
+long as `h` is in the same ones. The package warns when it looks wrong.
 
 ## A worked example
 
@@ -226,32 +199,14 @@ augment(fit, d$x)
 #> # ℹ 1,977 more rows
 ```
 
-There is deliberately no `.resid` column. A residual needs a response
-value at \\S\_{ik}\\, which is exactly what asynchronous data does not
-have; reporting one would mean inventing it. The fit does not retain its
-data, so
+The fit does not retain its data, so
 [`augment()`](https://generics.r-lib.org/reference/augment.html) needs
 `data_x` handed back to it.
 
 ## Choosing the bandwidth
 
-`h` trades variance against bias: small `h` admits few pairs, and large
-`h` admits pairs whose times are far apart and so pulls in a bias. `h`
-is in the units of `time`. The next section shows how to check how much
-the estimate depends on it.
-
-## Check how much the answer moves with h
-
-Cao, Zeng and Fine assume the covariance function of the covariate
-process is twice differentiable, which gives a bias of order \\h^2\\.
-Their Section 6 notes that relaxing this to one-sided differentiability
-leaves a bias of order \\h\\ instead. That weaker class admits processes
-with independent increments, including the Ornstein-Uhlenbeck process
-[`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md)
-uses by default.
-
-The practical symptom is an estimate that drifts steadily as `h` grows.
-It costs nothing to look:
+`h` is in the units of `time`. Small `h` admits few pairs; large `h`
+admits pairs far apart in time. Fit at several values and compare:
 
 ``` r
 
@@ -283,11 +238,8 @@ abline(h = 1.5, lty = 2, col = "firebrick")
 
 ![](asynchronous_files/figure-html/sweep-1.png)
 
-The estimate slides away from the truth as `h` grows, at a rate roughly
-linear in `h`. That is the \\O(h)\\ term, and it is telling you that the
-covariance of this covariate process has a kink at the diagonal. A plot
-that is flat across a range of `h` says the opposite and is reassuring.
-Either way, report the plot, not one bandwidth.
+Choose `h` from this plot, weighing the width of the interval against
+how far the estimate moves.
 
 ## Half kernel or full kernel
 
@@ -330,10 +282,8 @@ and covariate occasions are weighted by their **separate** distances to
 W\_{h_2}(t - S\_{ik})\\ X_i(S\_{ik}) \left\[ Y_i(T\_{ij}) -
 g\\X_i(S\_{ik})^\top \beta(t)\\ \right\] = 0.\\
 
-Because both time arguments are smoothed, the rate is the **bivariate**
-\\(n h_1 h_2)^{1/2}\\. This is much slower than the time-invariant fit,
-and a sample size that gave a comfortable constant-\\\beta\\ answer can
-be far too small here.
+Both time arguments are smoothed, so the curve needs more data than the
+time-invariant fit.
 
 ``` r
 
@@ -370,31 +320,13 @@ tidy(fit_td, conf.int = TRUE) |>
 #> 4  0.35     1.20     1.12      1.28
 ```
 
-Three cautions when reading such a plot:
-
-Each band covers its own target time. Read them together as a region for
-the whole curve and you are claiming much more than the data supports,
-so a curve straying outside at one or two times means little.
-
-They carry no correction for smoothing bias either, so they cover
-\\E\hat\beta(t)\\ instead of \\\beta(t)\\. A large bandwidth flattens
-the curve toward a constant and the bands stay the same width. Refit at
-a smaller `h` to see how much of the shape is smoothing.
-
-Target times within a bandwidth of either end of the observed range draw
-on a one-sided window and are the least trustworthy part of the picture.
-Keep `times` inside the data.
-
-If the bands cover a horizontal line across the whole range, the honest
-conclusion is that the data cannot resolve time variation. That is a
-different statement from evidence that \\\beta(t)\\ is flat.
+The bands are pointwise. Keep `times` inside the observed time range.
 
 ## Links other than the identity
 
 `link = "log"` and `link = "logistic"` fit the corresponding generalised
 linear models by Newton-Raphson on the same estimating equation.
-Everything above applies unchanged, including the check of how the
-estimate moves with `h`.
+Everything above applies unchanged.
 
 ``` r
 
@@ -423,11 +355,9 @@ summary(fit_b)
 
 ## Getting the units right
 
-The single most common mistake is a bandwidth on a different scale from
-the observation times: times in days, with `h` chosen as though they
-were on the unit interval. Times can be on any scale, so the package
-cannot simply reject the data; instead it tells you when almost nothing
-is contributing.
+`h` must be on the same scale as the observation times. With times in
+days and `h` chosen as though they were on the unit interval, the
+package warns that almost nothing is contributing.
 
 ``` r
 

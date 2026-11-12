@@ -145,7 +145,7 @@ two</td>
 </tr>
 <tr class="even">
 <td align="left">Survival</td>
-<td align="left">Choose the bandwidth properly</td>
+<td align="left">Choose the bandwidth</td>
 <td align="left"><code><a href="../reference/skmle_cv.html">skmle_cv()</a></code></td>
 </tr>
 <tr class="odd">
@@ -387,36 +387,10 @@ log-spaced over the range the theory supports.</p>
 <li>the refitted <code>skmle</code> model at that bandwidth</li>
 <li>the cross-validation loss table</li>
 </ul>
-<p>Each candidate is scored by an ordinary log-likelihood on the
-held-out subjects, with the covariate path carried forward from the last
-observation. Note what is <em>not</em> in that sentence: a kernel and a
-bandwidth. Scoring the fold with the kernel-weighted log-likelihood
-instead would not compare like with like, because the kernel weight
-<code>W(u/h)/h</code> shrinks as <code>h</code> grows and the loss would
-fall away with it whatever the fit was worth. <code><a href="../reference/skmle_cv.html">?skmle_cv</a></code>
-gives the criterion in full.</p>
-<p>Read <code>cv_results</code> rather than only <code>h_cv</code>, and
-read the <code>se</code> column with it. Two warnings are worth taking
-literally.</p>
-<p>If the minimum sits at an end of the grid, <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code>
-says so: the answer is then the best of the values offered, not a
-minimum. On the automatic grid that happens often, because the grid
-stops at <span class="math inline">\(\tau n^{-0.3}\)</span> – the rate
-the asymptotics assume – while the finite-sample minimum of the loss
-frequently lies above it. Widen <code>h_grid</code> by hand to see where
-the curve turns.</p>
-<p>And the curve is flat. With 80 subjects, 7 of the 10 candidates above
-lie within one standard error of the minimum: this much data does not
-pin down a bandwidth. The criterion also scores prediction of the
-held-out hazard, in which the baseline can absorb attenuation in
-<code>beta</code>, so it leans towards more smoothing than the
-coefficients on their own would want.</p>
-<p>It is tempting to correct that lean by taking the smallest
-<code>h</code> within one standard error of the minimum. Don’t: over 10
-replicates at <span class="math inline">\(n = 200\)</span> that rule put
-the squared error of <code>beta</code> back where the grid maximum had
-it, because it lands in the noisy small-<code>h</code> end. The rise at
-the left of the curve is real.</p>
+<p><code>cv_results</code> holds the held-out loss and its standard
+error for each candidate bandwidth. If the selected value sits at an end
+of the grid, <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code> warns; pass a wider
+<code>h_grid</code>.</p>
 <p>You can then inspect the final refit in the usual way.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv_fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span></span>
@@ -514,17 +488,15 @@ formula spans both: its left-hand side is looked up in
 <span><span class="co">#&gt;                 2.5 %    97.5 %</span></span>
 <span><span class="co">#&gt; (Intercept) 0.4818555 0.7382607</span></span>
 <span><span class="co">#&gt; x           1.2230761 1.4500656</span></span></code></pre></div>
-<p>The bandwidth is the one consequential choice. Fit at several
-bandwidths and check that the estimate is stable:</p>
+<p>To see how the estimate depends on the bandwidth, fit at several
+values:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.10</span>, <span class="fl">0.15</span>, <span class="fl">0.25</span>, <span class="fl">0.40</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">h</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="fu"><a href="../reference/kee_async.html">kee_async</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">y</span>, <span class="va">d</span><span class="op">$</span><span class="va">x</span>, <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, id <span class="op">=</span> <span class="va">id</span>, time <span class="op">=</span> <span class="va">time</span>, h <span class="op">=</span> <span class="va">h</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="st">"x"</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        x        x        x        x </span></span>
 <span><span class="co">#&gt; 1.366173 1.355546 1.336571 1.292212</span></span></code></pre></div>
 <p>If the coefficients themselves vary with time,
-<code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve <span class="math inline">\(\beta(t)\)</span> pointwise. Both time arguments
-are smoothed there, so it converges at the bivariate rate <span class="math inline">\((n h_1 h_2)^{1/2}\)</span> and the bands are
-wide.</p>
+<code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve <span class="math inline">\(\beta(t)\)</span> pointwise.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">203</span><span class="op">)</span></span>
 <span><span class="va">dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span></span>
@@ -538,9 +510,8 @@ wide.</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_td</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tutorial_files/figure-html/async-td-1.png" class="r-plt" alt="" width="672"></p>
-<p>The <code>asynchronous</code> article covers this properly: why
-last-value-carried-forward and regression calibration fail here, how to
-read the bandwidth diagnostics, and what the half kernel changes.</p>
+<p>The <code>asynchronous</code> article covers this setting in more
+detail.</p>
 </div>
 <div class="section level2">
 <h2 id="a-typical-workflow">A typical workflow<a class="anchor" aria-label="anchor" href="#a-typical-workflow"></a>
@@ -552,8 +523,7 @@ read the bandwidth diagnostics, and what the half kernel changes.</p>
 model.</li>
 <li>Use <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> to inspect the
 fitted model.</li>
-<li>Use <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code> if you want data-driven bandwidth
-selection.</li>
+<li>Use <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code> to select the bandwidth.</li>
 <li>Use <code><a href="../reference/kee_cox.html">kee_cox()</a></code> or <code><a href="../reference/kee_additive.html">kee_additive()</a></code> when the
 scientific model matches those specialized estimators.</li>
 <li>Use <code><a href="../reference/kee_async.html">kee_async()</a></code> or <code><a href="../reference/kee_async_td.html">kee_async_td()</a></code> when the

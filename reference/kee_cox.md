@@ -95,40 +95,9 @@ sign of that lag rather than on the sign of the time, so a covariate
 observed at `-180` and an event at `30` sit a lag of `210` apart and are
 handled like any other pair.
 
-Reach still decides whether such a row counts for anything. A pre-origin
-observation contributes only where it falls within `h` of an event time,
-so one further back than a bandwidth is silently outside every window
-and the fit is identical to the fit with that row deleted. Admitting
-negative times widens what is representable, not what is reachable.
-
-**The permission is numerical; the interpretation is not.** A negative
-observation time means a covariate measured before the time origin, that
-is, before the participant entered follow-up. Shifting the origin so
-that every time is positive is a different operation: it moves `X` too,
-leaves every lag and every risk set unchanged, and buys nothing. Holding
-`X` anchored at zero and admitting negative observation times adds
-information the fit would otherwise discard, and that is a claim about
-the data:
-
-- **The pre-entry measurement must be commensurable with the on-study
-  ones.** A biomarker assayed on a different platform, in a different
-  laboratory, or under a different protocol before enrolment is not the
-  same variable, and the estimator cannot detect that it is not. Carry a
-  provenance indicator and check that it does not predict the outcome.
-
-- **Entry is often not independent of the covariate.** If a participant
-  was enrolled because of the value measured beforehand, conditioning on
-  entry has already selected on the covariate, and the pre-entry row
-  reintroduces that selection into the risk-set average.
-
-- **Immortal time.** A participant contributes a pre-entry covariate
-  only by having survived to enrol. Nothing in the weighting corrects
-  for this.
-
-None of these is a defect in the estimator, and none of them is checked.
-If the pre-entry observations are ordinary measurements on the same
-scale, for example a run-in visit or a screening draw, using them is the
-point. If they come from elsewhere, the fit will be quiet and wrong.
+A pre-origin observation contributes only where it falls within `h` of
+an event time. Use negative times for ordinary measurements taken before
+entry on the same scale, such as a run-in visit or a screening draw.
 
 ## References
 

@@ -158,37 +158,15 @@ An object of class `kee_td`:
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods are
 available.
 
-## A slower rate than you may expect
-
-Because both time arguments are smoothed, the estimator converges at the
-**bivariate** rate \\(n h_1 h_2)^{1/2}\\. That is slower than the
-\\(nh)^{1/2}\\ of the time-invariant fit, and much slower than the usual
-varying-coefficient rate available when response and covariate are
-observed together. Expect wide bands. Do not read a wiggle in the curve
-as structure without checking it against them.
-
-A practical consequence: a sample that gives a comfortable
-time-invariant fit can be far too small for a credible curve. If the
-bands cover a horizontal line across the whole range, the honest reading
-is that the data cannot resolve time variation. That is a different
-statement from evidence that \\\beta(t)\\ is flat.
-
 ## Reading the output
 
-`se` holds sandwich standard errors at each target time separately. Each
-band covers its own target time; read across the whole curve and the
-coverage is much worse than the nominal level, so a curve straying
-outside at one or two times means little on its own.
-
-No undersmoothing correction is applied, so the intervals are centred on
-the smoothed curve \\E\hat\beta(t)\\ rather than on \\\beta(t)\\. With a
-large bandwidth the curve is flattened toward a constant and the bands
-do not widen to say so. Refit at a smaller `h` to see how much of the
-shape is smoothing.
-
-Target times within a bandwidth of the edge of the observed time range
-draw on a one-sided window and are the least reliable part of the curve.
-Keep `times` inside the data.
+`se` holds sandwich standard errors at each target time; the bands drawn
+by
+[`plot.kee_td()`](https://www.sundayu.me/skmle/reference/plot.kee_td.md)
+are pointwise. Keep `times` inside the observed time range. Both time
+arguments are smoothed, so the curve needs more data than a
+time-invariant fit from
+[`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md).
 
 ## Cost
 

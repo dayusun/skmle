@@ -51,16 +51,15 @@ Then pick within that group.
 | Survival | Start here; Cox model | [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md) |
 | Survival | Additive hazards instead | [`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md) |
 | Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) |
-| Survival | Choose the bandwidth properly | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
+| Survival | Choose the bandwidth | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
 | Longitudinal | Start here; one constant effect | [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) |
 | Longitudinal | The effect may change over time | [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md) |
 
 Every fitting function will pick a bandwidth for you if you do not
-supply one, and will say in a message what it chose. That is enough to
-get a first answer;
-[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
-chooses it from the data for the survival models, which is what to
-report.
+supply one, and will say in a message what it chose. For the survival
+models, use
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) to
+choose the bandwidth from the data.
 
 ## Survival outcomes
 
