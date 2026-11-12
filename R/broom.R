@@ -93,11 +93,7 @@ tidy.kee_td <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
 #' @param x A fitted `skmle`, `kee` or `kee_td` object.
 #' @param ... Unused.
 #'
-#' @return A one-row tibble. `nobs` is the number of **subjects**, which is the
-#'   unit the asymptotics are in. No `AIC` or `logLik` column is reported: the
-#'   criterion these estimators optimise is a kernel-weighted pseudo-likelihood,
-#'   so an information criterion built from it would not mean what it usually
-#'   means.
+#' @return A one-row tibble. `nobs` is the number of **subjects**.
 #'
 #' @examples
 #' set.seed(1)
@@ -152,10 +148,6 @@ glance.kee_td <- function(x, ...) {
 #' evaluates the link at each observed covariate vector, and the kernel weight
 #' is what ties that vector to a response occasion. So `augment()` returns
 #' `data_x` with a `.fitted` column, \eqn{g(X_i(S_{ik})^\top \hat\beta)}.
-#'
-#' There is deliberately no `.resid`. A residual needs a response value at
-#' \eqn{S_{ik}}, and asynchronous data has none; any residual reported here
-#' would have to be invented.
 #'
 #' The fit does not retain its data, so `data_x` must be supplied.
 #'

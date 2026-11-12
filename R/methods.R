@@ -43,10 +43,7 @@ vcov.kee_td <- function(object, time = NULL, ...) {
 
 #' Number of subjects contributing to a fit
 #'
-#' The asymptotics of every estimator in this package are in the number of
-#' subjects. Rows within a subject are repeated measurements of one trajectory
-#' and carry far less than one observation's worth of information, so `nobs()`
-#' returns the subject count, which is what `summary()` prints as `n`.
+#' Returns the number of subjects, which is what `summary()` prints as `n`.
 #'
 #' @param object A fitted `skmle`, `kee` or `kee_td` object.
 #' @param ... Unused.
@@ -71,9 +68,7 @@ nobs.kee_td <- function(object, ...) as.integer(object$n)
 
 #' Wald confidence intervals for a coefficient curve
 #'
-#' Pointwise Wald intervals at each target time. They are pointwise, not
-#' simultaneous, and are not corrected for smoothing bias, so they cover
-#' \eqn{E\hat\beta(t)} rather than \eqn{\beta(t)}; see [kee_async_td()].
+#' Pointwise Wald intervals at each target time.
 #'
 #' For `skmle` and `kee` fits no method is needed: [stats::confint.default()]
 #' works once [vcov()] is available.

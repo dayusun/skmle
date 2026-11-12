@@ -26,16 +26,14 @@
 #'   Survival \tab Start here; Cox model \tab [kee_cox()] \cr
 #'   Survival \tab Additive hazards instead \tab [kee_additive()] \cr
 #'   Survival \tab Want the baseline hazard, or a model between the two \tab [skmle()] \cr
-#'   Survival \tab Choose the bandwidth properly \tab [skmle_cv()] \cr
+#'   Survival \tab Choose the bandwidth \tab [skmle_cv()] \cr
 #'   Longitudinal \tab Start here; one constant effect \tab [kee_async()] \cr
 #'   Longitudinal \tab The effect may change over time \tab [kee_async_td()] \cr
 #' }
 #'
 #' Every fitting function will pick a bandwidth for you if you do not supply
-#' one, and will say in a message what it chose. That is enough to get a first
-#' answer; [skmle_cv()] chooses it from the data for the
-#' survival models, which is what to
-#' report.
+#' one, and will say in a message what it chose. For the survival models, use
+#' [skmle_cv()] to choose the bandwidth from the data.
 #'
 #' @section Survival outcomes:
 #' [skmle()] fits the transformed hazards family by the Sieve Maximum

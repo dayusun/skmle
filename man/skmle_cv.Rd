@@ -122,68 +122,29 @@ Because the fold assignment is random, pass \code{seed} (or \code{set.seed()} be
 calling) to make the grid selection reproducible.
 }
 
-\section{What the held-out loss is}{
+\section{The loss}{
 Each training fold is fitted at the candidate bandwidth, and the fit is scored
-on the held-out subjects by an ordinary log-likelihood per subject,
+on the held-out subjects by the log-likelihood per subject,
 
 \deqn{-\frac{1}{n_{\mathrm{test}}} \sum_{i \in \mathrm{test}}
   \left[ \delta_i \log g\{\hat\alpha(X_i) + Z_i(X_i)^\top \hat\beta\}
   - \int_0^{X_i} g\{\hat\alpha(t) + Z_i(t)^\top \hat\beta\}\,dt \right],}
 
 where \eqn{Z_i(t)} is the covariate carried forward from the last observation
-at or before \eqn{t} (and the first observation carried back, before the first
-observation time). The integral is exact up to the Legendre rule applied
-between consecutive observation times, where the carried-forward path jumps.
-
-No kernel and no bandwidth appear in that expression, and that is the point.
-The kernel-weighted log-likelihood \code{skmle()} maximises \strong{cannot} be compared
-across bandwidths: its weights are \eqn{W(u/h)/h}, so the weight each subject
-contributes falls away as \code{h} grows, and the criterion decreases
-monotonically in \code{h} whatever the fit is worth. Scored that way the largest
-candidate wins every grid on every data set, and coefficients further from the
-truth are preferred to coefficients nearer it. Dividing by the admitted
-weight, or scoring at one bandwidth held fixed across the grid, does not
-rescue it.
-
-The carried-forward likelihood still favours some bandwidths over others. A carried-forward covariate is out of date by the time since the
-last visit, so the held-out score is maximised by coefficients attenuated by
-that lag. The fit produces such coefficients at a bandwidth of the same
-order as the typical gap between visits. As \eqn{n} grows, the selected
-bandwidth therefore converges to a constant determined by the visit
-process rather than to zero, and the coefficients at \code{h_cv} remain biased
-for \eqn{\beta} at any sample size. Use \code{skmle_cv()} to choose a bandwidth
-for predicting the hazard.
+at or before \eqn{t}. This loss does not depend on the bandwidth itself, so
+it compares candidates on an equal footing.
 }
 
-\section{The default grid}{
+\section{The grid}{
 When \code{h_grid} is \code{NULL} the grid is log-spaced over
 \eqn{[\max\{\min_i (X_i - T_{ij})_+,\ \tau n^{-0.6}\},\
 \min\{\max_i \max_j (X_i - T_{ij})_+,\ \tau n^{-0.3}\}]}, with
 \eqn{\tau = \max_i X_i}, so it adapts to the scale of the times on its own.
+If the selected value is an endpoint of the grid, \code{skmle_cv()} warns; supply
+a wider \code{h_grid}.
 
-Always look at \code{cv_results}. A minimum at an endpoint of the grid raises a
-warning: the selected value is then the best of the values offered rather than
-a minimum, and the grid should be widened. On the automatic grid that warning
-is common, because \eqn{n^{-0.3}} is the rate the asymptotics assume while the
-finite-sample minimum of the loss frequently lies above it. Widening \code{h_grid}
-by hand shows where the curve turns.
-}
-
-\section{How sharp the selection is}{
-Not very, and the \code{se} column says so: it is the standard error of each loss
-across the folds, and over a wide middle range of \code{h} the losses sit inside one
-standard error of each other. Read the curve, not only \code{h_cv}.
-
-The criterion scores prediction of the held-out hazard, in which the baseline
-\eqn{\hat\alpha} can absorb attenuation in \eqn{\hat\beta}, so it leans towards
-more smoothing than the coefficients on their own would want. Over 10
-replicates at \eqn{n = 200} on a grid spanning \code{0.05} to \code{0.9}, the mean
-squared error of \eqn{\hat\beta} at the selected bandwidth was \code{0.155}, against
-\code{0.205} at the largest candidate and \code{0.065} at the bandwidth an oracle would
-have picked. Resist the temptation to correct the lean by taking the smallest
-bandwidth within one standard error of the minimum: that lands in the noisy
-small-\code{h} end, and scored \code{0.205} over the same replicates -- no better than
-taking the largest candidate. The rise at the left of the curve is real.
+\code{cv_results} lists the loss and its standard error across folds for every
+candidate.
 }
 
 \examples{

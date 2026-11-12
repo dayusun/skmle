@@ -18,11 +18,7 @@
 \item{...}{Unused.}
 }
 \value{
-A one-row tibble. \code{nobs} is the number of \strong{subjects}, which is the
-unit the asymptotics are in. No \code{AIC} or \code{logLik} column is reported: the
-criterion these estimators optimise is a kernel-weighted pseudo-likelihood,
-so an information criterion built from it would not mean what it usually
-means.
+A one-row tibble. \code{nobs} is the number of \strong{subjects}.
 }
 \description{
 One-row summary of a fit

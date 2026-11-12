@@ -23,13 +23,6 @@ Defaults to all.}
 Draws \eqn{\hat\beta_j(t)} against \code{t} with pointwise Wald bands, one panel
 per coefficient.
 }
-\details{
-Each band covers its own target time. Reading them together as a region for
-the whole curve overstates the evidence. They also carry no correction for
-smoothing bias, so they cover \eqn{E\hat\beta(t)} instead of
-\eqn{\beta(t)}: a large bandwidth flattens the curve without widening the
-band to say so.
-}
 \examples{
 set.seed(1)
 d <- sim_async_data(n = 200, beta = function(tt) cbind(0.5, 1 + tt))

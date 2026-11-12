@@ -20,9 +20,7 @@ A data frame with one row per (target time, coefficient) and columns
 \code{time}, \code{term}, \code{estimate}, \code{se}, and the two interval endpoints.
 }
 \description{
-Pointwise Wald intervals at each target time. They are pointwise, not
-simultaneous, and are not corrected for smoothing bias, so they cover
-\eqn{E\hat\beta(t)} rather than \eqn{\beta(t)}; see \code{\link[=kee_async_td]{kee_async_td()}}.
+Pointwise Wald intervals at each target time.
 }
 \details{
 For \code{skmle} and \code{kee} fits no method is needed: \code{\link[stats:confint.default]{stats::confint.default()}}

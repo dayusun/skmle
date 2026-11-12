@@ -103,35 +103,11 @@ The lag between the two occasions never enters, only their distances to
 \eqn{t}. That is the difference from \code{\link[=kee_async]{kee_async()}}, where the lag is
 everything.
 }
-\section{A slower rate than you may expect}{
-Because both time arguments are smoothed, the estimator converges at the
-\strong{bivariate} rate \eqn{(n h_1 h_2)^{1/2}}. That is slower than the
-\eqn{(nh)^{1/2}} of the time-invariant fit, and much slower than the usual
-varying-coefficient rate available when response and covariate are observed
-together. Expect wide bands. Do not read a wiggle in the curve as structure
-without checking it against them.
-
-A practical consequence: a sample that gives a comfortable time-invariant fit
-can be far too small for a credible curve. If the bands cover a horizontal
-line across the whole range, the honest reading is that the data cannot
-resolve time variation. That is a different statement from evidence that
-\eqn{\beta(t)} is flat.
-}
-
 \section{Reading the output}{
-\code{se} holds sandwich standard errors at each target time separately. Each band
-covers its own target time; read across the whole curve and the coverage is
-much worse than the nominal level, so a curve straying outside at one or two
-times means little on its own.
-
-No undersmoothing correction is applied, so the intervals are centred on the
-smoothed curve \eqn{E\hat\beta(t)} rather than on \eqn{\beta(t)}. With a large
-bandwidth the curve is flattened toward a constant and the bands do not widen
-to say so. Refit at a smaller \code{h} to see how much of the shape is smoothing.
-
-Target times within a bandwidth of the edge of the observed time range draw on
-a one-sided window and are the least reliable part of the curve. Keep \code{times}
-inside the data.
+\code{se} holds sandwich standard errors at each target time; the bands drawn by
+\code{\link[=plot.kee_td]{plot.kee_td()}} are pointwise. Keep \code{times} inside the observed time range.
+Both time arguments are smoothed, so the curve needs more data than a
+time-invariant fit from \code{\link[=kee_async]{kee_async()}}.
 }
 
 \section{Cost}{

@@ -242,59 +242,23 @@
 #' with \eqn{W_h(u) = W(u/h)/h} and \eqn{W} the Epanechnikov kernel.
 #'
 #' @details
-#' # Why not something simpler
+#' # Bandwidth
 #'
-#' Two obvious shortcuts are inconsistent here, which is the reason this
-#' function exists.
-#'
-#' *Last value carried forward* replaces \eqn{X_i(T_{ij})} by the most recent
-#' observed value. Under sparse sampling the gap back to that value does not
-#' shrink as \eqn{n} grows, so the substituted covariate keeps a non-vanishing
-#' error and the coefficient is attenuated toward zero.
-#'
-#' *Regression calibration* smooths the covariate path first and substitutes the
-#' smoothed value. Under sparse sampling the smoothing window never empties, so
-#' the same attenuation appears; for a nonlinear link there is a Jensen bias as
-#' well, because the estimating equation needs the average of \eqn{g(\cdot)}
-#' rather than \eqn{g} of the average.
-#'
-#' The kernel-weighted equation instead evaluates the link at each **observed**
-#' covariate vector, and lets the weight express how much that observation says
-#' about the response occasion.
-#'
-#' # Rate and bandwidth
-#'
-#' The estimator is consistent and asymptotically normal at the smoothing rate
-#' \eqn{(nh)^{1/2}}. Standard errors shrink more slowly than in a parametric
-#' fit, and the bandwidth becomes a real modelling choice: too small and few
-#' pairs contribute, too large and the bias grows.
-#'
-#' `h` is on the **same scale as the observation times**, as in the survival
-#' estimators; nothing else is assumed about that scale. A warning is issued when fewer than 5% of
-#' response occasions have any covariate observation in their window, which is
-#' the signature of a units mistake.
+#' `h` is on the same scale as the observation times. Small `h` admits few
+#' pairs; large `h` admits pairs far apart in time. Fit at a few values of `h`
+#' and compare the estimates. A warning is issued when fewer than 5% of response
+#' occasions have any covariate observation in their window, which usually means
+#' `h` is on the wrong scale.
 #'
 #' # Half kernel or full kernel
 #'
 #' `one_sided = FALSE`, the default, is the full two-sided kernel of the paper.
 #' `one_sided = TRUE` admits only covariate observations strictly **before** the
-#' response, which is what a causal reading of the covariate path requires and
-#' what the survival estimators in this package do by default. It roughly halves
-#' the number of contributing pairs, so it needs a larger `h` to reach the same
-#' effective sample size.
-#'
-#' # Assumptions worth checking
-#'
-#' Cao, Zeng and Fine assume the covariance function of the covariate process is
-#' twice differentiable, which gives a bias of order \eqn{h^2}. Their Section 6
-#' notes that relaxing this to one-sided differentiability, which admits
-#' processes with independent increments such as the Ornstein-Uhlenbeck process,
-#' leaves a bias of order \eqn{h} instead. The practical symptom is an estimate
-#' that drifts steadily as `h` grows, so fit at several bandwidths and look
-#' before trusting one number.
+#' response. It uses roughly half the pairs, so it needs a larger `h` for the
+#' same effective sample size.
 #'
 #' Observation times are assumed independent of the response and covariate
-#' processes. Informative observation times need a different estimator.
+#' processes.
 #'
 #' @param data_y Data frame of response occasions: one row per time the
 #'   response was recorded. First argument, so the function pipes.
@@ -449,36 +413,12 @@ kee_async <- function(data_y, data_x, formula, id, time, h = NULL, one_sided = F
 #' everything.
 #'
 #' @details
-#' # A slower rate than you may expect
-#'
-#' Because both time arguments are smoothed, the estimator converges at the
-#' **bivariate** rate \eqn{(n h_1 h_2)^{1/2}}. That is slower than the
-#' \eqn{(nh)^{1/2}} of the time-invariant fit, and much slower than the usual
-#' varying-coefficient rate available when response and covariate are observed
-#' together. Expect wide bands. Do not read a wiggle in the curve as structure
-#' without checking it against them.
-#'
-#' A practical consequence: a sample that gives a comfortable time-invariant fit
-#' can be far too small for a credible curve. If the bands cover a horizontal
-#' line across the whole range, the honest reading is that the data cannot
-#' resolve time variation. That is a different statement from evidence that
-#' \eqn{\beta(t)} is flat.
-#'
 #' # Reading the output
 #'
-#' `se` holds sandwich standard errors at each target time separately. Each band
-#' covers its own target time; read across the whole curve and the coverage is
-#' much worse than the nominal level, so a curve straying outside at one or two
-#' times means little on its own.
-#'
-#' No undersmoothing correction is applied, so the intervals are centred on the
-#' smoothed curve \eqn{E\hat\beta(t)} rather than on \eqn{\beta(t)}. With a large
-#' bandwidth the curve is flattened toward a constant and the bands do not widen
-#' to say so. Refit at a smaller `h` to see how much of the shape is smoothing.
-#'
-#' Target times within a bandwidth of the edge of the observed time range draw on
-#' a one-sided window and are the least reliable part of the curve. Keep `times`
-#' inside the data.
+#' `se` holds sandwich standard errors at each target time; the bands drawn by
+#' [plot.kee_td()] are pointwise. Keep `times` inside the observed time range.
+#' Both time arguments are smoothed, so the curve needs more data than a
+#' time-invariant fit from [kee_async()].
 #'
 #' # Cost
 #'
@@ -681,12 +621,6 @@ print.kee_td <- function(x, ...) {
 #'
 #' Draws \eqn{\hat\beta_j(t)} against `t` with pointwise Wald bands, one panel
 #' per coefficient.
-#'
-#' Each band covers its own target time. Reading them together as a region for
-#' the whole curve overstates the evidence. They also carry no correction for
-#' smoothing bias, so they cover \eqn{E\hat\beta(t)} instead of
-#' \eqn{\beta(t)}: a large bandwidth flattens the curve without widening the
-#' band to say so.
 #'
 #' @param x A `kee_td` object from [kee_async_td()].
 #' @param which Integer or character vector selecting coefficients to draw.

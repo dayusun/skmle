@@ -36,16 +36,14 @@ Then pick within that group.
 Survival \tab Start here; Cox model \tab \code{\link[=kee_cox]{kee_cox()}} \cr
 Survival \tab Additive hazards instead \tab \code{\link[=kee_additive]{kee_additive()}} \cr
 Survival \tab Want the baseline hazard, or a model between the two \tab \code{\link[=skmle]{skmle()}} \cr
-Survival \tab Choose the bandwidth properly \tab \code{\link[=skmle_cv]{skmle_cv()}} \cr
+Survival \tab Choose the bandwidth \tab \code{\link[=skmle_cv]{skmle_cv()}} \cr
 Longitudinal \tab Start here; one constant effect \tab \code{\link[=kee_async]{kee_async()}} \cr
 Longitudinal \tab The effect may change over time \tab \code{\link[=kee_async_td]{kee_async_td()}} \cr
 }
 
 Every fitting function will pick a bandwidth for you if you do not supply
-one, and will say in a message what it chose. That is enough to get a first
-answer; \code{\link[=skmle_cv]{skmle_cv()}} chooses it from the data for the
-survival models, which is what to
-report.
+one, and will say in a message what it chose. For the survival models, use
+\code{\link[=skmle_cv]{skmle_cv()}} to choose the bandwidth from the data.
 }
 
 \section{Survival outcomes}{

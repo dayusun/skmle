@@ -12,13 +12,9 @@ American Statistical Association* **120**(552), 2580-2591,
 Longitudinal covariates are rarely measured when you need them. A biomarker is
 drawn at a handful of clinic visits; the event you are modelling happens
 somewhere between two of them, and the outcome you are modelling is recorded on
-a schedule of its own. Carrying the last value forward answers a different
-question, and smoothing the covariate first and substituting it is regression
-calibration, which is not consistent when the sampling is sparse.
-
-`skmle` handles the mismatch directly, by weighting each observation according
-to how far its measurement time sits from the time being modelled. It covers
-two settings:
+a schedule of its own. `skmle` weights each observation according to how far
+its measurement time sits from the time being modelled, without carrying values
+forward or imputing the covariate. It covers two settings:
 
 For survival outcomes, the transformed hazards family, with covariates observed
 sparsely and intermittently. The Box-Cox parameter `s` indexes the family:
@@ -53,13 +49,13 @@ Then:
 | Survival | Start here; Cox model | `kee_cox()` |
 | Survival | Additive hazards instead | `kee_additive()` |
 | Survival | Want the baseline hazard, or a model between the two | `skmle()` |
-| Survival | Choose the bandwidth properly | `skmle_cv()` |
+| Survival | Choose the bandwidth | `skmle_cv()` |
 | Longitudinal | Start here; one constant effect | `kee_async()` |
 | Longitudinal | The effect may change over time | `kee_async_td()` |
 
 Every fitting function picks a bandwidth for you if you do not supply one, and
-says in a message what it chose. For the survival models, `skmle_cv()` chooses
-it from the data.
+says in a message what it chose. For the survival models, use `skmle_cv()` to
+choose it from the data.
 
 ## The functions
 
@@ -189,20 +185,16 @@ summary(fit_a)
 tidy(fit_a, conf.int = TRUE)   # a tibble, ready for ggplot2 or dplyr
 ```
 
-`h` is the one consequential choice. Fit at several bandwidths and check that
-the estimate is stable before reporting one.
+To see how the estimate depends on `h`, fit at several values.
 
 Each (response, covariate) pair within a subject contributes in proportion to
 its time separation, so nothing is discarded and nothing is carried forward.
-The estimator converges at the smoothing rate `(nh)^(1/2)`, so standard errors
-shrink more slowly than in a parametric fit.
 
 Identity, log and logistic links are supported by both `kee_async()` and
 `kee_async_td()`.
 
 If the coefficients vary with time, `kee_async_td()` estimates the curve
-pointwise. Both time arguments are smoothed there, so it converges at the
-bivariate rate `(n h1 h2)^(1/2)` and the bands are correspondingly wide:
+pointwise:
 
 ```r
 fit_td <- d$y |>
@@ -214,9 +206,7 @@ plot(fit_td)          # beta_j(t) with pointwise 95% bands
 tidy(fit_td)          # one row per (time, term)
 ```
 
-There is a full article on this setting: why last-value-carried-forward and
-regression calibration fail, how to read the bandwidth diagnostics, and what
-the half kernel changes.
+There is a full article on this setting:
 
 ```r
 vignette("asynchronous", package = "skmle")

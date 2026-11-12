@@ -84,58 +84,22 @@ Fine (2015),
       X_i(S_{ik}) [ Y_i(T_{ij}) - g\{X_i(S_{ik})^\top \beta\} ] = 0,}
 with \eqn{W_h(u) = W(u/h)/h} and \eqn{W} the Epanechnikov kernel.
 }
-\section{Why not something simpler}{
-Two obvious shortcuts are inconsistent here, which is the reason this
-function exists.
-
-\emph{Last value carried forward} replaces \eqn{X_i(T_{ij})} by the most recent
-observed value. Under sparse sampling the gap back to that value does not
-shrink as \eqn{n} grows, so the substituted covariate keeps a non-vanishing
-error and the coefficient is attenuated toward zero.
-
-\emph{Regression calibration} smooths the covariate path first and substitutes the
-smoothed value. Under sparse sampling the smoothing window never empties, so
-the same attenuation appears; for a nonlinear link there is a Jensen bias as
-well, because the estimating equation needs the average of \eqn{g(\cdot)}
-rather than \eqn{g} of the average.
-
-The kernel-weighted equation instead evaluates the link at each \strong{observed}
-covariate vector, and lets the weight express how much that observation says
-about the response occasion.
-}
-
-\section{Rate and bandwidth}{
-The estimator is consistent and asymptotically normal at the smoothing rate
-\eqn{(nh)^{1/2}}. Standard errors shrink more slowly than in a parametric
-fit, and the bandwidth becomes a real modelling choice: too small and few
-pairs contribute, too large and the bias grows.
-
-\code{h} is on the \strong{same scale as the observation times}, as in the survival
-estimators; nothing else is assumed about that scale. A warning is issued when fewer than 5\% of
-response occasions have any covariate observation in their window, which is
-the signature of a units mistake.
+\section{Bandwidth}{
+\code{h} is on the same scale as the observation times. Small \code{h} admits few
+pairs; large \code{h} admits pairs far apart in time. Fit at a few values of \code{h}
+and compare the estimates. A warning is issued when fewer than 5\% of response
+occasions have any covariate observation in their window, which usually means
+\code{h} is on the wrong scale.
 }
 
 \section{Half kernel or full kernel}{
 \code{one_sided = FALSE}, the default, is the full two-sided kernel of the paper.
 \code{one_sided = TRUE} admits only covariate observations strictly \strong{before} the
-response, which is what a causal reading of the covariate path requires and
-what the survival estimators in this package do by default. It roughly halves
-the number of contributing pairs, so it needs a larger \code{h} to reach the same
-effective sample size.
-}
-
-\section{Assumptions worth checking}{
-Cao, Zeng and Fine assume the covariance function of the covariate process is
-twice differentiable, which gives a bias of order \eqn{h^2}. Their Section 6
-notes that relaxing this to one-sided differentiability, which admits
-processes with independent increments such as the Ornstein-Uhlenbeck process,
-leaves a bias of order \eqn{h} instead. The practical symptom is an estimate
-that drifts steadily as \code{h} grows, so fit at several bandwidths and look
-before trusting one number.
+response. It uses roughly half the pairs, so it needs a larger \code{h} for the
+same effective sample size.
 
 Observation times are assumed independent of the response and covariate
-processes. Informative observation times need a different estimator.
+processes.
 }
 
 \examples{

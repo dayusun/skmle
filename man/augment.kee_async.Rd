@@ -23,10 +23,6 @@ is what ties that vector to a response occasion. So \code{augment()} returns
 \code{data_x} with a \code{.fitted} column, \eqn{g(X_i(S_{ik})^\top \hat\beta)}.
 }
 \details{
-There is deliberately no \code{.resid}. A residual needs a response value at
-\eqn{S_{ik}}, and asynchronous data has none; any residual reported here
-would have to be invented.
-
 The fit does not retain its data, so \code{data_x} must be supplied.
 }
 \examples{
