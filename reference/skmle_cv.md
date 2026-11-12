@@ -98,7 +98,9 @@ print(x, ...)
 - seed:
 
   Optional integer seed for the random subject-to-fold assignment. If
-  `NULL`, the current RNG state is used and no explicit seed is set.
+  `NULL`, the current RNG state is used and no explicit seed is set. A
+  supplied seed is used locally: the global RNG state is restored on
+  exit.
 
 - quiet:
 
@@ -204,9 +206,7 @@ bandwidth of the same order as the typical gap between visits. As \\n\\
 grows, the selected bandwidth therefore converges to a constant
 determined by the visit process rather than to zero, and the
 coefficients at `h_cv` remain biased for \\\beta\\ at any sample size.
-Use `skmle_cv()` to choose a bandwidth for predicting the hazard, and
-[`skmle_bc()`](https://www.sundayu.me/skmle/reference/skmle_bc.md) to
-estimate \\\beta\\ with confidence intervals.
+Use `skmle_cv()` to choose a bandwidth for predicting the hazard.
 
 ## The default grid
 

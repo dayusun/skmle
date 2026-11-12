@@ -6,7 +6,5 @@
   skmle](https://www.sundayu.me/skmle/articles/tutorial.md):
 - [Asynchronous Longitudinal
   Regression](https://www.sundayu.me/skmle/articles/asynchronous.md):
-- [Choosing the bandwidth: bias correction and
-  inference](https://www.sundayu.me/skmle/articles/bandwidth.md):
 - [Benchmarking skmle Against
   SurvSparse](https://www.sundayu.me/skmle/articles/benchmark_survsparse.md):

@@ -53,13 +53,12 @@ Then:
 | Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) |
 | Survival | Choose the bandwidth properly | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
 | Longitudinal | Start here; one constant effect | [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) |
-| Longitudinal | Choose the bandwidth properly | [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md) |
 | Longitudinal | The effect may change over time | [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md) |
 
 Every fitting function picks a bandwidth for you if you do not supply
-one, and says in a message what it chose. That is enough for a first
-answer; the `_cv()` functions choose it from the data, which is what to
-report.
+one, and says in a message what it chose. For the survival models,
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
+chooses it from the data.
 
 ``` r
 
@@ -442,39 +441,15 @@ confint(fit_a)
 #> x           1.2230761 1.4500656
 ```
 
-The bandwidth is the one consequential choice.
-[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-returns the asynchrony-corrected fit at the bandwidth that minimises its
-estimated variance:
+The bandwidth is the one consequential choice. Fit at several bandwidths
+and check that the estimate is stable:
 
 ``` r
 
-cv <- kee_async_cv(d$y, d$x,
-  y ~ x, id = id, time = time,
-  h_grid = c(0.10, 0.15, 0.25, 0.40), quiet = TRUE
-)
-#> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid
-#> to check that the minimum is interior
-cv
-#> Call:
-#> kee_async_cv(data_y = d$y, data_x = d$x, formula = y ~ x, id = id, 
-#>     time = time, h_grid = c(0.1, 0.15, 0.25, 0.4), quiet = TRUE)
-#> 
-#> Minimum-variance bandwidth: tr{Sigma_X V(h)} over the grid (pairs-corrected fits on all subjects)
-#> 
-#> # A tibble: 4 × 2
-#>       h   trSV
-#>   <dbl>  <dbl>
-#> 1  0.1  0.0255
-#> 2  0.15 0.0225
-#> 3  0.25 0.0202
-#> 4  0.4  0.0192
-#> 
-#> Selected h = 0.4
-#> 
-#> Coefficients at the selected h:
-#> (Intercept)           x 
-#>   0.6804317   1.4314279
+sapply(c(0.10, 0.15, 0.25, 0.40), function(h)
+  coef(kee_async(d$y, d$x, y ~ x, id = id, time = time, h = h))["x"])
+#>        x        x        x        x 
+#> 1.366173 1.355546 1.336571 1.292212
 ```
 
 If the coefficients themselves vary with time,

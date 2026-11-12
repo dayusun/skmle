@@ -24,29 +24,10 @@ response and a covariate observed on different time grids.
 
 - [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) :
   Asynchronous longitudinal regression with time-invariant coefficients
-- [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-  [`print(`*`<cv.kee_async>`*`)`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-  : Choose the bandwidth for an asynchronous longitudinal fit
 - [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
   [`print(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
   : Asynchronous longitudinal regression with time-dependent
   coefficients
-
-## Bandwidth selection with bias correction
-
-Fit an estimator over a grid of bandwidths, choose one by a plug-in mean
-squared error, extrapolate the coefficients to bandwidth zero, and
-report a standard error that accounts for the choice.
-
-- [`print(`*`<bc>`*`)`](https://www.sundayu.me/skmle/reference/skmle_bc.md)
-  [`summary(`*`<bc>`*`)`](https://www.sundayu.me/skmle/reference/skmle_bc.md)
-  [`print(`*`<summary.bc>`*`)`](https://www.sundayu.me/skmle/reference/skmle_bc.md)
-  [`skmle_bc()`](https://www.sundayu.me/skmle/reference/skmle_bc.md) :
-  Bias-Corrected SMKLE by Extrapolation in the Bandwidth
-- [`kee_cox_bc()`](https://www.sundayu.me/skmle/reference/kee_bc.md)
-  [`kee_async_bc()`](https://www.sundayu.me/skmle/reference/kee_bc.md) :
-  Bias-Corrected Kernel Estimating Equations by Extrapolation in the
-  Bandwidth
 
 ## Kernel weights
 
@@ -82,8 +63,7 @@ here are the supplied starting points.
   : Number of subjects contributing to a fit
 - [`confint(`*`<kee_td>`*`)`](https://www.sundayu.me/skmle/reference/confint.kee_td.md)
   : Wald confidence intervals for a coefficient curve
-- [`plot(`*`<cv.kee_async>`*`)`](https://www.sundayu.me/skmle/reference/plot.cv.skmle.md)
-  [`plot(`*`<cv.skmle>`*`)`](https://www.sundayu.me/skmle/reference/plot.cv.skmle.md)
+- [`plot(`*`<cv.skmle>`*`)`](https://www.sundayu.me/skmle/reference/plot.cv.skmle.md)
   : Plot a cross-validation curve
 
 ## Tidy output

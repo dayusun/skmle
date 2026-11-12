@@ -8,9 +8,6 @@ stopped looking rather than a minimum, and the grid should be widened.
 ## Usage
 
 ``` r
-# S3 method for class 'cv.kee_async'
-plot(x, ...)
-
 # S3 method for class 'cv.skmle'
 plot(x, ...)
 ```
@@ -19,7 +16,7 @@ plot(x, ...)
 
 - x:
 
-  A `cv.skmle` or `cv.kee_async` object.
+  A `cv.skmle` object.
 
 - ...:
 
@@ -33,13 +30,21 @@ plot(x, ...)
 ## Examples
 
 ``` r
-set.seed(1)
-d <- sim_async_data(n = 150)
-cv <- d$y |>
-  kee_async_cv(d$x, y ~ x,
-    id = id, time = time,
-    h_grid = c(0.1, 0.2, 0.3, 0.5), K = 3, seed = 1, quiet = TRUE
-  )
-#> Warning: the selected bandwidth is at an endpoint of 'h_grid'; widen the grid to check that the minimum is interior
+# \donttest{
+library(survival)
+set.seed(123)
+dat <- sim_skmle_data(
+  n = 60,
+  mu = function(tt) 8 * (0.75 + (0.5 - tt)^2),
+  mu_bar = 8,
+  alpha = function(tt) 0.5 * 0.75 + 0.75 * (tt * (1 - sin(2 * pi * (tt - 0.25)))),
+  beta = c(1, -0.5),
+  s = 0,
+  cen = 0.7
+)
+cv <- skmle_cv(Surv(X, delta) ~ covariates, data = dat, id = id,
+  obs_times = obs_times, s = 0, K = 3, seed = 2026, quiet = TRUE)
 plot(cv)
+
+# }
 ```

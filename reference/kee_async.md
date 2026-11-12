@@ -27,8 +27,7 @@ kee_async(
   link = c("identity", "log", "logistic"),
   intercept = TRUE,
   maxit = 50L,
-  tol = 1e-08,
-  correct = c("none", "pairs", "gaussian")
+  tol = 1e-08
 )
 ```
 
@@ -67,9 +66,7 @@ kee_async(
 
   Positive bandwidth, on the same scale as `time`. If omitted, a value
   is read off the observation times as a rule of thumb and reported in a
-  message. Use
-  [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-  to choose it from the data.
+  message.
 
 - one_sided:
 
@@ -88,15 +85,7 @@ kee_async(
 
 - maxit, tol:
 
-  Newton-Raphson controls, ignored when `link = "identity"` and
-  `correct = "none"`.
-
-- correct:
-
-  `"none"` (default): the kernel equation of Cao, Zeng and Fine.
-  `"pairs"`: the pair-moment correction, with no model for the
-  covariates. `"gaussian"`: the correction for one stationary Gaussian
-  covariate. See Details.
+  Newton-Raphson controls, ignored when `link = "identity"`.
 
 ## Value
 
@@ -127,15 +116,9 @@ An object of class `kee` with components
 
   Number of weighted (response, covariate) pairs contributing.
 
-- h, one_sided, link, correct:
+- h, one_sided, link:
 
   Fit settings.
-
-- variogram:
-
-  With `correct = "gaussian"`, a list holding the estimated variogram
-  `gamma` (a function of the lag), the covariate mean `m` and variance
-  `s2`; otherwise `NULL`.
 
 - convergence:
 
@@ -179,8 +162,6 @@ The estimator is consistent and asymptotically normal at the smoothing
 rate \\(nh)^{1/2}\\. Standard errors shrink more slowly than in a
 parametric fit, and the bandwidth becomes a real modelling choice: too
 small and few pairs contribute, too large and the bias grows.
-[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-picks it from the data.
 
 `h` is on the **same scale as the observation times**. Unlike the
 survival `h` must be on whatever scale the times are on; nothing else is
@@ -210,46 +191,6 @@ fit at several bandwidths and look before trusting one number.
 Observation times are assumed independent of the response and covariate
 processes. Informative observation times need a different estimator.
 
-## Asynchrony correction
-
-`correct` removes the asynchrony bias instead of shrinking it with
-\\h\\.
-
-`correct = "pairs"` uses each subject's own covariate pairs in place of
-the unobserved covariate at the response time. For two covariate
-occasions \\S\_{ik} \ne S\_{ik'}\\ of the same subject, \\(X_i(S\_{ik}),
-X_i(S\_{ik'}))\\ has the distribution of \\(X(S), X(T))\\ at the same
-two times, so the equation \$\$\frac{\sum W_h(T\_{ij} - S\_{ik})
-X_i(S\_{ik}) Y_i(T\_{ij})} {\sum W_h(T\_{ij} - S\_{ik})} -
-\frac{\sum\_{k \ne k'} W_h(S\_{ik'} - S\_{ik}) r(S\_{ik'}) X_i(S\_{ik})
-g\\X_i(S\_{ik'})^\top \beta\\} {\sum\_{k \ne k'} W_h(S\_{ik'} - S\_{ik})
-r(S\_{ik'})} = 0\$\$ has mean zero at the true \\\beta\\ for every
-\\h\\. Here \\r = \lambda_T / \lambda_S\\ is the ratio of the response
-and covariate visit intensities, estimated from the observation times
-alone by a logistic regression of the occasion type on a natural spline
-of time (4 degrees of freedom). No model is assumed for the covariate
-process: it need not be Gaussian or stationary, and any number of
-covariates, including ones constant within a subject, is allowed. At
-least one covariate must vary within a subject. The fit needs subjects
-with two or more covariate occasions and assumes visit processes whose
-second-order intensity factorises (for example Poisson visits).
-
-`correct = "gaussian"` replaces \\g\\X(S)^\top\beta\\\\ by
-\\E\[g\\X(T)^\top\beta\\ \mid x(S)\]\\ for a single covariate that is
-second-order stationary with variogram \\\gamma(u) = E\\x(t) - x(t -
-u)\\^2\\, mean \\m\\ and variance \\s^2\\, computed as if \\x(T) \mid
-x(S)\\ were normal with mean \\m + \rho(u)\\x(S) - m\\\\ and variance
-\\s^2\\1 - \rho(u)^2\\\\, \\\rho(u) = 1 - \gamma(u)/(2s^2)\\. The
-variogram is estimated by isotonic regression of \\\\x(S\_{ik}) -
-x(S\_{ik'})\\^2\\ on \\\|S\_{ik} - S\_{ik'}\|\\. With the identity link
-it needs only stationarity; with the log and logistic links it also
-needs normality. It has a smaller variance than `"pairs"` when these
-assumptions hold and a bias that grows with \\h\\ when they do not.
-
-Both corrected equations are unbiased at every fixed \\h\\ under their
-assumptions, so \\h\\ affects only the variance. The standard errors are
-the sandwich with the intensity ratio or the variogram treated as known.
-
 ## References
 
 Cao, H., Zeng, D. and Fine, J. P. (2015). Regression analysis of sparse
@@ -258,8 +199,6 @@ Society, Series B* 77, 755-776.
 
 ## See also
 
-[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-to choose `h`,
 [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
 for a coefficient curve \\\beta(t)\\,
 [`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md)

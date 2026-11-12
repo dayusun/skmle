@@ -5,7 +5,7 @@ Tell the user which bandwidth was chosen for them
 ## Usage
 
 ``` r
-announce_bandwidth(h, cv_fun)
+announce_bandwidth(h, cv_fun = NULL)
 ```
 
 ## Arguments
@@ -16,7 +16,8 @@ announce_bandwidth(h, cv_fun)
 
 - cv_fun:
 
-  Name of the cross-validation function to point at.
+  Name of the cross-validation function to point at, or `NULL` when the
+  estimator has none.
 
 ## Value
 

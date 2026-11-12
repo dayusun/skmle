@@ -55,13 +55,12 @@ Then:
 | Survival | Want the baseline hazard, or a model between the two | [`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) |
 | Survival | Choose the bandwidth properly | [`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md) |
 | Longitudinal | Start here; one constant effect | [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md) |
-| Longitudinal | Choose the bandwidth properly | [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md) |
 | Longitudinal | The effect may change over time | [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md) |
 
 Every fitting function picks a bandwidth for you if you do not supply
-one, and says in a message what it chose. That is enough for a first
-answer; the `_cv()` functions choose it from the data, which is what to
-report.
+one, and says in a message what it chose. For the survival models,
+[`skmle_cv()`](https://www.sundayu.me/skmle/reference/skmle_cv.md)
+chooses it from the data.
 
 ## The functions
 
@@ -84,8 +83,6 @@ report.
 
 - [`kee_async()`](https://www.sundayu.me/skmle/reference/kee_async.md)
   fits one constant coefficient per covariate.
-- [`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-  selects the bandwidth by subject-level cross-validation.
 - [`kee_async_td()`](https://www.sundayu.me/skmle/reference/kee_async_td.md)
   estimates a coefficient curve `β(t)`, pointwise.
 - [`sim_async_data()`](https://www.sundayu.me/skmle/reference/sim_async_data.md)
@@ -216,17 +213,8 @@ summary(fit_a)
 tidy(fit_a, conf.int = TRUE)   # a tibble, ready for ggplot2 or dplyr
 ```
 
-`h` is the one consequential choice;
-[`kee_async_cv()`](https://www.sundayu.me/skmle/reference/kee_async_cv.md)
-makes it by cross-validation over subjects:
-
-``` r
-
-cv <- d$y |>
-  kee_async_cv(d$x, y ~ x, id = id, time = time, K = 5, seed = 1)
-
-cv$h_cv
-```
+`h` is the one consequential choice. Fit at several bandwidths and check
+that the estimate is stable before reporting one.
 
 Each (response, covariate) pair within a subject contributes in
 proportion to its time separation, so nothing is discarded and nothing
