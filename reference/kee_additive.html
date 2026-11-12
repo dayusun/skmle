@@ -83,9 +83,9 @@ a kernel estimating-equation approach.</p>
 
 <dt id="arg-obs-times">obs_times<a class="anchor" aria-label="anchor" href="#arg-obs-times"></a></dt>
 <dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.
-Times may be on any scale; the sieve basis and the cumulative-hazard
-quadrature are built on the observed follow-up, so there is no need to
-rescale to the unit interval first. <code>h</code> must be on the same scale.
+Times may be on any scale; the cumulative-hazard quadrature is built on
+the observed follow-up, so there is no need to rescale to the unit
+interval first. <code>h</code> must be on the same scale.
 Observation times may be negative; see “Negative observation
 times” in <code><a href="kee_cox.html">kee_cox()</a></code>.</p></dd>
 
@@ -132,9 +132,11 @@ than the general <code>skmle(s = 1)</code> fit because it solves a more speciali
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-<em>Journal of the American Statistical Association</em> (2025): 1-12.</p>
-<p>Sun, Dayu, Hongyuan Cao, and Yining Chen. "Additive hazards models with sparse
-longitudinal covariates." <em>Lifetime Data Analysis</em> (2022).</p>
+<em>Journal of the American Statistical Association</em> 120(552), 2580-2591.
+<a href="https://doi.org/10.1080/01621459.2025.2476781" class="external-link">doi:10.1080/01621459.2025.2476781</a></p>
+<p>Sun, Zhuowei, Hongyuan Cao, and Li Chen. "Regression Analysis of Additive
+Hazards Model with Sparse Longitudinal Covariates." <em>Lifetime Data Analysis</em>
+(2022). <a href="https://doi.org/10.1007/s10985-022-09548-6" class="external-link">doi:10.1007/s10985-022-09548-6</a></p>
     </div>
 
     <div class="section level2">

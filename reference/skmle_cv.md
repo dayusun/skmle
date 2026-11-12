@@ -77,8 +77,9 @@ print(x, ...)
 - nknots:
 
   Number of interior knots used in the sieve approximation of the
-  baseline component. Knots are placed at `(1:nknots)/(nknots + 1)`. The
-  basis is a natural cubic spline
+  baseline component. Knots are placed at
+  `tau * (1:nknots)/(nknots + 1)`, where `tau` is the largest observed
+  event or censoring time. The basis is a natural cubic spline
   ([`splines::ns`](https://rdrr.io/r/splines/ns.html)); its order is
   fixed, which is why there is no `norder` argument.
 

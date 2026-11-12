@@ -82,9 +82,8 @@ a kernel estimating-equation approach.</p>
 
 <dt id="arg-obs-times">obs_times<a class="anchor" aria-label="anchor" href="#arg-obs-times"></a></dt>
 <dd><p>Longitudinal observation times aligned row-wise with <code>data</code>.
-Times may be on any scale; the sieve basis and the cumulative-hazard
-quadrature are built on the observed follow-up, so there is no need to
-rescale to the unit interval first. <code>h</code> must be on the same scale.
+Times may be on any scale, so there is no need to rescale to the unit
+interval first. <code>h</code> must be on the same scale.
 Observation times may be negative; see “Negative observation
 times” in <code>kee_cox()</code>.</p></dd>
 
@@ -130,9 +129,10 @@ coefficients.</p>
     <h2 id="negative-observation-times">Negative observation times<a class="anchor" aria-label="anchor" href="#negative-observation-times"></a></h2>
 
 
-<p><code>obs_times</code> may be negative. Event times may not: the sieve basis and the
-cumulative-hazard quadrature are built on <code>[0, max(X)]</code>, so an event time
-outside that span is extrapolation. Observation times carry no such
+<p><code>obs_times</code> may be negative. Event times may not, and a negative event time
+is an error: in <code><a href="skmle.html">skmle()</a></code> and <code><a href="kee_additive.html">kee_additive()</a></code> the sieve basis and the
+cumulative-hazard quadrature are built on <code>[0, max(X)]</code>, and every estimator
+takes the time origin to be zero. Observation times carry no such
 constraint. They enter the score only through the lag <code>X - obs_times</code>, and
 the half kernel admits a row on the sign of that lag rather than on the sign
 of the time, so a covariate observed at <code>-180</code> and an event at <code>30</code> sit a lag
@@ -168,9 +168,12 @@ come from elsewhere, the fit will be quiet and wrong.</p>
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-<em>Journal of the American Statistical Association</em> (2025): 1-12.</p>
-<p>Cao, Hongyuan, et al. "Inference for Cox models with sparse longitudinal covariates."
-<em>Biometrika</em> (2015).</p>
+<em>Journal of the American Statistical Association</em> 120(552), 2580-2591.
+<a href="https://doi.org/10.1080/01621459.2025.2476781" class="external-link">doi:10.1080/01621459.2025.2476781</a></p>
+<p>Cao, Hongyuan, Mathew M. Churpek, Donglin Zeng, and Jason P. Fine.
+"Analysis of the Proportional Hazards Model with Sparse Longitudinal
+Covariates." <em>Journal of the American Statistical Association</em> 110(511),
+1187-1196 (2015). <a href="https://doi.org/10.1080/01621459.2014.957289" class="external-link">doi:10.1080/01621459.2014.957289</a></p>
     </div>
 
     <div class="section level2">

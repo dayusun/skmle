@@ -68,7 +68,7 @@
 <p>Longitudinal covariates are rarely measured when you need them. A biomarker is drawn at a handful of clinic visits; the event you are modelling happens somewhere between two of them, and the outcome you are modelling is recorded on a schedule of its own. Carrying the last value forward answers a different question, and smoothing the covariate first and substituting it is regression calibration, which is not consistent when the sampling is sparse.</p>
 <p><code>skmle</code> handles the mismatch directly, by weighting each observation according to how far its measurement time sits from the time being modelled. It covers two settings:</p>
 <p>For survival outcomes, the transformed hazards family, with covariates observed sparsely and intermittently. The Box-Cox parameter <code>s</code> indexes the family: <code>s = 0</code> is proportional hazards, <code>s = 1</code> is additive hazards, and other values interpolate. This is the Sieve Maximum Kernel-weighted Log-likelihood Estimator (SMKLE) of Sun, Sun, Zhao and Cao (2025), plus faster specialised estimating equations for the two named cases.</p>
-<p>For longitudinal outcomes, generalised linear models where the response and the covariate are measured on <em>different</em> time grids and never observed together. This is the asynchronous case. This is the kernel-weighted estimating equations of Cao, Zeng and Fine (2015), with either time-invariant coefficients or a coefficient curve <code>β(t)</code>.</p>
+<p>For longitudinal outcomes, generalised linear models where the response and the covariate are measured on <em>different</em> time grids and never observed together. This is the asynchronous case, handled by the kernel-weighted estimating equations of Cao, Zeng and Fine (2015), with either time-invariant coefficients or a coefficient curve <code>β(t)</code>.</p>
 <p>Both settings share one idea and one implementation: a kernel weight bridging mismatched time grids, with the heavy numerical work in C++ via <code>Rcpp</code> and <code>RcppArmadillo</code>, behind an ordinary R modelling interface.</p>
 <div class="section level2">
 <h2 id="which-function-do-i-need">Which function do I need?<a class="anchor" aria-label="anchor" href="#which-function-do-i-need"></a>
@@ -229,6 +229,7 @@
 <span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy</a></span><span class="op">(</span><span class="va">fit_a</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>   <span class="co"># a tibble, ready for ggplot2 or dplyr</span></span></code></pre></div>
 <p><code>h</code> is the one consequential choice. Fit at several bandwidths and check that the estimate is stable before reporting one.</p>
 <p>Each (response, covariate) pair within a subject contributes in proportion to its time separation, so nothing is discarded and nothing is carried forward. The estimator converges at the smoothing rate <code>(nh)^(1/2)</code>, so standard errors shrink more slowly than in a parametric fit.</p>
+<p>Identity, log and logistic links are supported by both <code><a href="reference/kee_async.html">kee_async()</a></code> and <code><a href="reference/kee_async_td.html">kee_async_td()</a></code>.</p>
 <p>If the coefficients vary with time, <code><a href="reference/kee_async_td.html">kee_async_td()</a></code> estimates the curve pointwise. Both time arguments are smoothed there, so it converges at the bivariate rate <code>(n h1 h2)^(1/2)</code> and the bands are correspondingly wide:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_td</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">y</span> <span class="op">|&gt;</span></span>
@@ -242,13 +243,12 @@
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"asynchronous"</span>, package <span class="op">=</span> <span class="st">"skmle"</span><span class="op">)</span></span></code></pre></div>
 <p>or read it at <a href="https://www.sundayu.me/skmle/articles/asynchronous.html" class="uri">https://www.sundayu.me/skmle/articles/asynchronous.html</a>.</p>
-<p>Identity, log and logistic links are supported in both.</p>
 </div>
 <div class="section level2">
 <h2 id="benchmarks-against-survsparse">Benchmarks against SurvSparse<a class="anchor" aria-label="anchor" href="#benchmarks-against-survsparse"></a>
 </h2>
 <p>The package includes a benchmark vignette comparing <code>skmle</code> with <code>SurvSparse</code> on matched sparse longitudinal survival-data settings.</p>
-<p>In the current benchmark sweep:</p>
+<p>Median times from one run of that vignette (x86_64 Linux, R 4.6.1, <code>SurvSparse</code> 0.1, five iterations each); absolute times vary with hardware:</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -262,44 +262,40 @@
 <code>SurvSparse</code> median</th>
 <th align="right">
 <code>skmle</code> median</th>
-<th align="left">Relative result</th>
+<th align="right">Ratio</th>
 </tr></thead>
 <tbody>
 <tr>
 <td align="left">Additive hazards, <code>n = 200</code>
 </td>
-<td align="right">~288 ms</td>
+<td align="right">269 ms</td>
 <td align="right">
-<code>kee_additive</code>: ~87 ms</td>
-<td align="left">
-<code>skmle</code> faster</td>
+<code>kee_additive</code>: 66 ms</td>
+<td align="right">4.1x</td>
 </tr>
 <tr>
 <td align="left">Additive hazards, <code>n = 500</code>
 </td>
-<td align="right">~835 ms</td>
+<td align="right">1039 ms</td>
 <td align="right">
-<code>kee_additive</code>: ~116 ms</td>
-<td align="left">
-<code>skmle</code> faster</td>
+<code>kee_additive</code>: 90 ms</td>
+<td align="right">11.6x</td>
 </tr>
 <tr>
 <td align="left">Transformed hazards, <code>n = 100</code>
 </td>
-<td align="right">~1096 ms</td>
+<td align="right">348 ms</td>
 <td align="right">
-<code>skmle(s = 0)</code>: ~137 ms</td>
-<td align="left">
-<code>skmle</code> much faster</td>
+<code>skmle(s = 0)</code>: 80 ms</td>
+<td align="right">4.3x</td>
 </tr>
 <tr>
 <td align="left">Transformed hazards, <code>n = 200</code>
 </td>
-<td align="right">~2238 ms</td>
+<td align="right">647 ms</td>
 <td align="right">
-<code>skmle(s = 0)</code>: ~216 ms</td>
-<td align="left">
-<code>skmle</code> much faster</td>
+<code>skmle(s = 0)</code>: 97 ms</td>
+<td align="right">6.7x</td>
 </tr>
 </tbody>
 </table>

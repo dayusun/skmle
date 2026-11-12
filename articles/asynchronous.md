@@ -393,7 +393,8 @@ different statement from evidence that \\\beta(t)\\ is flat.
 
 `link = "log"` and `link = "logistic"` fit the corresponding generalised
 linear models by Newton-Raphson on the same estimating equation.
-Everything above applies unchanged, including the bandwidth selection.
+Everything above applies unchanged, including the check of how the
+estimate moves with `h`.
 
 ``` r
 

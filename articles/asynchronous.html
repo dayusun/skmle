@@ -417,7 +417,7 @@ is a different statement from evidence that <span class="math inline">\(\beta(t)
 <p><code>link = "log"</code> and <code>link = "logistic"</code> fit the
 corresponding generalised linear models by Newton-Raphson on the same
 estimating equation. Everything above applies unchanged, including the
-bandwidth selection.</p>
+check of how the estimate moves with <code>h</code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">11</span><span class="op">)</span></span>
 <span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_async_data.html">sim_async_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">400</span>, beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">1.0</span><span class="op">)</span>, link <span class="op">=</span> <span class="st">"logistic"</span><span class="op">)</span></span>

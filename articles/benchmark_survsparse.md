@@ -20,7 +20,6 @@ representative settings.
 
 ``` r
 
-library(nloptr)
 library(skmle)
 library(SurvSparse)
 library(survival)
@@ -93,7 +92,7 @@ run_additive_benchmark <- function(n, iterations = 5) {
     dplyr::mutate(expression = as.character(expression)) %>%
     dplyr::mutate(
       scenario = sprintf("Additive (n = %d)", n),
-      median_ms = as.numeric(median) / 1e6
+      median_ms = as.numeric(median) * 1000
     ) %>%
     dplyr::select(scenario, expression, median_ms, `itr/sec`)
 }
@@ -119,7 +118,7 @@ run_transformed_benchmark <- function(n, iterations = 5) {
     dplyr::mutate(expression = as.character(expression)) %>%
     dplyr::mutate(
       scenario = sprintf("Transformed (n = %d)", n),
-      median_ms = as.numeric(median) / 1e6
+      median_ms = as.numeric(median) * 1000
     ) %>%
     dplyr::select(scenario, expression, median_ms, `itr/sec`)
 }
@@ -150,17 +149,17 @@ benchmark_results <- benchmark_results %>%
   )
 
 benchmark_results
-#>                 scenario           expression    median_ms    itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 3.244967e-07  3.2760570
-#> 2     Additive (n = 200)   skmle_kee_additive 8.773927e-08 10.9746506
-#> 3     Additive (n = 200)         skmle_spline 1.173998e-07  8.4358721
-#> 4     Additive (n = 500)   SurvSparse_add_haz 1.054001e-06  0.8796103
-#> 5     Additive (n = 500)   skmle_kee_additive 1.236625e-07  8.4410079
-#> 6     Additive (n = 500)         skmle_spline 1.580120e-07  6.2914147
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 3.648092e-07  2.6511000
-#> 8  Transformed (n = 100)         skmle_spline 9.308254e-08 10.7414424
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 6.903182e-07  1.3144204
-#> 10 Transformed (n = 200)         skmle_spline 1.041275e-07  8.9868158
+#>                 scenario           expression  median_ms    itr/sec
+#> 1     Additive (n = 200)   SurvSparse_add_haz  322.09140  3.4951780
+#> 2     Additive (n = 200)   skmle_kee_additive   89.51380  8.2279313
+#> 3     Additive (n = 200)         skmle_spline  122.95508  8.3677521
+#> 4     Additive (n = 500)   SurvSparse_add_haz 1048.39109  0.8721557
+#> 5     Additive (n = 500)   skmle_kee_additive  118.57105  8.5462423
+#> 6     Additive (n = 500)         skmle_spline  176.16070  5.8094277
+#> 7  Transformed (n = 100) SurvSparse_trans_haz  363.00582  2.7359008
+#> 8  Transformed (n = 100)         skmle_spline   91.82894 10.0149845
+#> 9  Transformed (n = 200) SurvSparse_trans_haz  736.13437  1.3935976
+#> 10 Transformed (n = 200)         skmle_spline  102.85019  9.4120213
 #>                  method
 #> 1    SurvSparse add.haz
 #> 2    skmle kee_additive
@@ -191,28 +190,28 @@ speed_summary <- benchmark_results %>%
   dplyr::mutate(speedup_vs_baseline = median_ms / baseline_ms)
 
 speed_summary
-#>                 scenario           expression    median_ms    itr/sec
-#> 1     Additive (n = 200)   SurvSparse_add_haz 3.244967e-07  3.2760570
-#> 2     Additive (n = 200)   skmle_kee_additive 8.773927e-08 10.9746506
-#> 3     Additive (n = 200)         skmle_spline 1.173998e-07  8.4358721
-#> 4     Additive (n = 500)   SurvSparse_add_haz 1.054001e-06  0.8796103
-#> 5     Additive (n = 500)   skmle_kee_additive 1.236625e-07  8.4410079
-#> 6     Additive (n = 500)         skmle_spline 1.580120e-07  6.2914147
-#> 7  Transformed (n = 100) SurvSparse_trans_haz 3.648092e-07  2.6511000
-#> 8  Transformed (n = 100)         skmle_spline 9.308254e-08 10.7414424
-#> 9  Transformed (n = 200) SurvSparse_trans_haz 6.903182e-07  1.3144204
-#> 10 Transformed (n = 200)         skmle_spline 1.041275e-07  8.9868158
-#>                  method  baseline_ms speedup_vs_baseline
-#> 1    SurvSparse add.haz 8.773927e-08            3.698420
-#> 2    skmle kee_additive 8.773927e-08            1.000000
-#> 3          skmle spline 8.773927e-08            1.338053
-#> 4    SurvSparse add.haz 1.236625e-07            8.523204
-#> 5    skmle kee_additive 1.236625e-07            1.000000
-#> 6          skmle spline 1.236625e-07            1.277768
-#> 7  SurvSparse trans.haz 9.308254e-08            3.919201
-#> 8          skmle spline 9.308254e-08            1.000000
-#> 9  SurvSparse trans.haz 1.041275e-07            6.629548
-#> 10         skmle spline 1.041275e-07            1.000000
+#>                 scenario           expression  median_ms    itr/sec
+#> 1     Additive (n = 200)   SurvSparse_add_haz  322.09140  3.4951780
+#> 2     Additive (n = 200)   skmle_kee_additive   89.51380  8.2279313
+#> 3     Additive (n = 200)         skmle_spline  122.95508  8.3677521
+#> 4     Additive (n = 500)   SurvSparse_add_haz 1048.39109  0.8721557
+#> 5     Additive (n = 500)   skmle_kee_additive  118.57105  8.5462423
+#> 6     Additive (n = 500)         skmle_spline  176.16070  5.8094277
+#> 7  Transformed (n = 100) SurvSparse_trans_haz  363.00582  2.7359008
+#> 8  Transformed (n = 100)         skmle_spline   91.82894 10.0149845
+#> 9  Transformed (n = 200) SurvSparse_trans_haz  736.13437  1.3935976
+#> 10 Transformed (n = 200)         skmle_spline  102.85019  9.4120213
+#>                  method baseline_ms speedup_vs_baseline
+#> 1    SurvSparse add.haz    89.51380            3.598232
+#> 2    skmle kee_additive    89.51380            1.000000
+#> 3          skmle spline    89.51380            1.373588
+#> 4    SurvSparse add.haz   118.57105            8.841881
+#> 5    skmle kee_additive   118.57105            1.000000
+#> 6          skmle spline   118.57105            1.485697
+#> 7  SurvSparse trans.haz    91.82894            3.953066
+#> 8          skmle spline    91.82894            1.000000
+#> 9  SurvSparse trans.haz   102.85019            7.157346
+#> 10         skmle spline   102.85019            1.000000
 ```
 
 ## Runtimes
@@ -294,5 +293,5 @@ The benchmark shows a stable pattern:
   which is expected because it solves the broader joint optimization
   problem rather than a specialized estimating equation.
 
-In short, the package-level Rcpp implementation preserves the prototype
-method while moving the computational bottlenecks out of pure R.
+The timings are from one machine and vary with hardware; the ratios are
+more stable than the absolute values.

@@ -163,11 +163,10 @@ rate \\(nh)^{1/2}\\. Standard errors shrink more slowly than in a
 parametric fit, and the bandwidth becomes a real modelling choice: too
 small and few pairs contribute, too large and the bias grows.
 
-`h` is on the **same scale as the observation times**. Unlike the
-survival `h` must be on whatever scale the times are on; nothing else is
-assumed about that scale. A warning is issued when fewer than 5% of
-response occasions have any covariate observation in their window, which
-is the signature of a units mistake.
+`h` is on the **same scale as the observation times**, as in the
+survival estimators; nothing else is assumed about that scale. A warning
+is issued when fewer than 5% of response occasions have any covariate
+observation in their window, which is the signature of a units mistake.
 
 ## Half kernel or full kernel
 

@@ -62,7 +62,6 @@ chooses it from the data.
 
 ``` r
 
-library(nloptr)
 library(skmle)
 library(survival)
 ```
@@ -319,12 +318,12 @@ n^{-0.3}\\ – the rate the asymptotics assume – while the finite-sample
 minimum of the loss frequently lies above it. Widen `h_grid` by hand to
 see where the curve turns.
 
-And the curve is flat. With 80 subjects every candidate above is within
-one standard error of the minimum, which is the honest answer: this much
-data does not pin down a bandwidth. The criterion also scores prediction
-of the held-out hazard, in which the baseline can absorb attenuation in
-`beta`, so it leans towards more smoothing than the coefficients on
-their own would want.
+And the curve is flat. With 80 subjects, 7 of the 10 candidates above
+lie within one standard error of the minimum: this much data does not
+pin down a bandwidth. The criterion also scores prediction of the
+held-out hazard, in which the baseline can absorb attenuation in `beta`,
+so it leans towards more smoothing than the coefficients on their own
+would want.
 
 It is tempting to correct that lean by taking the smallest `h` within
 one standard error of the minimum. Don’t: over 10 replicates at \\n =
@@ -355,10 +354,11 @@ summary(cv_fit$fit)
 ## Half kernel or full kernel
 
 Every estimator weights a covariate observation by how far it sits from
-the time being modelled. By default that window is *one-sided*: only
-observations strictly before the time contribute, which is the risk-set
-restriction of a hazard model. Set `one_sided = FALSE` to smooth the
-covariate path from both sides instead.
+the time being modelled. For the survival estimators that window is
+*one-sided* by default: only observations strictly before the time
+contribute, which is the risk-set restriction of a hazard model. Set
+`one_sided = FALSE` to smooth the covariate path from both sides
+instead.
 
 ``` r
 

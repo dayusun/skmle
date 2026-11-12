@@ -114,7 +114,8 @@ observation times as a rule of thumb and reported in a message. Use
 
 <dt id="arg-nknots">nknots<a class="anchor" aria-label="anchor" href="#arg-nknots"></a></dt>
 <dd><p>Number of interior knots used in the sieve approximation of the
-baseline component. Knots are placed at <code>(1:nknots)/(nknots + 1)</code>. The
+baseline component. Knots are placed at <code>tau * (1:nknots)/(nknots + 1)</code>,
+where <code>tau</code> is the largest observed event or censoring time. The
 basis is a natural cubic spline (<code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns</a></code>); its order is fixed, which
 is why there is no <code>norder</code> argument.</p></dd>
 
@@ -184,7 +185,8 @@ estimated baseline component with <code><a href="https://rdrr.io/r/graphics/plot
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-<em>Journal of the American Statistical Association</em> (2025): 1-12.</p>
+<em>Journal of the American Statistical Association</em> 120(552), 2580-2591.
+<a href="https://doi.org/10.1080/01621459.2025.2476781" class="external-link">doi:10.1080/01621459.2025.2476781</a></p>
     </div>
 
     <div class="section level2">

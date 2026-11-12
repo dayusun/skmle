@@ -164,8 +164,7 @@ two</td>
 one, and says in a message what it chose. For the survival models,
 <code><a href="../reference/skmle_cv.html">skmle_cv()</a></code> chooses it from the data.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/astamm/nloptr" class="external-link">nloptr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.sundayu.me/skmle/">skmle</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.sundayu.me/skmle/">skmle</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -406,12 +405,12 @@ stops at <span class="math inline">\(\tau n^{-0.3}\)</span> – the rate
 the asymptotics assume – while the finite-sample minimum of the loss
 frequently lies above it. Widen <code>h_grid</code> by hand to see where
 the curve turns.</p>
-<p>And the curve is flat. With 80 subjects every candidate above is
-within one standard error of the minimum, which is the honest answer:
-this much data does not pin down a bandwidth. The criterion also scores
-prediction of the held-out hazard, in which the baseline can absorb
-attenuation in <code>beta</code>, so it leans towards more smoothing
-than the coefficients on their own would want.</p>
+<p>And the curve is flat. With 80 subjects, 7 of the 10 candidates above
+lie within one standard error of the minimum: this much data does not
+pin down a bandwidth. The criterion also scores prediction of the
+held-out hazard, in which the baseline can absorb attenuation in
+<code>beta</code>, so it leans towards more smoothing than the
+coefficients on their own would want.</p>
 <p>It is tempting to correct that lean by taking the smallest
 <code>h</code> within one standard error of the minimum. Don’t: over 10
 replicates at <span class="math inline">\(n = 200\)</span> that rule put
@@ -439,11 +438,11 @@ the left of the curve is real.</p>
 <h2 id="half-kernel-or-full-kernel">Half kernel or full kernel<a class="anchor" aria-label="anchor" href="#half-kernel-or-full-kernel"></a>
 </h2>
 <p>Every estimator weights a covariate observation by how far it sits
-from the time being modelled. By default that window is
-<em>one-sided</em>: only observations strictly before the time
-contribute, which is the risk-set restriction of a hazard model. Set
-<code>one_sided = FALSE</code> to smooth the covariate path from both
-sides instead.</p>
+from the time being modelled. For the survival estimators that window is
+<em>one-sided</em> by default: only observations strictly before the
+time contribute, which is the risk-set restriction of a hazard model.
+Set <code>one_sided = FALSE</code> to smooth the covariate path from
+both sides instead.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kee_cox.html">kee_cox</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">delta</span><span class="op">)</span> <span class="op">~</span> <span class="va">covariates</span>,</span>

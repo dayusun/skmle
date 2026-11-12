@@ -121,7 +121,8 @@ a grid is generated automatically from the observed time gaps.</p></dd>
 
 <dt id="arg-nknots">nknots<a class="anchor" aria-label="anchor" href="#arg-nknots"></a></dt>
 <dd><p>Number of interior knots used in the sieve approximation of the
-baseline component. Knots are placed at <code>(1:nknots)/(nknots + 1)</code>. The
+baseline component. Knots are placed at <code>tau * (1:nknots)/(nknots + 1)</code>,
+where <code>tau</code> is the largest observed event or censoring time. The
 basis is a natural cubic spline (<code><a href="https://rdrr.io/r/splines/ns.html" class="external-link">splines::ns</a></code>); its order is fixed, which
 is why there is no <code>norder</code> argument.</p></dd>
 

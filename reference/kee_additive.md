@@ -37,10 +37,10 @@ kee_additive(
 - obs_times:
 
   Longitudinal observation times aligned row-wise with `data`. Times may
-  be on any scale; the sieve basis and the cumulative-hazard quadrature
-  are built on the observed follow-up, so there is no need to rescale to
-  the unit interval first. `h` must be on the same scale. Observation
-  times may be negative; see “Negative observation times” in
+  be on any scale; the cumulative-hazard quadrature is built on the
+  observed follow-up, so there is no need to rescale to the unit
+  interval first. `h` must be on the same scale. Observation times may
+  be negative; see “Negative observation times” in
   [`kee_cox()`](https://www.sundayu.me/skmle/reference/kee_cox.md).
 
 - h:
@@ -89,10 +89,13 @@ specialized problem.
 
 Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao. "Kernel Meets
 Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-*Journal of the American Statistical Association* (2025): 1-12.
+*Journal of the American Statistical Association* 120(552), 2580-2591.
+[doi:10.1080/01621459.2025.2476781](https://doi.org/10.1080/01621459.2025.2476781)
 
-Sun, Dayu, Hongyuan Cao, and Yining Chen. "Additive hazards models with
-sparse longitudinal covariates." *Lifetime Data Analysis* (2022).
+Sun, Zhuowei, Hongyuan Cao, and Li Chen. "Regression Analysis of
+Additive Hazards Model with Sparse Longitudinal Covariates." *Lifetime
+Data Analysis* (2022).
+[doi:10.1007/s10985-022-09548-6](https://doi.org/10.1007/s10985-022-09548-6)
 
 ## Examples
 

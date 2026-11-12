@@ -36,11 +36,9 @@ kee_cox(
 - obs_times:
 
   Longitudinal observation times aligned row-wise with `data`. Times may
-  be on any scale; the sieve basis and the cumulative-hazard quadrature
-  are built on the observed follow-up, so there is no need to rescale to
-  the unit interval first. `h` must be on the same scale. Observation
-  times may be negative; see “Negative observation times” in
-  `kee_cox()`.
+  be on any scale, so there is no need to rescale to the unit interval
+  first. `h` must be on the same scale. Observation times may be
+  negative; see “Negative observation times” in `kee_cox()`.
 
 - h:
 
@@ -85,13 +83,17 @@ coefficients.
 
 ## Negative observation times
 
-`obs_times` may be negative. Event times may not: the sieve basis and
-the cumulative-hazard quadrature are built on `[0, max(X)]`, so an event
-time outside that span is extrapolation. Observation times carry no such
-constraint. They enter the score only through the lag `X - obs_times`,
-and the half kernel admits a row on the sign of that lag rather than on
-the sign of the time, so a covariate observed at `-180` and an event at
-`30` sit a lag of `210` apart and are handled like any other pair.
+`obs_times` may be negative. Event times may not, and a negative event
+time is an error: in
+[`skmle()`](https://www.sundayu.me/skmle/reference/skmle.md) and
+[`kee_additive()`](https://www.sundayu.me/skmle/reference/kee_additive.md)
+the sieve basis and the cumulative-hazard quadrature are built on
+`[0, max(X)]`, and every estimator takes the time origin to be zero.
+Observation times carry no such constraint. They enter the score only
+through the lag `X - obs_times`, and the half kernel admits a row on the
+sign of that lag rather than on the sign of the time, so a covariate
+observed at `-180` and an event at `30` sit a lag of `210` apart and are
+handled like any other pair.
 
 Reach still decides whether such a row counts for anything. A pre-origin
 observation contributes only where it falls within `h` of an event time,
@@ -132,10 +134,14 @@ point. If they come from elsewhere, the fit will be quiet and wrong.
 
 Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao. "Kernel Meets
 Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-*Journal of the American Statistical Association* (2025): 1-12.
+*Journal of the American Statistical Association* 120(552), 2580-2591.
+[doi:10.1080/01621459.2025.2476781](https://doi.org/10.1080/01621459.2025.2476781)
 
-Cao, Hongyuan, et al. "Inference for Cox models with sparse longitudinal
-covariates." *Biometrika* (2015).
+Cao, Hongyuan, Mathew M. Churpek, Donglin Zeng, and Jason P. Fine.
+"Analysis of the Proportional Hazards Model with Sparse Longitudinal
+Covariates." *Journal of the American Statistical Association* 110(511),
+1187-1196 (2015).
+[doi:10.1080/01621459.2014.957289](https://doi.org/10.1080/01621459.2014.957289)
 
 ## Examples
 
