@@ -66,7 +66,8 @@ integration.}
 \item{xtol_rel}{Relative convergence tolerance passed to the optimizer.}
 
 \item{seed}{Optional integer seed for the random subject-to-fold assignment.
-If \code{NULL}, the current RNG state is used and no explicit seed is set.}
+If \code{NULL}, the current RNG state is used and no explicit seed is set.
+A supplied seed is used locally: the global RNG state is restored on exit.}
 
 \item{quiet}{Logical; if \code{TRUE}, suppress progress output.}
 

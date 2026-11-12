@@ -29,3 +29,5 @@
 ^.*\.tar\.gz$
 ^CITATION\.cff$
 ^LICENSE\.md$
+^TODO\.md$
+^todo$

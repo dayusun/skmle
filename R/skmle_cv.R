@@ -100,6 +100,7 @@ locf_score <- function(X_time, obs_times_vec, id_vec, delta, knots, tau,
 #' @param n_h Number of candidate bandwidths to generate when `h_grid` is `NULL`.
 #' @param seed Optional integer seed for the random subject-to-fold assignment.
 #'   If `NULL`, the current RNG state is used and no explicit seed is set.
+#'   A supplied seed is used locally: the global RNG state is restored on exit.
 #' @param quiet Logical; if `TRUE`, suppress progress output.
 #'
 #' @section Kernel choice:
@@ -317,7 +318,17 @@ skmle_cv <- function(formula, data, id, obs_times, s = 0, K = 5, h_grid = NULL,
   }
 
   # split data into K folds by subject id (reproducible if `seed` given)
-  if (!is.null(seed)) set.seed(seed)
+  # without changing the caller's RNG stream
+  if (!is.null(seed)) {
+    if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
+      old_seed <- get(".Random.seed", envir = globalenv(), inherits = FALSE)
+      on.exit(assign(".Random.seed", old_seed, envir = globalenv()),
+              add = TRUE)
+    } else {
+      on.exit(rm(".Random.seed", envir = globalenv()), add = TRUE)
+    }
+    set.seed(seed)
+  }
   fold_id_subj <- sample(rep(1:K, length.out = n))
 
   # pre-compute quadrature and knots
