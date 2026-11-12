@@ -22,9 +22,8 @@ kee_cox(
 \item{id}{Subject identifier aligned row-wise with \code{data}.}
 
 \item{obs_times}{Longitudinal observation times aligned row-wise with \code{data}.
-Times may be on any scale; the sieve basis and the cumulative-hazard
-quadrature are built on the observed follow-up, so there is no need to
-rescale to the unit interval first. \code{h} must be on the same scale.
+Times may be on any scale, so there is no need to rescale to the unit
+interval first. \code{h} must be on the same scale.
 Observation times may be negative; see \dQuote{Negative observation
 times} in \code{\link[=kee_cox]{kee_cox()}}.}
 
@@ -63,9 +62,10 @@ coefficients.
 }
 \section{Negative observation times}{
 
-\code{obs_times} may be negative. Event times may not: the sieve basis and the
-cumulative-hazard quadrature are built on \verb{[0, max(X)]}, so an event time
-outside that span is extrapolation. Observation times carry no such
+\code{obs_times} may be negative. Event times may not, and a negative event time
+is an error: in \code{\link[=skmle]{skmle()}} and \code{\link[=kee_additive]{kee_additive()}} the sieve basis and the
+cumulative-hazard quadrature are built on \verb{[0, max(X)]}, and every estimator
+takes the time origin to be zero. Observation times carry no such
 constraint. They enter the score only through the lag \code{X - obs_times}, and
 the half kernel admits a row on the sign of that lag rather than on the sign
 of the time, so a covariate observed at \code{-180} and an event at \code{30} sit a lag
@@ -134,8 +134,11 @@ summary(fit_cox)
 \references{
 Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-\emph{Journal of the American Statistical Association} (2025): 1-12.
+\emph{Journal of the American Statistical Association} 120(552), 2580-2591.
+\doi{10.1080/01621459.2025.2476781}
 
-Cao, Hongyuan, et al. "Inference for Cox models with sparse longitudinal covariates."
-\emph{Biometrika} (2015).
+Cao, Hongyuan, Mathew M. Churpek, Donglin Zeng, and Jason P. Fine.
+"Analysis of the Proportional Hazards Model with Sparse Longitudinal
+Covariates." \emph{Journal of the American Statistical Association} 110(511),
+1187-1196 (2015). \doi{10.1080/01621459.2014.957289}
 }

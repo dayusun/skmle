@@ -45,7 +45,8 @@ observation times as a rule of thumb and reported in a message. Use
 \code{\link[=skmle_cv]{skmle_cv()}} to choose it from the data.}
 
 \item{nknots}{Number of interior knots used in the sieve approximation of the
-baseline component. Knots are placed at \code{(1:nknots)/(nknots + 1)}. The
+baseline component. Knots are placed at \code{tau * (1:nknots)/(nknots + 1)},
+where \code{tau} is the largest observed event or censoring time. The
 basis is a natural cubic spline (\code{splines::ns}); its order is fixed, which
 is why there is no \code{norder} argument.}
 
@@ -140,5 +141,6 @@ summary(fit)
 \references{
 Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-\emph{Journal of the American Statistical Association} (2025): 1-12.
+\emph{Journal of the American Statistical Association} 120(552), 2580-2591.
+\doi{10.1080/01621459.2025.2476781}
 }

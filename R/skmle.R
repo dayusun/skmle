@@ -33,7 +33,8 @@
 #'   averages inside the C++ backend as well as to the row weights, so the two
 #'   are always consistent.
 #' @param nknots Number of interior knots used in the sieve approximation of the
-#'   baseline component. Knots are placed at `(1:nknots)/(nknots + 1)`. The
+#'   baseline component. Knots are placed at `tau * (1:nknots)/(nknots + 1)`,
+#'   where `tau` is the largest observed event or censoring time. The
 #'   basis is a natural cubic spline (`splines::ns`); its order is fixed, which
 #'   is why there is no `norder` argument.
 #' @param lq_nodes Number of Legendre-Gauss quadrature nodes used in numerical
@@ -64,7 +65,8 @@
 #' @references
 #' Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 #' "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-#' *Journal of the American Statistical Association* (2025): 1-12.
+#' *Journal of the American Statistical Association* 120(552), 2580-2591.
+#' \doi{10.1080/01621459.2025.2476781}
 #'
 #' @return
 #' An object of class `skmle` containing:

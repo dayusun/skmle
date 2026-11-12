@@ -29,9 +29,9 @@ equations for the two named cases.
 
 For longitudinal outcomes, generalised linear models where the response and the
 covariate are measured on *different* time grids and never observed together.
-This is the asynchronous case. This is the kernel-weighted estimating equations of Cao,
-Zeng and Fine (2015), with either time-invariant coefficients or a coefficient
-curve `β(t)`.
+This is the asynchronous case, handled by the kernel-weighted estimating
+equations of Cao, Zeng and Fine (2015), with either time-invariant coefficients
+or a coefficient curve `β(t)`.
 
 Both settings share one idea and one implementation: a kernel weight bridging
 mismatched time grids, with the heavy numerical work in C++ via `Rcpp` and
@@ -197,6 +197,9 @@ its time separation, so nothing is discarded and nothing is carried forward.
 The estimator converges at the smoothing rate `(nh)^(1/2)`, so standard errors
 shrink more slowly than in a parametric fit.
 
+Identity, log and logistic links are supported by both `kee_async()` and
+`kee_async_td()`.
+
 If the coefficients vary with time, `kee_async_td()` estimates the curve
 pointwise. Both time arguments are smoothed there, so it converges at the
 bivariate rate `(n h1 h2)^(1/2)` and the bands are correspondingly wide:
@@ -221,21 +224,20 @@ vignette("asynchronous", package = "skmle")
 
 or read it at <https://www.sundayu.me/skmle/articles/asynchronous.html>.
 
-Identity, log and logistic links are supported in both.
-
 ## Benchmarks against SurvSparse
 
 The package includes a benchmark vignette comparing `skmle` with `SurvSparse`
 on matched sparse longitudinal survival-data settings.
 
-In the current benchmark sweep:
+Median times from one run of that vignette (x86_64 Linux, R 4.6.1,
+`SurvSparse` 0.1, five iterations each); absolute times vary with hardware:
 
-| Scenario | `SurvSparse` median | `skmle` median | Relative result |
-| :-- | --: | --: | :-- |
-| Additive hazards, `n = 200` | ~288 ms | `kee_additive`: ~87 ms | `skmle` faster |
-| Additive hazards, `n = 500` | ~835 ms | `kee_additive`: ~116 ms | `skmle` faster |
-| Transformed hazards, `n = 100` | ~1096 ms | `skmle(s = 0)`: ~137 ms | `skmle` much faster |
-| Transformed hazards, `n = 200` | ~2238 ms | `skmle(s = 0)`: ~216 ms | `skmle` much faster |
+| Scenario | `SurvSparse` median | `skmle` median | Ratio |
+| :-- | --: | --: | --: |
+| Additive hazards, `n = 200` | 269 ms | `kee_additive`: 66 ms | 4.1x |
+| Additive hazards, `n = 500` | 1039 ms | `kee_additive`: 90 ms | 11.6x |
+| Transformed hazards, `n = 100` | 348 ms | `skmle(s = 0)`: 80 ms | 4.3x |
+| Transformed hazards, `n = 200` | 647 ms | `skmle(s = 0)`: 97 ms | 6.7x |
 
 The additive comparison also includes the general spline-based `skmle(s = 1)`
 fit, which remains competitive but is slower than `kee_additive()` because it

@@ -54,7 +54,8 @@ a grid is generated automatically from the observed time gaps.}
 \item{n_h}{Number of candidate bandwidths to generate when \code{h_grid} is \code{NULL}.}
 
 \item{nknots}{Number of interior knots used in the sieve approximation of the
-baseline component. Knots are placed at \code{(1:nknots)/(nknots + 1)}. The
+baseline component. Knots are placed at \code{tau * (1:nknots)/(nknots + 1)},
+where \code{tau} is the largest observed event or censoring time. The
 basis is a natural cubic spline (\code{splines::ns}); its order is fixed, which
 is why there is no \code{norder} argument.}
 

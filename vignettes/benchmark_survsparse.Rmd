@@ -41,7 +41,6 @@ We compare:
 The goal is not to claim a universal speed ratio for every problem size, but to show how the package behaves across a small grid of representative settings.
 
 ```{r setup, warning=FALSE, message=FALSE}
-library(nloptr)
 library(skmle)
 library(SurvSparse)
 library(survival)
@@ -108,7 +107,7 @@ run_additive_benchmark <- function(n, iterations = 5) {
     dplyr::mutate(expression = as.character(expression)) %>%
     dplyr::mutate(
       scenario = sprintf("Additive (n = %d)", n),
-      median_ms = as.numeric(median) / 1e6
+      median_ms = as.numeric(median) * 1000
     ) %>%
     dplyr::select(scenario, expression, median_ms, `itr/sec`)
 }
@@ -134,7 +133,7 @@ run_transformed_benchmark <- function(n, iterations = 5) {
     dplyr::mutate(expression = as.character(expression)) %>%
     dplyr::mutate(
       scenario = sprintf("Transformed (n = %d)", n),
-      median_ms = as.numeric(median) / 1e6
+      median_ms = as.numeric(median) * 1000
     ) %>%
     dplyr::select(scenario, expression, median_ms, `itr/sec`)
 }
@@ -242,4 +241,4 @@ The benchmark shows a stable pattern:
 - For the transformed hazards comparison, `skmle(s = 0)` is much faster than `SurvSparse::trans.haz()` in these runs.
 - The general spline-based `skmle(s = 1)` fit is slower than `kee_additive()`, which is expected because it solves the broader joint optimization problem rather than a specialized estimating equation.
 
-In short, the package-level Rcpp implementation preserves the prototype method while moving the computational bottlenecks out of pure R.
+The timings are from one machine and vary with hardware; the ratios are more stable than the absolute values.

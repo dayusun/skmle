@@ -8,9 +8,8 @@
 #' @param data Data frame containing all variables used in the fit.
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
-#'   Times may be on any scale; the sieve basis and the cumulative-hazard
-#'   quadrature are built on the observed follow-up, so there is no need to
-#'   rescale to the unit interval first. `h` must be on the same scale.
+#'   Times may be on any scale, so there is no need to rescale to the unit
+#'   interval first. `h` must be on the same scale.
 #'   Observation times may be negative; see \dQuote{Negative observation
 #'   times} in [kee_cox()].
 #' @param h Positive kernel bandwidth. If omitted, one is read off the
@@ -34,9 +33,10 @@
 #' coefficients.
 #'
 #' @section Negative observation times:
-#' `obs_times` may be negative. Event times may not: the sieve basis and the
-#' cumulative-hazard quadrature are built on `[0, max(X)]`, so an event time
-#' outside that span is extrapolation. Observation times carry no such
+#' `obs_times` may be negative. Event times may not, and a negative event time
+#' is an error: in [skmle()] and [kee_additive()] the sieve basis and the
+#' cumulative-hazard quadrature are built on `[0, max(X)]`, and every estimator
+#' takes the time origin to be zero. Observation times carry no such
 #' constraint. They enter the score only through the lag `X - obs_times`, and
 #' the half kernel admits a row on the sign of that lag rather than on the sign
 #' of the time, so a covariate observed at `-180` and an event at `30` sit a lag
@@ -76,10 +76,13 @@
 #' @references
 #' Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 #' "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-#' *Journal of the American Statistical Association* (2025): 1-12.
+#' *Journal of the American Statistical Association* 120(552), 2580-2591.
+#' \doi{10.1080/01621459.2025.2476781}
 #'
-#' Cao, Hongyuan, et al. "Inference for Cox models with sparse longitudinal covariates."
-#' *Biometrika* (2015).
+#' Cao, Hongyuan, Mathew M. Churpek, Donglin Zeng, and Jason P. Fine.
+#' "Analysis of the Proportional Hazards Model with Sparse Longitudinal
+#' Covariates." *Journal of the American Statistical Association* 110(511),
+#' 1187-1196 (2015). \doi{10.1080/01621459.2014.957289}
 #'
 #' @return
 #' An object of class `kee` containing coefficient estimates, the estimated
@@ -247,9 +250,9 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE,
 #' @param data Data frame containing all variables used in the fit.
 #' @param id Subject identifier aligned row-wise with `data`.
 #' @param obs_times Longitudinal observation times aligned row-wise with `data`.
-#'   Times may be on any scale; the sieve basis and the cumulative-hazard
-#'   quadrature are built on the observed follow-up, so there is no need to
-#'   rescale to the unit interval first. `h` must be on the same scale.
+#'   Times may be on any scale; the cumulative-hazard quadrature is built on
+#'   the observed follow-up, so there is no need to rescale to the unit
+#'   interval first. `h` must be on the same scale.
 #'   Observation times may be negative; see \dQuote{Negative observation
 #'   times} in [kee_cox()].
 #' @param h Positive kernel bandwidth. If omitted, one is read off the
@@ -275,10 +278,12 @@ kee_cox <- function(formula, data, id, obs_times, h = NULL, one_sided = TRUE,
 #' @references
 #' Sun, Dayu, Zhuowei Sun, Xingqiu Zhao, and Hongyuan Cao.
 #' "Kernel Meets Sieve: Transformed Hazards Models with Sparse Longitudinal Covariates."
-#' *Journal of the American Statistical Association* (2025): 1-12.
+#' *Journal of the American Statistical Association* 120(552), 2580-2591.
+#' \doi{10.1080/01621459.2025.2476781}
 #'
-#' Sun, Dayu, Hongyuan Cao, and Yining Chen. "Additive hazards models with sparse
-#' longitudinal covariates." *Lifetime Data Analysis* (2022).
+#' Sun, Zhuowei, Hongyuan Cao, and Li Chen. "Regression Analysis of Additive
+#' Hazards Model with Sparse Longitudinal Covariates." *Lifetime Data Analysis*
+#' (2022). \doi{10.1007/s10985-022-09548-6}
 #'
 #' @return
 #' An object of class `kee` containing coefficient estimates, an estimated
